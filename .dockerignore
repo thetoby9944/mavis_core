@@ -1,0 +1,27 @@
+
+
+# Ignore everything
+**
+
+# Allow files and directories
+#!/requirements.txt
+#!/mavis/scripts/**
+#!/src/app.py
+#!/src/.streamlit/**
+
+#!/src/pipelines/**
+#!/src/data
+#!/src/logs
+
+# Ignore unnecessary files inside allowed directories
+# This should go after the allowed directories
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+.env*
+.cache
+*.log
+.git*
+scripts

@@ -1,0 +1,28 @@
+#python==3.7
+numpy
+natsort
+matplotlib
+pandas
+seaborn
+Pillow
+scikit-learn
+scikit-image
+opencv-python
+image-quality
+
+# tensorflow==2.3 -- install based on hardware
+tensorflow-addons==0.11.2
+
+segmentation-models
+pixellib
+pyelastix
+
+streamlit
+streamlit-drawable-canvas
+streamlit-pandas-profiling
+streamlit-aggrid
+xmltodict
+dill
+wget
+
+pycairo # convert polgons to segmap
