@@ -461,13 +461,11 @@ class ModuleWidget:
             self.licenses = []
 
     def get_modules(self, interactive=False, search=""):
-        package_path = Path(sys.argv[1])
+        # Path(sys.argv[1])
+        package_path = shelveutils.ModulePathDAO().get() or "pipelines"
         print(f"Looking for mavis modules in {package_path}")
         if str(package_path) not in sys.path:
             sys.path.append(str(package_path))
-        # package_path = mavis.__path__[0]
-        # package = mavis
-        prefix = package_path.name + "."
 
         packages = [
             __import__(modname, fromlist="dummy")
@@ -505,19 +503,36 @@ class ModuleWidget:
 
         if interactive:
             with st.sidebar.expander("More"):
-                upload_widget = st.empty()
+                db_module_path = shelveutils.ModulePathDAO().get() 
+                module_path = st.text_input("Module Path", db_module_path or "pipelines")
+                if module_path != db_module_path:
+                    shelveutils.ModulePathDAO().set(module_path)
 
+                db_log_path = shelveutils.LogPathDAO().get()
+                log_path = st.text_input("Log Path", db_log_path or "logs")
+                if log_path != db_log_path:
+                    shelveutils.LogPathDAO().set(log_path)
+
+                db_data_path = shelveutils.DataPathDAO().get()
+                data_path = st.text_input("Data Path", db_data_path or "data")
+                if data_path != db_data_path:
+                    shelveutils.DataPathDAO().set(data_path)
+
+                st.write("---")
+
+                upload_widget = st.empty()
                 with upload_widget:
                     uploader = FileUpload(str(package_path), f"Upload package", ".zip")
 
                 if st.button(f"Upload package"):
                     uploader.start()
-                st.write("---")
-                uploader = FileUpload(Path(self.license_path).parent, "Upload a License file", ".txt", False)
-                if st.button("Upload License"):
-                    target_dir = uploader.start()
-                    if target_dir:
-                        st.success("Uploaded a license file. Press **`R`** to refresh.")
+
+                #st.write("---")
+                #uploader = FileUpload(Path(self.license_path).parent, "Upload a License file", ".txt", False)
+                #if st.button("Upload License"):
+                #    target_dir = uploader.start()
+                #    if target_dir:
+                #        st.success("Uploaded a license file. Press **`R`** to refresh.")
 
     @staticmethod
     def execute(module_name):
