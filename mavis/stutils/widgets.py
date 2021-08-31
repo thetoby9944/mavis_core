@@ -465,6 +465,9 @@ class ModuleWidget:
         print(f"Looking for mavis modules in {package_path}")
         if str(package_path) not in sys.path:
             sys.path.append(str(package_path))
+        # package_path = mavis.__path__[0]
+        # package = mavis
+        prefix = package_path.name + "."
 
         packages = [
             __import__(modname, fromlist="dummy")
