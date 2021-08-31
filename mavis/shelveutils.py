@@ -30,14 +30,13 @@ shelve.Unpickler = Unpickler
 # Use session state hack for login
 from stutils.sessionstate import get
 
-DATA_PATH = Path("data")
 
 def credential_path():
-    return str(DATA_PATH / "login")
+    return str(DataPathDAO().get() / "login")
 
 
 def project_path(name):
-    return str(DATA_PATH / get(username="default").username / name)
+    return str(DataPathDAO().get() / get(username="default").username / name)
 
 
 def current_data_dir():
@@ -53,11 +52,11 @@ def current_model_dir():
 
 
 def workflow_path():
-    return str(DATA_PATH / "WORKFLOW")
+    return str(DataPathDAO().get() / "WORKFLOW")
 
 
 def config_path():
-    path = DATA_PATH / get(username="default").username
+    path = DataPathDAO().get() / get(username="default").username
     path.mkdir(exist_ok=True, parents=True)
     return str(path / "CONFIG")
 
@@ -182,7 +181,7 @@ class DFDAO(BaseDAO):
 
 class ProjectDAO(BaseDAO):
     def _project_names(self):
-        path = DATA_PATH / get(username="default").username
+        path = DataPathDAO().get() / get(username="default").username
         names = set([
             Path(p).stem
             for p in glob.glob(str(path / "*.bak")) + glob.glob(str(path / "*.db"))
@@ -264,7 +263,7 @@ class UserDAO(BaseDAO):
             passwords[username] = password
             login["passwords"] = passwords
             st.info("Created User " + username)
-            os.mkdir(str(DATA_PATH / username))
+            os.mkdir(str(DataPathDAO().get() / username))
 
     def delete(self, username, password):
         with shelve.open(credential_path()) as login:
@@ -334,6 +333,39 @@ class ModelDAO(BaseDAO):
         model_paths = self.get_all() + [model_path]
         with shelve.open(config_path()) as db:
             db[self.key] = model_paths
+
+
+class SimpleKeyDAO(BaseDAO):
+    @property
+    def key(self):
+        raise NotImplementedError
+
+    def get(self):
+        with shelve.open(config_path()) as db:
+            if self.key not in db:
+                db[self.key] = ""
+            module_path = db[self.key]
+        return module_path
+
+    def set(self, module_path):
+        with shelve.open(config_path()) as db:
+            db[self.key] = module_path
+
+
+class ModulePathDAO(SimpleKeyDAO):
+    def key(self):
+        return "module_path"
+
+
+class LogPathDAO(SimpleKeyDAO):
+    def key(self):
+        return "log_path"
+
+
+class DataPathDAO(SimpleKeyDAO):
+    def key(self):
+        return "log_path"
+
 
 
 class WorkflowDAO:

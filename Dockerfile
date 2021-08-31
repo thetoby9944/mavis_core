@@ -26,7 +26,4 @@ RUN pip install -r /requirements.txt \
     && rm -rf /root/.cache/pip /tmp/* /var/tmp/*
 
 
-COPY . /usr/mavis
-WORKDIR /usr/mavis/src
-
 CMD mavis

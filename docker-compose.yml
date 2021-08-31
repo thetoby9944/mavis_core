@@ -7,9 +7,7 @@ services:
             - ~/Projects/mavis/src/data:/usr/mavis/src/data                      # Main Mavis Data
             - ~/Projects/mavis/src/logs:/usr/mavis/src/logs                      # Streamlit & Tensorboard Logs Location
             - ~/Projects/mavis-git/mavis/src/pipelines:/usr/mavis/src/pipelines  # Addons Location
-            - ~/Projects/mavis-git/mavis/src/mavis:/usr/mavis/src/mavis          # Add for mirror life updates
             - /data:/data                                                        # Any persistent data location that should be accessible
-            - ~/Projects/mavis/src/data:/home/tschiele/Projects/mavis/src/data/  # Redirect so old projects are still working
         ports:
             - 8501:8501
         # user: ${UID}

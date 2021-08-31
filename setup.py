@@ -17,14 +17,12 @@ setup(
     version='0.1.0',
     description='Mavis Platform',
     scripts=[str((Path(root_folder) / 'scripts' / 'mavis.py'))],
-    # url='https://github.com/shuds13/pyexample',
-    author='Tobias Schiele',
-    author_email='tobias.schiele',
+    url='https://github.com/thetoby9944/mavis_core',
+    author='thetoby9944',
+    author_email='thetoby',
     license='BSD 2-clause',
     packages=find_packages(),
-    install_requires=[
-        'numpy',
-    ],
+    install_requires=required,
     include_dirs=[str(Path(root_folder) / folder) for folder in static_folders],
     package_data={
         folder: [

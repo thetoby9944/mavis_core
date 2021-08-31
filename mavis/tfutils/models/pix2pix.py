@@ -5,6 +5,7 @@ import streamlit as st
 import tensorflow as tf
 
 from pilutils import pil
+from shelveutils import LogPathDAO
 
 
 class Pix2Pix(tf.keras.Model):
@@ -17,7 +18,7 @@ class Pix2Pix(tf.keras.Model):
         self.generator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
         self.discriminator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
 
-        log_dir = "logs/"
+        log_dir = LogPathDAO().get()
         self.summary_writer = tf.summary.create_file_writer(
             log_dir + "fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
         self.summary_writer.set_as_default()

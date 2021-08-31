@@ -8,7 +8,7 @@ import tensorflow as tf
 import streamlit as st
 from tensorflow.python.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
-from shelveutils import ProjectDAO
+from shelveutils import ProjectDAO, LogPathDAO
 from tfutils.callbacks import CheckPoint
 import config
 
@@ -31,7 +31,7 @@ def train_model(
     # local import to avoid circular
 
     log_dir = str(
-        Path(f'logs')
+        Path(LogPathDAO().get())
         / ProjectDAO().get()
         / f'{datetime.now().strftime("%Y%m%d-%H%M%S")}-{model.name}'
     )
