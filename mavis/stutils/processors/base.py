@@ -56,12 +56,12 @@ class BaseProcessor:
             self.column_out_block(label=output_label, new_dir=output_new_dir, suffix=output_suffix)
 
         st.markdown("--- \n ### Options")
-        config.c.select("Select Preset")
+        config.Preset().select("Select Preset")
         if class_info_required or class_subset_required:
-            config.c.class_info_block(with_color=color_info_required)
+            config.Preset().class_info_block(with_color=color_info_required)
 
             if class_subset_required:
-                self.class_names, self.class_colors = config.c.class_subset_block()
+                self.class_names, self.class_colors = config.Preset().class_subset_block()
 
     def save_new_df(self, df):
         self.df = DFDAO().set(df, ProjectDAO().get())
@@ -105,7 +105,7 @@ class BaseProcessor:
                             self.preview(n + i)
                 except:
                     st.warning("Preview message")
-                    st.code(traceback.format_exc())#.split("\n")[-2])
+                    st.code(traceback.format_exc())  # .split("\n")[-2])
 
     def preview(self, n) -> None:
         raise NotImplementedError

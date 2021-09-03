@@ -13,8 +13,8 @@ from skimage.filters import sobel
 from skimage.morphology import skeletonize
 from sklearn.metrics import pairwise_distances_argmin
 
-import config
 from pilutils import pil
+from shelveutils import ConfigDAO
 
 
 def load_label(path, inverted=False):
@@ -219,8 +219,8 @@ def color_coded_to_labelme(img_path: Union[Path, str],
     lbl = np.array(seg_map if type(seg_map) == Image else Image.open(seg_map).convert("RGB"))
     label_me = LabelMeJsonWrapper(img_path, save_with_contents, save_full_path)
 
-    for i, col in enumerate(config.c.CLASS_COLORS):
-        if config.c.CLASS_NAMES[i] in exclude_classes:
+    for i, col in enumerate(ConfigDAO()["CLASS_COLORS"]):
+        if ConfigDAO()["CLASS_NAMES"][i] in exclude_classes:
             continue
         mask = np.zeros(lbl.shape[:-1]).astype(np.uint8)
         mask[(lbl == tuple(col)).all(axis=-1)] = 1
@@ -288,7 +288,7 @@ class LabelMeJsonWrapper:
         """
         for cnt in external_contours(mask):
             self.labels["shapes"] += [{
-                "label": str(config.c.CLASS_NAMES[class_id]),
+                "label": str(ConfigDAO()["CLASS_NAMES"][class_id]),
                 "points": np.squeeze(cnt).astype(float).tolist(),
                 "group_id": int(class_id),
                 "shape_type": "polygon",

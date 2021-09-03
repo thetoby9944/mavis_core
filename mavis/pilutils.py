@@ -5,10 +5,11 @@ import PIL
 import cairo
 from PIL import Image
 
+from shelveutils import ConfigDAO
+
 Image.MAX_IMAGE_PIXELS = None
 
 import numpy as np
-import config
 
 IMAGE_FILETYPE_EXTENSIONS = [".bmp", ".png", ".jpg", ".jpeg", ".tif"]
 FILETYPE_EXTENSIONS = IMAGE_FILETYPE_EXTENSIONS + [".xml", ".json"]
@@ -50,7 +51,7 @@ def to_integer_encoding(path):
     img = Image.open(path).convert("RGB")
     img = np.array(img)
     res = np.zeros_like(img)
-    for i, col in enumerate(config.c.CLASS_COLORS):
+    for i, col in enumerate(ConfigDAO()["CLASS_COLORS"]):
         res[(img == tuple(col)).all(axis=-1)] = (i, 0, 0)
     res = Image.fromarray(res, mode="RGB")
     return res
@@ -60,8 +61,8 @@ def to_color_encoding(path):
     img = Image.open(path).convert("RGB")
     img = np.array(img)
     res = np.zeros_like(img)
-    for i in range(len(config.c.CLASS_COLORS)):
-        res[(img == (i, 0, 0)).all(axis=-1)] = tuple(config.c.CLASS_COLORS[i])
+    for i in range(len(ConfigDAO()["CLASS_COLORS"])):
+        res[(img == (i, 0, 0)).all(axis=-1)] = tuple(ConfigDAO()["CLASS_COLORS"][i])
     res = Image.fromarray(res, mode="RGB")
     return res
 

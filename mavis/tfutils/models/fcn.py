@@ -4,7 +4,6 @@ from tensorflow.python.keras.layers import Conv2D, Dropout, BatchNormalization, 
 
 
 def fcn(n_classes=5, dropout_rate=0.2):
-
     x_in = Input(shape=(None, None, 3))
 
     x = Conv2D(filters=32, kernel_size=3, strides=1)(x_in)

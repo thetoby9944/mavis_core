@@ -1,12 +1,14 @@
-import base64
 import glob
 import json
 import os
+import pprint
 import shelve
 import time
+import tkinter as tk
 import traceback
+from abc import ABC
 from pathlib import Path
-from zipfile import ZipFile, ZIP_STORED
+from tkinter import filedialog
 
 import numpy as np
 import pandas as pd
@@ -35,8 +37,16 @@ def credential_path():
     return str(DataPathDAO().get() / "login")
 
 
+def projects_path():
+    path = DataPathDAO().get() / get(username="default")
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
 def project_path(name):
-    return str(DataPathDAO().get() / get(username="default").username / name)
+    path = DataPathDAO().get() / get(username="default") / name
+    path.mkdir(parents=True, exist_ok=True)
+    return str(path)
 
 
 def current_data_dir():
@@ -46,7 +56,7 @@ def current_data_dir():
 
 
 def current_model_dir():
-    path = Path(ProjectDAO().get()) / "data" / "models"
+    path = Path(current_data_dir()) / "models"
     path.mkdir(parents=True, exist_ok=True)
     return str(path)
 
@@ -56,7 +66,8 @@ def workflow_path():
 
 
 def config_path():
-    path = DataPathDAO().get() / get(username="default").username
+    username = "default" # get(username="default")
+    path = Path("data") / "config" / username
     path.mkdir(exist_ok=True, parents=True)
     return str(path / "CONFIG")
 
@@ -128,16 +139,17 @@ class BaseDAO:
     ACTIVE_PIPELINE = None
 
 
-class LoginDAO():
+class LoginDAO:
     def __init__(self):
         with shelve.open(credential_path()) as login:
             if "passwords" not in login:
                 login["passwords"] = {"default": "wg"}
 
-    def check_session(self, session_state):
+    def check_session(self, username, password):
         with shelve.open(credential_path()) as login:
-            username, password = session_state.username, session_state.password
-            check_user = username in login["passwords"] and password == login["passwords"][username]
+            # username, password = get(username="default", password="")
+            check_user = username in login["passwords"]
+            check_user = check_user and password == login["passwords"][username]
             return check_user, username, password
 
 
@@ -181,7 +193,7 @@ class DFDAO(BaseDAO):
 
 class ProjectDAO(BaseDAO):
     def _project_names(self):
-        path = DataPathDAO().get() / get(username="default").username
+        path = projects_path()
         names = set([
             Path(p).stem
             for p in glob.glob(str(path / "*.bak")) + glob.glob(str(path / "*.db"))
@@ -190,15 +202,15 @@ class ProjectDAO(BaseDAO):
         return list(names)
 
     def get(self):
-        created = False
         with shelve.open(config_path()) as c:
             if "Last" not in c or c["Last"] is None:
                 c["Last"] = "Default"
-                created = True
-            last = c["Last"]
 
-        if created:
-            self.get_all()
+            last = c["Last"]
+            all_projects = self._project_names()
+            if last not in all_projects:
+                c["Last"] = "Default"
+                self.get_all()
 
         return project_path(last)
 
@@ -276,63 +288,47 @@ class UserDAO(BaseDAO):
                 st.info("Wrong credentials for " + username)
 
 
-class PresetDAO(BaseDAO):
-    def __init__(self):
-        self.active_key = f"{PresetDAO.ACTIVE_PIPELINE}_active_preset"
-        self.set_key = "presets"
+class SimpleListDAO(BaseDAO):
+    @property
+    def key(self):
+        raise NotImplementedError
 
-    def get_all(self, default=None):
-        with shelve.open(config_path()) as db:
-            try:
-                preset_dict = db[self.set_key]
-            except:
-                preset_dict = {default.name: default}
-                db[self.set_key] = preset_dict
-        return preset_dict
-
-    def get(self, default=None):
-        with shelve.open(config_path()) as db:
-            if self.active_key not in db:
-                print("No active preset found")
-                db[self.active_key] = default.name
-            active_preset = db[self.active_key]
-
-        presets = self.get_all(default=default)
-        print(presets[active_preset].__class__.__bases__)
-        print(presets[active_preset].name)
-        return presets[active_preset]
-
-    def set(self, preset):
-        with shelve.open(config_path()) as db:
-            db[self.active_key] = preset.name
-            print(f"active preset ist now {preset.name}")
-
-    def add(self, preset):
-        preset_dict = self.get_all()
-        if preset.name not in preset_dict:
-            st.info("Saved Preset")
-
-        preset_dict[preset.name] = preset
-
-        with shelve.open(config_path()) as db:
-            db[self.set_key] = preset_dict
-
-
-class ModelDAO(BaseDAO):
-    def __init__(self):
-        self.key = f"{PresetDAO.ACTIVE_PIPELINE}_models"
+    @property
+    def default(self):
+        return []
 
     def get_all(self):
         with shelve.open(config_path()) as db:
             if self.key not in db:
-                db[self.key] = []
-            preset_dict = db[self.key]
-        return preset_dict
+                db[self.key] = self.default
+            all_entries = db[self.key]
+        return all_entries
 
-    def add(self, model_path):
-        model_paths = self.get_all() + [model_path]
+    def add(self, entry):
+        all_entries = self.get_all()
+        if entry not in all_entries:
+            with shelve.open(config_path()) as db:
+                db[self.key] = all_entries + [entry]
+
+    def reset(self):
         with shelve.open(config_path()) as db:
-            db[self.key] = model_paths
+            db[self.key] = self.default
+
+
+class PresetListDAO(SimpleListDAO):
+    @property
+    def key(self):
+        return "all_presets"
+
+    @property
+    def default(self):
+        return ["Default"]
+
+
+class ModelDAO(SimpleListDAO):
+    @property
+    def key(self):
+        return f"{BaseDAO.ACTIVE_PIPELINE}_models"
 
 
 class SimpleKeyDAO(BaseDAO):
@@ -340,32 +336,93 @@ class SimpleKeyDAO(BaseDAO):
     def key(self):
         raise NotImplementedError
 
+    @property
+    def default(self):
+        raise NotImplementedError
+
     def get(self):
         with shelve.open(config_path()) as db:
             if self.key not in db:
-                db[self.key] = ""
-            module_path = db[self.key]
-        return module_path
+                db[self.key] = self.default
+            value = db[self.key]
+        return value
 
-    def set(self, module_path):
+    def set(self, value):
         with shelve.open(config_path()) as db:
-            db[self.key] = module_path
+            db[self.key] = value
+
+    def reset(self):
+        with shelve.open(config_path()) as db:
+            db[self.key] = self.default
 
 
-class ModulePathDAO(SimpleKeyDAO):
+class LocalFolderBrowserMixin:
+    def browse(self) -> None or Path:
+        clicked = st.button('Select Folder')
+        if clicked:
+            root = tk.Tk()
+            root.wm_attributes('-topmost', 1)
+            root.withdraw()
+            dialog = filedialog.askdirectory(
+                master=root,
+                initialdir="bullshit"
+            )
+            dirname = st.text_input(
+                'Selected folder:',
+                dialog
+            )
+
+            if dirname:
+                return Path(dirname)
+
+
+class SimplePathDAO(SimpleKeyDAO, ABC, LocalFolderBrowserMixin):
+    def get(self):
+        with shelve.open(config_path()) as db:
+            if self.key not in db:
+                db[self.key] = self.default
+            module_path = db[self.key]
+        return Path(module_path)
+
+
+class ModulePathDAO(SimplePathDAO):
+    @property
     def key(self):
         return "module_path"
 
+    @property
+    def default(self):
+        return "pipelines"
 
-class LogPathDAO(SimpleKeyDAO):
+
+class LogPathDAO(SimplePathDAO):
+    @property
     def key(self):
         return "log_path"
 
+    @property
+    def default(self):
+        return "logs"
 
-class DataPathDAO(SimpleKeyDAO):
+
+class DataPathDAO(SimplePathDAO):
+    @property
     def key(self):
-        return "log_path"
+        return "data_path"
 
+    @property
+    def default(self):
+        return "data"
+
+
+class ActivePresetDAO(SimpleKeyDAO):
+    @property
+    def key(self):
+        return f"{BaseDAO.ACTIVE_PIPELINE}_active_preset"
+
+    @property
+    def default(self):
+        return "Default"
 
 
 class WorkflowDAO:
@@ -452,40 +509,38 @@ class WorkflowDAO:
         self.activate("Default")
 
 
-class ExportWidget:
-    def __init__(self, name):
-        self.name = name
+class ConfigDAO:
+    def __init__(self, default=None):
+        self.default = default
+        self.active = ActivePresetDAO().get()
+        with shelve.open(config_path()) as db:
+            if self.active not in db:
+                db[self.active] = {}
 
-    def _zip_dir(self, source_dirs, folder_names, pattern="*", verbose=True, recursive=False):
-        remove_files = glob.glob(str(DOWNLOADS_PATH / "**"))
-        [os.remove(f) for f in remove_files]
-        st.info(f"Removed {len(remove_files)} old archvies")
+    def __setitem__(self, key, value):
+        with shelve.open(config_path()) as db:
+            config = db[self.active]
+            config[key] = value
+            db[self.active] = config
 
-        target_file = str(DOWNLOADS_PATH / self.name)
+    def __getitem__(self, key):
+        with shelve.open(config_path()) as db:
+            config = db[self.active]
+        if key not in config:
+            self[key] = self.default
+            return self.default
+        return config[key]
 
-        with ZipFile(target_file, 'w', ZIP_STORED) as zf:
-            for source_dir, folder_name in zip(source_dirs, folder_names):
-                src_path = Path(source_dir).expanduser().resolve(strict=True)
-                files = list(src_path.rglob(pattern) if recursive else src_path.glob(pattern))
-                if verbose:
-                    bar = st.progress(0)
-                for i, file in enumerate(files):
-                    if verbose:
-                        bar.progress(i / len(files))
-                    zf.write(file, Path(folder_name) / file.relative_to(src_path))
+    def print_preset(self):
+        with shelve.open(config_path()) as db:
+            config = db[self.active]
+        formatted = pprint.pformat({
+            k: v.get_config() if k == "OPTIMIZER" and v is not None else v
+            for k, v in config.items() if "__" not in k and k.isupper()
+        })
+        return formatted
 
-        st.markdown(f"Download [{self.name}](downloads/{self.name})", unsafe_allow_html=True)
+    def reset(self):
+        with shelve.open(config_path()) as db:
+            db[self.active] = {}
 
-    def df_link(self, csv_args):
-        csv_args["header"] = True
-        csv = DFDAO().get(ProjectDAO().get()).to_csv(index=False, **csv_args)
-        b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
-        href = f'<a download="{self.name}.csv" href="data:file/csv;base64,{b64}">' \
-               f'Download {self.name}.csv</a>'
-        st.markdown(href, unsafe_allow_html=True)
-
-    def ds_link(self, paths, folder_names, recursive=False):
-        self._zip_dir(paths, folder_names, recursive=recursive)
-
-    def model_link(self, path: Path):
-        self._zip_dir(path.parent, "model", pattern=path.name)

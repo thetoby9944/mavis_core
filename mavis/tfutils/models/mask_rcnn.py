@@ -1,36 +1,14 @@
 from pathlib import Path
 
-import streamlit as st
 import tensorflow as tf
 import wget
 from pixellib.custom_train import instance_custom_training
 from pixellib.mask_rcnn import MaskRCNN
 from tensorflow.python.keras import regularizers
 
-import config
-from config import BasePreset
 from cvutils import LabelMeJsonWrapper
+from shelveutils import ConfigDAO
 from tfutils.dataset.pixellib import PixelLibDataset
-
-
-@BasePreset.add
-class MaskRCNNConfig:
-    """
-    This class is not used  # TODO
-    """
-    TRAIN_ROIS_PER_IMAGE = 512
-    ANCHOR_SCALES = (1, 4, 8, 16, 32, 64, 128, 256)
-    RPN_NMS_THRESHOLD = 0.8
-    IMAGE_RESIZE_MODE = "square"
-    MAX_GT_INSTANCES = 200
-
-    @BasePreset.access("Mask RCNN Settings")
-    def mask_rcnn_settings(self):
-        self.TRAIN_ROIS_PER_IMAGE = st.number_input("Train ROIs per image", value=self.TRAIN_ROIS_PER_IMAGE)
-        self.ANCHOR_SCALES = (4, 8, 16, 32, 64, 128, 256)
-        self.RPN_NMS_THRESHOLD = st.number_input("Non max supr. Threshold", 0., 1., self.RPN_NMS_THRESHOLD)
-        self.IMAGE_RESIZE_MODE = "square"
-        self.MAX_GT_INSTANCES = st.number_input("Max Ground Truth instances", value=self.MAX_GT_INSTANCES)
 
 
 class PixelLibWrapper:
@@ -48,7 +26,7 @@ class PixelLibWrapper:
         metrics. Then calls the Keras compile() function.
         """
         # Optimizer object
-        optimizer = config.c.OPTIMIZER
+        optimizer = ConfigDAO()["OPTIMIZER"]
 
         # Add Losses
         loss_names = [
@@ -105,12 +83,12 @@ class PixelLibWrapper:
 
     def compile(self, **kwargs):
         self.train_instance.modelConfig(
-            network_backbone=config.c.BACKBONE,
+            network_backbone=ConfigDAO()["BACKBONE"],
             num_classes=len(self.dataset.class_names_from_dataset),
-            batch_size=config.c.BATCH_SIZE,
+            batch_size=ConfigDAO()["BATCH_SIZE"],
             image_resize_mode="square",
-            image_max_dim=config.c.SIZE,
-            image_min_dim=config.c.SIZE
+            image_max_dim=ConfigDAO()["SIZE"],
+            image_min_dim=ConfigDAO()["SIZE"]
         )
 
         # Fixed by resnet
@@ -161,7 +139,7 @@ class PixelLibWrapper:
             # All layers
             "all": ".*",
         }
-        layers = "heads" if config.c.TRAIN_HEADS_ONLY else "all"
+        layers = "heads" if ConfigDAO()["TRAIN_HEADS_ONLY"] else "all"
         layers = layer_regex[layers]
 
         m.set_trainable(layers)
@@ -177,7 +155,7 @@ class PixelLibWrapper:
             assert boxes.shape[0] == masks.shape[-1] == class_ids.shape[0]
 
         for i in range(n_instances):
-            image[masks[..., i]] = config.c.CLASS_COLORS[list(config.c.CLASS_NAMES).index(
+            image[masks[..., i]] = ConfigDAO()["CLASS_COLORS"][list(ConfigDAO()["CLASS_NAMES"]).index(
                 (["Background"] + self.dataset.class_names_from_dataset)[class_ids[i]]
             )]
 
@@ -195,7 +173,7 @@ class PixelLibWrapper:
         print(f"found {len(boxes)} in {img_path}")
 
         for box, mask, i in zip(boxes, masks.transpose(2, 0, 1), class_ids):
-            if config.c.CLASS_NAMES[i] in exclude_classes:
+            if ConfigDAO()["CLASS_NAMES"][i] in exclude_classes:
                 continue
             label_me.add(mask, i)
 

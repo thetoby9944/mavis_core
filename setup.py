@@ -19,7 +19,7 @@ setup(
     scripts=[str((Path(root_folder) / 'scripts' / 'mavis.py'))],
     url='https://github.com/thetoby9944/mavis_core',
     author='thetoby9944',
-    author_email='thetoby',
+    author_email='thetoby@web.de',
     license='BSD 2-clause',
     packages=find_packages(),
     install_requires=required,

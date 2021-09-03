@@ -2,12 +2,11 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 import tensorflow as tf
-
 from PIL import Image
 from tensorflow.python.keras.models import load_model
 
 import config
-from shelveutils import PresetDAO
+from shelveutils import ConfigDAO, ActivePresetDAO, PresetListDAO
 from stutils.processors.base import BaseProcessor
 from tfutils.train import train_model
 
@@ -25,7 +24,7 @@ class TfModelProcessor(BaseProcessor):
         self.dry_run = False
 
     def model_from_path(self):
-        return load_model(config.c.MODEL_PATH, compile=False)
+        return load_model(ConfigDAO()["MODEL_PATH"], compile=False)
 
     def inference(self, img_paths):
         model = self.model_from_path()
@@ -34,7 +33,7 @@ class TfModelProcessor(BaseProcessor):
         n = len(img_paths)
 
         def prog_perc(x):
-            return min(1., x / (n // config.c.BATCH_SIZE - 1)) if n > config.c.BATCH_SIZE else 1.
+            return min(1., x / (n // ConfigDAO()["BATCH_SIZE"] - 1)) if n > ConfigDAO()["BATCH_SIZE"] else 1.
 
         bar = st.progress(0)
         for i, batch in enumerate(ds):
@@ -67,18 +66,18 @@ class TfModelProcessor(BaseProcessor):
     def training(self):
         final_model, final_loss = None, np.inf
         for preset in self.presets:
-            config.c = preset
+            ActivePresetDAO().set(preset)
 
-            st.info(f"Loaded preset {config.c.name}")
+            st.info(f"Loaded preset {ActivePresetDAO().get()}")
 
-            if preset.MODEL_PATH is not None and self.continue_training:
+            if ConfigDAO()["MODEL_PATH"] is not None and self.continue_training:
                 model = self.model_from_path()
             else:
                 model = self.models()[0]
 
             # Name the model (not relevant for mask rcnn)
-            model._name = preset.name + model._name
-            st.code(config.c.print_preset())
+            model._name = ActivePresetDAO().get() + model._name
+            st.code(ConfigDAO().print_preset())
 
             # First Compile the model, so that all variables for dataset creation have been initialized
             with st.spinner("Compiling Model"):
@@ -101,9 +100,9 @@ class TfModelProcessor(BaseProcessor):
 
             # Every iteration save the best model only
             if self.save_weights_only:
-                final_model.save_weights(config.c.MODEL_PATH)
+                final_model.save_weights(ConfigDAO()["MODEL_PATH"])
             else:
-                final_model.save(config.c.MODEL_PATH)
+                final_model.save(ConfigDAO()["MODEL_PATH"])
 
         return final_model
 
@@ -127,8 +126,8 @@ class TfModelProcessor(BaseProcessor):
     def training_block(self):
         preset_names = st.multiselect(
             "Run Training on these Presets",
-            list(PresetDAO().get_all().keys()),
-            [preset.name for preset in self.presets]
+            list(PresetListDAO().get_all()),
+            self.presets
         )
 
         # self.continue_training = st.checkbox("Continue Training", False)
@@ -137,8 +136,7 @@ class TfModelProcessor(BaseProcessor):
         self.dry_run = st.button("Check preset")
 
         if st.button("Start Training") or self.dry_run:
-            presets = PresetDAO().get_all()
-            self.presets = [presets[k] for k in preset_names]
+            self.presets = preset_names
             if len(self.presets) is 0:
                 st.warning("No presets selected!")
                 return
@@ -150,7 +148,7 @@ class TfModelProcessor(BaseProcessor):
             self.save_new_df(df)
 
     def run(self):
-        config.c.common_model_parameter()
+        config.Preset().common_model_parameter()
         st.write("--- \n ### Inference")
         # self.inference_parameter()
         self.preview_block(expanded=False)

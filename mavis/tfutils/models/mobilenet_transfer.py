@@ -1,13 +1,13 @@
 import tensorflow as tf
 
-import config
+from shelveutils import ConfigDAO
 
 
 def MobileNet_Transfer(len_classes, dropout_rate=0.2):
     x_in = tf.keras.layers.Input(shape=(None, None, 3))
 
     x = tf.keras.layers.experimental.preprocessing.Rescaling(2. / 1., offset=-1)(x_in)
-    x = tf.keras.applications.MobileNetV2(input_shape=(config.c.SIZE, config.c.SIZE, 3),
+    x = tf.keras.applications.MobileNetV2(input_shape=(ConfigDAO()["SIZE"], ConfigDAO()["SIZE"], 3),
                                           include_top=False,
                                           weights='imagenet')(x, training=False)
     x.trainable = False

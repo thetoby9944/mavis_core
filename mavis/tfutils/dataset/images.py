@@ -3,8 +3,8 @@ import streamlit as st
 import tensorflow as tf
 from imgaug import SegmentationMapsOnImage
 
-import config
 from pilutils import pil
+from shelveutils import ConfigDAO
 from tfutils.dataset.base import TFDatasetWrapper
 from tfutils.dataset.preprocessing import resnet_preprocess_img, masking, process_image_path, normalize_minus_one
 
@@ -26,14 +26,14 @@ class ImageToImageDataset(TFDatasetWrapper):
         """
         Prepare Training Dataset (self.ds and self.val_ds)
         """
-        print("Creating Dataset while size is", config.c.SIZE)
+        print("Creating Dataset while size is", ConfigDAO()["SIZE"])
         image_paths = tf.data.Dataset.from_tensor_slices(img_paths)
         label_paths = tf.data.Dataset.from_tensor_slices(labels)
 
         paths = tf.data.Dataset.zip((
             image_paths,
             label_paths)
-        ).shuffle(buffer_size=config.c.BUFFER_SIZE)
+        ).shuffle(buffer_size=ConfigDAO()["BUFFER_SIZE"])
 
         self.ds = paths.map(lambda x, y: (
             process_image_path(x),
@@ -46,13 +46,13 @@ class ImageToImageDataset(TFDatasetWrapper):
         return self.ds, self.val_ds
 
     def pred_to_pil(self, pred):
-        if config.c.BINARY:
+        if ConfigDAO()["BINARY"]:
             return pil(pred)
-        if hasattr(config.c, "INSPECT_CHANNEL") and config.c.INSPECT_CHANNEL in config.c.CLASS_NAMES:
-            return pil(pred[:, :, list(config.c.CLASS_NAMES).index(config.c.INSPECT_CHANNEL)])
+        if ConfigDAO()["INSPECT_CHANNEL"] in ConfigDAO()["CLASS_NAMES"]:
+            return pil(pred[:, :, list(ConfigDAO()["CLASS_NAMES"]).index(ConfigDAO()["INSPECT_CHANNEL"])])
         pred = np.argmax(pred, axis=-1)
         img = np.zeros((*pred.shape, 3), dtype=np.uint8)
-        for i, col in enumerate(config.c.CLASS_COLORS):
+        for i, col in enumerate(ConfigDAO()["CLASS_COLORS"]):
             img[pred == i] = tuple(col)
         return pil(img)
 
@@ -79,7 +79,7 @@ class ImageToImageDataset(TFDatasetWrapper):
         with st.expander("Train Dataset Peek"):
             self.peek_dataset(self.ds)
         with st.expander("Val Dataset Peek"):
-            self.peek_dataset(self.val_ds, config.c.VAL_SPLIT)
+            self.peek_dataset(self.val_ds, ConfigDAO()["VAL_SPLIT"])
 
 
 class ImageToReconstructionDataset(ImageToImageDataset):

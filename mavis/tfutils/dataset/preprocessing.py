@@ -2,7 +2,7 @@ import numpy as np
 import segmentation_models as sm
 import tensorflow as tf
 
-import config
+from shelveutils import ConfigDAO
 
 auto = tf.data.experimental.AUTOTUNE
 
@@ -16,7 +16,7 @@ def normalize_minus_one(img: tf.Tensor) -> tf.Tensor:
 def py_unet_preprocessing(img: tf.Tensor) -> tf.Tensor:
     if np.min(img) < 0:
         img -= np.min(img)
-    return sm.get_preprocessing(config.c.BACKBONE)(img)
+    return sm.get_preprocessing(ConfigDAO()["BACKBONE"])(img)
 
 
 # @tf.function
@@ -27,13 +27,13 @@ def resnet_preprocess_img(img: tf.Tensor) -> tf.Tensor:
 
 
 def one_hot(label):
-    one_hot_label = np.asarray(label.numpy().decode() == config.c.CLASS_NAMES)
-    return one_hot_label.reshape(len(config.c.CLASS_NAMES)).astype(np.int8),
+    one_hot_label = np.asarray(label.numpy().decode() == ConfigDAO()["CLASS_NAMES"])
+    return one_hot_label.reshape(len(ConfigDAO()["CLASS_NAMES"])).astype(np.int8),
 
 
 # @tf.function
 def resize(img: tf.Tensor) -> tf.Tensor:
-    return tf.image.resize_with_pad(img, config.c.SIZE, config.c.SIZE,
+    return tf.image.resize_with_pad(img, ConfigDAO()["SIZE"], ConfigDAO()["SIZE"],
                                     antialias=False,
                                     method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
 
@@ -48,8 +48,8 @@ def mask_by_color(img: tf.Tensor, col: tf.Tensor) -> tf.Tensor:
 # @tf.function
 def masking(img: tf.Tensor) -> tf.Tensor:
     img = tf.image.convert_image_dtype(img, tf.uint8, saturate=True)
-    img = tf.stack([mask_by_color(img, col) for col in config.c.CLASS_COLORS], axis=-1)
-    if config.c.BINARY:
+    img = tf.stack([mask_by_color(img, col) for col in ConfigDAO()["CLASS_COLORS"]], axis=-1)
+    if ConfigDAO()["BINARY"]:
         img = img[..., 1]
     return img
 
@@ -70,7 +70,7 @@ def process_image_path(file_path):
 
 
 def prepare_batch(ds: tf.data.Dataset) -> tf.data.Dataset:
-    ds = ds.batch(config.c.BATCH_SIZE)
+    ds = ds.batch(ConfigDAO()["BATCH_SIZE"])
     # `prefetch` lets the dataset fetch batches in the background while the model is training.
     ds = ds.prefetch(buffer_size=auto)
     return ds

@@ -14,13 +14,16 @@ from PIL import Image
 from natsort import os_sorted
 from st_aggrid import GridOptionsBuilder, AgGrid
 
+import config
 import shelveutils
+from config import ExportWidget
 from pdutils import overwrite_modes, fill_column, image_columns
 from pilutils import FILETYPE_EXTENSIONS, IMAGE_FILETYPE_EXTENSIONS
-from shelveutils import ProjectDAO, current_data_dir, DFDAO, config_path, LoginDAO, ExportWidget
-from stutils.sessionstate import get
+from shelveutils import ProjectDAO, DFDAO, config_path, LoginDAO, LocalFolderBrowserMixin
 
-#import mavis
+
+# import mavis
+from stutils.sessionstate import get
 
 
 def icon(icon_name):
@@ -100,22 +103,22 @@ class EditWidget:
 
         if not df.empty:
             columns_to_remove = st.multiselect("Remove column(s)", list(df.columns))
-            delete_files = st.checkbox("Delete associated files.")
+            delete_files = False  # st.checkbox("Delete associated files.")
             if st.button("Remove"):
                 for column in columns_to_remove:
                     if delete_files:
                         for path in df[column]:
                             try:
                                 path = Path(path)
-                                if path.isfile():
+                                if path.is_file():
                                     path.unlink()
                             except:
                                 pass
                     df = df.drop(column, axis=1)
                     st.info(column + " removed")
                 DFDAO().set(df, project, allow_loss=True)
-
-            if not st.checkbox("Adv. Options", False):
+            st.write("---")
+            if not st.checkbox("More", False, key="showmoreedit"):
                 return
 
             st.markdown("--- \n ### Duplicate a column")
@@ -203,7 +206,7 @@ class EditWidget:
             st.info("Editing not available. Project empty")
 
 
-class SlimProjectWidget():
+class SlimProjectWidget:
     def __init__(self):
         col1, col2 = st.columns([1, 2])
         current = Path(ProjectDAO().get()).stem
@@ -237,23 +240,6 @@ class ImportExportTableWidget:
             download_name = st.text_input("Export Name", Path(ProjectDAO().get()).stem)
             if st.button("Generate Download Link"):
                 ExportWidget(download_name).df_link(csv_args)
-
-
-class FileUploaderWidget:
-    def __init__(self, df, verbose=False):
-        # st.markdown("### Upload Files")
-        column = st.text_input("Title for new files:", "Images")
-        uploader = FileUpload(Path(current_data_dir()) / column)
-        overwrite_mode = overwrite_modes["opt_a"]
-        if verbose:
-            overwrite_mode = st.radio("When creating a column which is already present",
-                                      list(overwrite_modes.values()), 0)
-
-        if st.button("Upload"):
-            paths = uploader.start()
-            if paths:
-                df = fill_column(df, column, paths, overwrite_mode)
-                DFDAO().set(df, ProjectDAO().get())
 
 
 class GalleryWidget:
@@ -380,19 +366,10 @@ class TableWidget:
 
 
 class LoginWidget:
-    def __init__(self):
-        self.login = LoginDAO()
-        self.session_state = get(username="", password="")
-        try:
-            self.session_state.username
-            self.session_state.password
-        except:
-            self.session_state.username = ""
-            self.session_state.password = ""
-
     def check(self):
         login_column = st.empty()
-        result, username, password = self.login.check_session(self.session_state)
+        username, password = get(username="default", password="")
+        result, username, password = LoginDAO().check_session(username, password)
         if not result:
             column = login_column.columns(3)[1]
 
@@ -402,15 +379,15 @@ class LoginWidget:
                 username = st.text_input("Username:", key="userlogin")
                 password = st.text_input("Password:", type="password", key="userpw")
                 st.form_submit_button("Login")
-                st.write("test")
-            self.session_state.username = username
-            self.session_state.password = password
-            result, username, password = self.login.check_session(self.session_state)
-            if password and not self.login.check_session(self.session_state)[0]:
+
+            result, username, password = LoginDAO().check_session(username, password)
+            if password and not result:
                 st.warning("Please enter valid credentials")
 
             if result:
                 st.success(f"Logged in as: {username}")
+                st.session_state.username = username
+                st.session_state.password = password
                 login_column.empty()
         return result
 
@@ -422,14 +399,36 @@ class BodyWidget:
             df = DFDAO().get(project)
 
             with st.expander(f"🗀  {Path(ProjectDAO().get()).stem}"):
+
                 SlimProjectWidget()
 
                 TableWidget(df)
 
+                st.write("---")
                 col1, col2 = st.columns(2)
                 with col1:
                     st.markdown("### 🞥 Add Files")
-                    FileUploaderWidget(df)
+                    st.write("  ")
+                    # local = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(sys.argv[0]).parent.resolve()
+
+                    local = LocalFolderBrowserMixin().browse()
+
+                    if local is not None and local:
+                        file_list = [
+                            str(local_file)
+                            for local_file in
+                            list(local.glob("*"))
+                            if local_file.is_file()
+                        ]
+
+                        df2 = fill_column(
+                            df,
+                            f"{local.name} ({local.parent.name})",
+                            file_list,
+                            overwrite_modes["opt_w"]
+                        )
+                        DFDAO().set(df2, project, )
+
                 with col2:
                     st.write("### ✎ Edit")
                     EditWidget(df)
@@ -442,7 +441,7 @@ class BodyWidget:
                 GalleryWidget(df)
 
             if df.empty:
-                st.info("Start by uploading images to **🗀** the project, `\n` or use the **`Start`** module to "
+                st.info("Start by uploading images to **🗀** the project, `\n` or use the **`Project`** module to "
                         "import .zip archives or locate files on the host system.")
 
         except:
@@ -453,6 +452,19 @@ class BodyWidget:
 
 class ModuleWidget:
     def __init__(self):
+        # Packages
+        package_path = shelveutils.ModulePathDAO().get() or "pipelines"
+        # print(f"Looking for mavis modules in {package_path}")
+        if str(package_path) not in sys.path:
+            sys.path.append(str(package_path))
+
+        self.packages = [
+            __import__(modname, fromlist="dummy")
+            for importer, modname, ispkg in pkgutil.iter_modules([str(package_path)], "")
+        ]
+        self.pack_names = [pack.__name__.split('.')[-1] for pack in self.packages]
+
+        # Licenses
         self.license_path = str(Path(config_path()).parent / "license_keys.txt")
         try:
             with open(self.license_path) as f:
@@ -460,28 +472,65 @@ class ModuleWidget:
         except:
             self.licenses = []
 
-    def get_modules(self, interactive=False, search=""):
-        # Path(sys.argv[1])
+    def get_modules(self):
+        for pack, pack_name in zip(self.packages, self.pack_names):
+
+            modules = glob.glob(join(dirname(pack.__file__), "*.py"))
+            modules = [basename(f)[:-3] for f in modules if isfile(f)
+                       and not f.endswith('__init__.py')]
+
+            for module_name in sorted(modules):
+                full_module_name = f"{pack.__name__}.{module_name}"
+                yield full_module_name
+
+    def get_modules_interactive(self):
         package_path = shelveutils.ModulePathDAO().get() or "pipelines"
-        print(f"Looking for mavis modules in {package_path}")
-        if str(package_path) not in sys.path:
-            sys.path.append(str(package_path))
 
-        packages = [
-            __import__(modname, fromlist="dummy")
-            for importer, modname, ispkg in pkgutil.iter_modules([str(package_path)], "")
-        ]
-        pack_names = [pack.__name__.split('.')[-1] for pack in packages]
+        search = st.sidebar.text_input("What do you want to do?")
+        with st.sidebar.expander("Settings"):
+            module_path = shelveutils.ModulePathDAO().get()
+            module_path = st.text_input("Module path", module_path or "pipelines")
+            shelveutils.ModulePathDAO().set(module_path)
 
-        for pack, pack_name in zip(packages, pack_names):
+            log_path = shelveutils.LogPathDAO().get()
+            log_path = st.text_input("Log path", log_path or "logs")
+            shelveutils.LogPathDAO().set(log_path)
 
-            if pack_name not in self.licenses:
-                # st.sidebar.warning(f"Package {pack_name} is not licensed.")
-                # continue
-                pass
+            data_path = shelveutils.DataPathDAO().get()
+            # with st.form("Data path"):
+            data_path = st.text_input("Data path", data_path or "data")
+            #    if st.form_submit_button("Update data path"):
+            shelveutils.DataPathDAO().set(data_path)
 
-            if interactive:
-                expander = st.sidebar.expander(pack_name, expanded=bool(search))
+            st.write("---")
+
+            if st.button("Reset Presets"):
+                config.PresetListDAO().reset()
+                config.ActivePresetDAO().reset()
+                config.ConfigDAO().reset()
+            st.write("---")
+
+            upload_widget = st.empty()
+            with upload_widget:
+                uploader = FileUpload(str(package_path), f"Upload package", ".zip")
+
+            if st.button(f"Upload package"):
+                uploader.start()
+
+            # st.write("---")
+            # uploader = FileUpload(Path(self.license_path).parent, "Upload a License file", ".txt", False)
+            # if st.button("Upload License"):
+            #     target_dir = uploader.start()
+            #     if target_dir:
+            #         st.success("Uploaded a license file. Press **`R`** to refresh.")
+
+        for pack, pack_name in zip(self.packages, self.pack_names):
+            # if pack_name not in self.licenses:
+            #     st.sidebar.warning(f"Package {pack_name} is not licensed.")
+            #     continue
+            #     pass
+
+            expander = st.sidebar.expander(pack_name, expanded=bool(search))
 
             modules = glob.glob(join(dirname(pack.__file__), "*.py"))
             modules = [basename(f)[:-3] for f in modules if isfile(f)
@@ -493,7 +542,7 @@ class ModuleWidget:
 
                 full_module_name = f"{pack.__name__}.{module_name}"
 
-                if interactive and expander.checkbox(module_name):
+                if expander.checkbox(module_name):
                     name = module_name.split('.')[-1]
                     shelveutils.BaseDAO.ACTIVE_PIPELINE = name
                     st.markdown(f"# {name}")
@@ -501,39 +550,8 @@ class ModuleWidget:
 
                 yield full_module_name
 
-        if interactive:
-            with st.sidebar.expander("More"):
-                db_module_path = shelveutils.ModulePathDAO().get() 
-                module_path = st.text_input("Module Path", db_module_path or "pipelines")
-                if module_path != db_module_path:
-                    shelveutils.ModulePathDAO().set(module_path)
-
-                db_log_path = shelveutils.LogPathDAO().get()
-                log_path = st.text_input("Log Path", db_log_path or "logs")
-                if log_path != db_log_path:
-                    shelveutils.LogPathDAO().set(log_path)
-
-                db_data_path = shelveutils.DataPathDAO().get()
-                data_path = st.text_input("Data Path", db_data_path or "data")
-                if data_path != db_data_path:
-                    shelveutils.DataPathDAO().set(data_path)
-
-                st.write("---")
-
-                upload_widget = st.empty()
-                with upload_widget:
-                    uploader = FileUpload(str(package_path), f"Upload package", ".zip")
-
-                if st.button(f"Upload package"):
-                    uploader.start()
-
-                #st.write("---")
-                #uploader = FileUpload(Path(self.license_path).parent, "Upload a License file", ".txt", False)
-                #if st.button("Upload License"):
-                #    target_dir = uploader.start()
-                #    if target_dir:
-                #        st.success("Uploaded a license file. Press **`R`** to refresh.")
-
     @staticmethod
     def execute(module_name):
         run_module(module_name)
+
+

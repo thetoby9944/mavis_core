@@ -4,13 +4,12 @@ import re
 from datetime import datetime
 from pathlib import Path
 
-import tensorflow as tf
 import streamlit as st
+import tensorflow as tf
 from tensorflow.python.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
-from shelveutils import ProjectDAO, LogPathDAO
+from shelveutils import ProjectDAO, LogPathDAO, ConfigDAO, ActivePresetDAO
 from tfutils.callbacks import CheckPoint
-import config
 
 
 def get_model_summary(model):
@@ -38,21 +37,21 @@ def train_model(
     tensorboard = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
 
     with tf.summary.create_file_writer(log_dir).as_default():
-        description = "\n".join([f"```{line}```  " for line in re.split("\\n|<\\?br>", config.c.print_preset())])
+        description = "\n".join([f"```{line}```  " for line in re.split("\\n|<\\?br>", ConfigDAO().print_preset())])
         try:
             # tf.summary.text("Configuration", data="", description=description)
-            for i, (image_batch, label_batch) in enumerate(validation_data.take(config.c.VAL_SPLIT)):
-                tf.summary.image(f"Validation Image Data", image_batch, max_outputs=config.c.BATCH_SIZE, step=0,
-                                 description=f"##Active Preset\n###{config.c.name}\n\n{description}")
-                if config.c.BINARY:
+            for i, (image_batch, label_batch) in enumerate(validation_data.take(ConfigDAO()["VAL_SPLIT"])):
+                tf.summary.image(f"Validation Image Data", image_batch, max_outputs=ConfigDAO()["BATCH_SIZE"], step=0,
+                                 description=f"##Active Preset\n###{ActivePresetDAO().get()}\n\n{description}")
+                if ConfigDAO()["BINARY"]:
                     tf.expand_dims(label_batch, -1)
-                tf.summary.image(f"Validation Label Data", label_batch, max_outputs=config.c.BATCH_SIZE, step=0)
+                tf.summary.image(f"Validation Label Data", label_batch, max_outputs=ConfigDAO()["BATCH_SIZE"], step=0)
         except:
             pass
 
     metric = "val_loss" if validation_data else "loss"
 
-    checkpoint_path = config.c.MODEL_PATH
+    checkpoint_path = ConfigDAO()["MODEL_PATH"]
     model_checkpoint = CheckPoint(
         model_path=checkpoint_path,
         save_weights_only=save_weights_only,
@@ -62,7 +61,7 @@ def train_model(
     early_stopping = EarlyStopping(
         monitor=metric,
         min_delta=0,
-        patience=config.c.PATIENCE,
+        patience=ConfigDAO()["PATIENCE"],
         verbose=0,
         mode='auto',
         restore_best_weights=False
@@ -70,7 +69,7 @@ def train_model(
 
     reduce_lr_on_plateau = ReduceLROnPlateau(
         monitor="loss",
-        patience=config.c.PATIENCE / 2,
+        patience=ConfigDAO()["PATIENCE"] / 2,
         min_delta=0.01,
         factor=0.5,
         verbose=1,
@@ -86,13 +85,13 @@ def train_model(
 
     model.fit(
         train_data,
-        epochs=config.c.EPOCHS,
-        steps_per_epoch=config.c.STEPS_PER_EPOCH,
+        epochs=ConfigDAO()["EPOCHS"],
+        steps_per_epoch=ConfigDAO()["STEPS_PER_EPOCH"],
         callbacks=cbs,
         use_multiprocessing=multiprocessing,
         workers=workers,
         validation_data=validation_data,
-        validation_steps=config.c.VAL_SPLIT,
+        validation_steps=ConfigDAO()["VAL_SPLIT"],
         max_queue_size=workers * 2
     )
 
@@ -101,7 +100,7 @@ def train_model(
     st.info("Evaluating")
     ev = model.evaluate(
         validation_data if validation_data else train_data,
-        steps=config.c.VAL_SPLIT
+        steps=ConfigDAO()["VAL_SPLIT"]
     )
 
     if "iou_score" in model.metrics_names:

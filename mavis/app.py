@@ -1,6 +1,5 @@
 import base64
 import os
-import sys
 from pathlib import Path
 
 import streamlit as st
@@ -12,7 +11,7 @@ def init_streamlit():
     st.set_page_config(
         page_title="Mavis",
         page_icon="assets/images/icon.png",
-        # layout="wide",
+        layout="wide",
     )
     st.sidebar.image("assets/images/logo.svg", output_format="JPG", width=300)
 
@@ -91,5 +90,4 @@ if __name__ == "__main__":
 
     if LoginWidget().check():
         BodyWidget()
-        search = st.sidebar.text_input("What do you want to do?")
-        list(ModuleWidget().get_modules(interactive=True, search=search))
+        list(ModuleWidget().get_modules_interactive())
