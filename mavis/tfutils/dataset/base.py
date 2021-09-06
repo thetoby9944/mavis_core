@@ -79,7 +79,6 @@ class TFDatasetWrapper:
         self._iaa_augmentor = self._iaa_augmentor.to_deterministic()
 
     def _iaa_aug(self, img, lbl):
-        self._init_iaa_augmentor()
 
         def apply(tensor, iaa_augmentor):
             if iaa_augmentor is None:
@@ -145,6 +144,7 @@ class TFDatasetWrapper:
         if labels is None:
             return self.create_inference(img_paths)
         else:
+            self._init_iaa_augmentor()
             return self.create_train(img_paths, labels)
 
     def create_inference(self, img_paths) -> (tf.data.Dataset or Sequence):
