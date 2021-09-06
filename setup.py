@@ -9,12 +9,16 @@ with open("README.md", "r") as fh:
 with open('requirements.txt') as f:
     required = f.read().splitlines()
 
+with open('mavis/__init__.py') as f:
+    version = f.readlines()[0].split("=")[1].strip().replace('"', "")
+
+
 root_folder = "mavis"
 static_folders = ["assets", ".streamlit"]
 
 setup(
     name='mavis_core',
-    version='0.1.0',
+    version=version,
     description='Mavis Platform',
     scripts=[str((Path(root_folder) / 'scripts' / 'mavis.py'))],
     url='https://github.com/thetoby9944/mavis_core',
@@ -34,19 +38,18 @@ setup(
     },
     include_package_data=True,
     classifiers=[
-        'Development Status :: 1 - Planning',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: BSD License',
-        'Operating System :: POSIX :: Linux :: Windows',
+        'Intended Audience :: Developers',
+        'License :: Free for non-commercial use',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],
     entry_points={
         'console_scripts': [
-            'mavis = mavis.app:run']
+            'mavis = mavis.app:run'
+        ]
     }
 
 )
