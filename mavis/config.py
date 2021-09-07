@@ -100,18 +100,7 @@ class Preset(BasePreset):
         self.CLASS_INDICES = ConfigDAO([])["CLASS_INDICES"]
         self.CLASS_COLORS = ConfigDAO([])["CLASS_COLORS"]
         self.RECONSTRUCTION_CLASS = ConfigDAO("")["RECONSTRUCTION_CLASS"]
-        self.AUGMENTATIONS = ConfigDAO([])["AUGMENTATIONS"]
-        self.AUG_ROTATE = ConfigDAO("mirror")["AUG_ROTATE"]
-        self.AUG_MIN_JPG_QUALITY = ConfigDAO(65)["AUG_MIN_JPG_QUALITY"]
-        self.AUG_NOISE = ConfigDAO(10)["AUG_NOISE"]
-        self.AUG_CONTRAST_MIN = ConfigDAO(0.7)["AUG_CONTRAST_MIN"]
-        self.AUG_CONTRAST_MAX = ConfigDAO(1.3)["AUG_CONTRAST_MAX"]
-        self.AUG_SATURATION_MIN = ConfigDAO(0.6)["AUG_SATURATION_MIN"]
-        self.AUG_SATURATION_MAX = ConfigDAO(1.6)["AUG_SATURATION_MAX"]
-        self.AUG_BRIGHTNESS = ConfigDAO(0.05)["AUG_BRIGHTNESS"]
-        self.AUG_ZOOM_PERCENT = ConfigDAO(0.1)["AUG_ZOOM_PERCENT"]
-        self.AUG_GAUSS_SIGMA = ConfigDAO(1.)["AUG_GAUSS_SIGMA"]
-        self.AUG_GAUSS_FILTER_RADIUS = ConfigDAO(1)["AUG_GAUSS_FILTER_RADIUS"]
+        self.SIZE = ConfigDAO(512)["SIZE"]
         self.MODEL_PATH = ConfigDAO("")["MODEL_PATH"]
         self.TRAIN_ROIS_PER_IMAGE = ConfigDAO(512)["TRAIN_ROIS_PER_IMAGE"]
         self.ANCHOR_SCALES = ConfigDAO((1, 4, 8, 16, 32, 64, 128, 256))["ANCHOR_SCALES"]
@@ -129,32 +118,19 @@ class Preset(BasePreset):
         self.LOSS = ConfigDAO(None)["LOSS"]
         self.CLASS_WEIGHT = ConfigDAO({})["CLASS_WEIGHT"]
         self.OVERLAP_PERCENTAGE = ConfigDAO(0.0)["OVERLAP_PERCENTAGE"]
-        self.SIZE = ConfigDAO(512)["SIZE"]
-        self.BUFFER_SIZE = ConfigDAO(1000)["BUFFER_SIZE"]
         self.EPOCHS = ConfigDAO(10)["EPOCHS"]
         self.STEPS_PER_EPOCH = ConfigDAO(10)["STEPS_PER_EPOCH"]
+        self.EARLY_STOPPING = ConfigDAO(10)["EARLY_STOPPING"]
+        self.RED_ON_PLATEAU_PATIENCE = ConfigDAO(10)["RED_ON_PLATEAU_PATIENCE"]
+        self.OPTIMIZER = ConfigDAO(None)["OPTIMIZER"]
         self.BATCH_SIZE = ConfigDAO(8)["BATCH_SIZE"]
         self.VAL_SPLIT = ConfigDAO(1)["VAL_SPLIT"]
-        self.PATIENCE = ConfigDAO(10)["PATIENCE"]
-        self.OPTIMIZER = ConfigDAO(None)["OPTIMIZER"]
 
     def update(self):
         ConfigDAO()["CLASS_NAMES"] = self.CLASS_NAMES
         ConfigDAO()["CLASS_INDICES"] = self.CLASS_INDICES
         ConfigDAO()["CLASS_COLORS"] = self.CLASS_COLORS
         ConfigDAO()["RECONSTRUCTION_CLASS"] = self.RECONSTRUCTION_CLASS
-        ConfigDAO()["AUGMENTATIONS"] = self.AUGMENTATIONS
-        ConfigDAO()["AUG_ROTATE"] = self.AUG_ROTATE
-        ConfigDAO()["AUG_MIN_JPG_QUALITY"] = self.AUG_MIN_JPG_QUALITY
-        ConfigDAO()["AUG_NOISE"] = self.AUG_NOISE
-        ConfigDAO()["AUG_CONTRAST_MIN"] = self.AUG_CONTRAST_MIN
-        ConfigDAO()["AUG_CONTRAST_MAX"] = self.AUG_CONTRAST_MAX
-        ConfigDAO()["AUG_SATURATION_MIN"] = self.AUG_SATURATION_MIN
-        ConfigDAO()["AUG_SATURATION_MAX"] = self.AUG_SATURATION_MAX
-        ConfigDAO()["AUG_BRIGHTNESS"] = self.AUG_BRIGHTNESS
-        ConfigDAO()["AUG_ZOOM_PERCENT"] = self.AUG_ZOOM_PERCENT
-        ConfigDAO()["AUG_GAUSS_SIGMA"] = self.AUG_GAUSS_SIGMA
-        ConfigDAO()["AUG_GAUSS_FILTER_RADIUS"] = self.AUG_GAUSS_FILTER_RADIUS
         ConfigDAO()["MODEL_PATH"] = self.MODEL_PATH
         ConfigDAO()["TRAIN_ROIS_PER_IMAGE"] = self.TRAIN_ROIS_PER_IMAGE
         ConfigDAO()["ANCHOR_SCALES"] = self.ANCHOR_SCALES
@@ -173,13 +149,13 @@ class Preset(BasePreset):
         ConfigDAO()["CLASS_WEIGHT"] = self.CLASS_WEIGHT
         ConfigDAO()["OVERLAP_PERCENTAGE"] = self.OVERLAP_PERCENTAGE
         ConfigDAO()["SIZE"] = self.SIZE
-        ConfigDAO()["BUFFER_SIZE"] = self.BUFFER_SIZE
         ConfigDAO()["EPOCHS"] = self.EPOCHS
         ConfigDAO()["STEPS_PER_EPOCH"] = self.STEPS_PER_EPOCH
+        ConfigDAO()["EARLY_STOPPING"] = self.EARLY_STOPPING
+        ConfigDAO()["RED_ON_PLATEAU_PATIENCE"] = self.RED_ON_PLATEAU_PATIENCE
+        ConfigDAO()["OPTIMIZER"] = self.OPTIMIZER
         ConfigDAO()["BATCH_SIZE"] = self.BATCH_SIZE
         ConfigDAO()["VAL_SPLIT"] = self.VAL_SPLIT
-        ConfigDAO()["PATIENCE"] = self.PATIENCE
-        ConfigDAO()["OPTIMIZER"] = self.OPTIMIZER
 
     def _class_info_parameter_block(self, with_color=False):
         from stutils.widgets import rgb_picker
@@ -258,61 +234,6 @@ class Preset(BasePreset):
         class_colors = [self.CLASS_COLORS[list(self.CLASS_NAMES).index(name)] for name in class_names]
         return class_names, class_colors
 
-    def _augmentation_parameter_block(self, model_processor):
-        st.markdown("### Data Augmentation")
-        all_aug = list(model_processor.dataset.all_augmentations.keys())
-        if st.button("Add all"):
-            self.AUGMENTATIONS = all_aug
-        self.AUGMENTATIONS = st.multiselect(
-            "Data Augmentations",
-            all_aug,
-            [a for a in self.AUGMENTATIONS if a in all_aug]
-        )
-        self.AUG_ROTATE = st.selectbox(
-            "Rotation Border Treatment",
-            ["zeros", "mirror"],
-            ["zeros", "mirror"].index(self.AUG_ROTATE)
-        )
-        self.AUG_SATURATION_MIN = st.slider(
-            "Random Saturation - Minimum multiplier", 0., 1.,
-            self.AUG_SATURATION_MIN
-        )
-        self.AUG_SATURATION_MAX = st.slider(
-            "Random Saturation - Maximum multiplier", 1., 2.,
-            self.AUG_SATURATION_MAX
-        )
-        self.AUG_BRIGHTNESS = st.slider(
-            "Random Brightness - Maximum deviation in percent", 0., 1.,
-            self.AUG_BRIGHTNESS
-        )
-        self.AUG_CONTRAST_MIN = st.slider(
-            "Random Contrast - Minimum multiplier", 0., 1.,
-            self.AUG_CONTRAST_MIN
-        )
-        self.AUG_CONTRAST_MAX = st.slider(
-            "Random Contrast - Maximum multiplier", 1., 2.,
-            self.AUG_CONTRAST_MAX
-        )
-        self.AUG_MIN_JPG_QUALITY = st.slider(
-            "JPG Quality - Minimum Percentage", 0, 100,
-            self.AUG_MIN_JPG_QUALITY
-        )
-        self.AUG_NOISE = st.slider(
-            "Random Noise - Std. Deviation in pixel values", 0, 255,
-            self.AUG_NOISE
-        )
-        self.AUG_ZOOM_PERCENT = st.slider(
-            "Zoom Percentage - Maximum Zoom multiplier", 0., 1.,
-            self.AUG_ZOOM_PERCENT
-        )
-        self.AUG_GAUSS_FILTER_RADIUS = st.slider(
-            "Gauss Filter Radius", 0, 3,
-            self.AUG_GAUSS_FILTER_RADIUS
-        )
-        self.AUG_GAUSS_SIGMA = st.slider(
-            "Gauss Std Dev. of Sigma Value", 0., 3.,
-            self.AUG_GAUSS_SIGMA
-        )
 
     def _model_path(self):
         btn = st.empty()
@@ -357,9 +278,14 @@ class Preset(BasePreset):
             int(self.EPOCHS)
         ))
 
-        self.PATIENCE = int(st.number_input(
-            "Patience in epochs", 1, 10 * 1000,
-            int(self.PATIENCE)
+        self.EARLY_STOPPING = int(st.number_input(
+            "Eearly Stopping - Patience in epochs", 1, 10 * 1000,
+            int(self.EARLY_STOPPING)
+        ))
+
+        self.RED_ON_PLATEAU_PATIENCE = int(st.number_input(
+            "Reduce learning rate on plateau - Patience in epochs", 1, 10 * 1000,
+            int(self.RED_ON_PLATEAU_PATIENCE)
         ))
 
         self.STEPS_PER_EPOCH = int(st.number_input(
@@ -370,12 +296,6 @@ class Preset(BasePreset):
         self.VAL_SPLIT = st.number_input(
             "Validation Images in batches", 0, 100,
             int(self.VAL_SPLIT)
-        )
-
-    def _advanced_training_duration_parameter_block(self):
-        self.BUFFER_SIZE = st.number_input(
-            "Shuffle Buffer Size. 1 - no shuffling", 1, 100 * 1000,
-            int(self.BUFFER_SIZE)
         )
 
     def _image_size_parameter_block(self):
@@ -583,6 +503,9 @@ class Preset(BasePreset):
                 if self.INSPECT_CHANNEL in output_opts else 0
             )
 
+    ####################################################################################################################
+    # access
+
     @BasePreset.access("Morphology Pipeline")
     def morph_options(self, all_processors):
         n_steps = st.number_input("Build new Processing pipeline. Number of processing steps", 0, 20, 0)
@@ -596,7 +519,6 @@ class Preset(BasePreset):
 
         [loaded_processor.configure_opt() for loaded_processor in self.MORPH_SETTINGS]
 
-
     @BasePreset.access("Mask RCNN Settings")
     def mask_rcnn_settings(self):
         self.TRAIN_ROIS_PER_IMAGE = st.number_input("Train ROIs per image", value=self.TRAIN_ROIS_PER_IMAGE)
@@ -604,9 +526,6 @@ class Preset(BasePreset):
         self.RPN_NMS_THRESHOLD = st.number_input("Non max supr. Threshold", 0., 1., self.RPN_NMS_THRESHOLD)
         self.IMAGE_RESIZE_MODE = "square"
         self.MAX_GT_INSTANCES = st.number_input("Max Ground Truth instances", value=self.MAX_GT_INSTANCES)
-
-    ####################################################################################################################
-    # access
 
     @BasePreset.access("Class Info")
     def class_info_block(self, with_color=False):
@@ -624,15 +543,12 @@ class Preset(BasePreset):
     def classification_training_args(self, model_processor):
         self.ARCHITECTURE = "Classifcation"
         self._basic_training_duration_parameter_block()
-        self._advanced_training_duration_parameter_block()
-        self._augmentation_parameter_block(model_processor)
         self._optimizer_parameter_block()
 
     @BasePreset.access("Training Settings")
     def reconstruction_training_args(self, model_processor):
         self.ARCHITECTURE = "Reconstruction"
         self._basic_training_duration_parameter_block()
-        self._augmentation_parameter_block(model_processor)
         self._reconstruction_class()
 
     @BasePreset.access("Training Settings")
@@ -640,7 +556,6 @@ class Preset(BasePreset):
         self.ARCHITECTURE = "Mask-RCNN"
         self._basic_training_duration_parameter_block()
         self._backbone_parameter_block(model_processor)
-        self._augmentation_parameter_block(model_processor)
         self._optimizer_parameter_block()
 
     @BasePreset.access("Training Settings")
@@ -649,8 +564,6 @@ class Preset(BasePreset):
         self._basic_training_duration_parameter_block()
         self._backbone_parameter_block(model_processor)
         self._architecture_parameter_block(model_processor)
-        self._advanced_training_duration_parameter_block()
-        self._augmentation_parameter_block(model_processor)
         self._optimizer_parameter_block()
 
     @BasePreset.access("Inference Settings")
@@ -706,4 +619,4 @@ class ExportWidget:
         self._zip_dir(paths, folder_names, recursive=recursive)
 
     def model_link(self, path: Path):
-        self._zip_dir(path.parent, "model", pattern=path.name)
+        self._zip_dir([path.parent], ["model"], pattern=path.name+"*")

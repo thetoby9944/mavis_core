@@ -373,22 +373,24 @@ class LoginWidget:
         if not result:
             column = login_column.columns(3)[1]
 
-            form = column.form("Login")
-            with form:
-                st.write("Login")
+            #form = column.form("Login")
+            #with form:
+            with column:
+                st.write("### Login")
                 username = st.text_input("Username:", key="userlogin")
                 password = st.text_input("Password:", type="password", key="userpw")
-                st.form_submit_button("Login")
+                if st.button("Login"):
 
-            result, username, password = LoginDAO().check_session(username, password)
-            if password and not result:
-                st.warning("Please enter valid credentials")
+                    result, username, password = LoginDAO().check_session(username, password)
+                    if password and not result:
+                        st.warning("Please enter valid credentials")
 
-            if result:
-                st.success(f"Logged in as: {username}")
-                st.session_state.username = username
-                st.session_state.password = password
-                login_column.empty()
+                    if result:
+                        st.success(f"Logged in as: {username}")
+                        st.session_state.username = username
+                        st.session_state.password = password
+                        login_column.empty()
+                        st.experimental_rerun()
         return result
 
 

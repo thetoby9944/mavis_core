@@ -14,13 +14,13 @@ with open('mavis/__init__.py') as f:
 
 
 root_folder = "mavis"
-static_folders = ["assets", ".streamlit"]
+static_folders = ["assets", ".streamlit", "scripts"]
 
 setup(
     name='mavis_core',
     version=version,
     description='Mavis Platform',
-    scripts=[str((Path(root_folder) / 'scripts' / 'mavis.py'))],
+    scripts=[str((Path(root_folder) / 'scripts' / 'mavis_core.py'))],
     url='https://github.com/thetoby9944/mavis_core',
     author='thetoby9944',
     author_email='thetoby@web.de',

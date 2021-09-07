@@ -15,12 +15,10 @@ class ImageToImageDataset(TFDatasetWrapper):
         self.image_preprocessing = [resnet_preprocess_img]
         self.label_preprocessing = [masking]
 
-    @property
-    def lbl_augmentor(self):
-        def apply(image):
-            image = SegmentationMapsOnImage(image[0], shape=(*image.shape[1:-1], 3))
-            return self.get_iaa_augmentor().augment_segmentation_maps(image).get_arr()
-        return apply
+    def img_aug(self, image, label):
+        label = SegmentationMapsOnImage(label, shape=image.shape)
+        image, label = self.iaa(image=image, segmentation_maps=label)
+        return image, label.get_arr()
 
     def create_train(self, img_paths, labels):
         """
@@ -92,7 +90,7 @@ class ImageToReconstructionDataset(ImageToImageDataset):
     @property
     def lbl_augmentor(self):
         def apply(image):
-            return self.get_iaa_augmentor().augment_images(image)
+            return self._iaa.augment_images(image)
         return apply
 
     def pred_to_pil(self, pred):

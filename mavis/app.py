@@ -2,18 +2,20 @@ import base64
 import os
 from pathlib import Path
 
-import streamlit as st
-import streamlit.bootstrap
 import tensorflow as tf
 
 
 def init_streamlit():
+    import streamlit as st
+    from mavis import __version__
+
     st.set_page_config(
         page_title="Mavis",
         page_icon="assets/images/icon.png",
         layout="wide",
     )
     st.sidebar.image("assets/images/logo.svg", output_format="JPG", width=300)
+    st.sidebar.code(f"\t\t\t  {__version__}")
 
     def get_base64(bin_file):
         with open(bin_file, 'rb') as f:
@@ -78,6 +80,9 @@ def run():
     # _config.set_option("server.headless", True)
     args = [str(Path(os.curdir).resolve()), str(Path(__file__).resolve())]
     os.chdir(dirname)
+    print(os.getcwd())
+    import streamlit.bootstrap
+
     # streamlit.cli.main_run(filename, args)
     streamlit.bootstrap.run(filename, '', args, flag_options={})
 

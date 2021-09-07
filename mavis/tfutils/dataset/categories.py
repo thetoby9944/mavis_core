@@ -12,9 +12,14 @@ class ImageToCategoryDataset(TFDatasetWrapper):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.image_preprocessing = [resnet_preprocess_img]
+        self.augment_label = False
 
     def display_pred(self, pred):
         st.write(ConfigDAO()["CLASS_NAMES"][np.argmax(pred)])
+
+    def img_aug(self, image, label):
+        image = self.iaa(image=image)
+        return image, label
 
     def create_train(self, img_paths, labels):
         """

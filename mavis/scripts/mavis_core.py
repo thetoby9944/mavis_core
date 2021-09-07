@@ -4,11 +4,13 @@
 #with open('mavis/__init__.py') as f:
 #    version = f.readlines()[0].split("=")[1].strip().replace('"', "")
 
-__requires__ = 'mavis-core==0.4.4'
+import mavis
+
+__requires__ = f'mavis-core=={mavis.__version__}'
 import sys
 
 from pkg_resources import load_entry_point
 
 sys.exit(
-    load_entry_point(f'mavis-core==0.4.4', 'console_scripts', 'mavis')()
+    load_entry_point(__requires__, 'console_scripts', 'mavis')()
 )

@@ -75,7 +75,7 @@ class PixelLibDataset(TFDatasetWrapper):
             self.train_instance.dataset_train,
             m.config,
             shuffle=True,
-            augmentation=self.get_iaa_augmentor()
+            augmentation=self.iaa
         )
         sample_in, sample_out = train_generator.__getitem__(0)
 
@@ -104,7 +104,7 @@ class PixelLibDataset(TFDatasetWrapper):
                 config=self.train_instance.config,
                 image_id=image_id,
                 training=False,
-                augmentation=self.get_iaa_augmentor()
+                augmentation=self.iaa
             )
 
             out = display_box_instances(image.astype(np.uint8), gt_boxes, gt_masks, gt_class_ids, ds.class_names)

@@ -61,7 +61,7 @@ def train_model(
     early_stopping = EarlyStopping(
         monitor=metric,
         min_delta=0,
-        patience=ConfigDAO()["PATIENCE"],
+        patience=ConfigDAO()["EARLY_STOPPING"],
         verbose=0,
         mode='auto',
         restore_best_weights=False
@@ -69,7 +69,7 @@ def train_model(
 
     reduce_lr_on_plateau = ReduceLROnPlateau(
         monitor="loss",
-        patience=ConfigDAO()["PATIENCE"] / 2,
+        patience=ConfigDAO()["RED_ON_PLATEAU_PATIENCE"],
         min_delta=0.01,
         factor=0.5,
         verbose=1,
