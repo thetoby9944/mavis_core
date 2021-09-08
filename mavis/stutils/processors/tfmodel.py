@@ -6,7 +6,7 @@ from PIL import Image
 from tensorflow.python.keras.models import load_model
 
 import config
-from shelveutils import ConfigDAO, ActivePresetDAO, PresetListDAO
+from shelveutils import ConfigDAO, ActivePresetDAO, PresetListDAO, LogPathDAO
 from stutils.processors.base import BaseProcessor
 from tfutils.train import train_model
 
@@ -143,7 +143,7 @@ class TfModelProcessor(BaseProcessor):
 
             if not self.dry_run:
                 st.markdown(f"Started Training. Run tensorboard to see progress.")
-                st.code("tensorboard --log-dir mavis/logs --bind-all")
+                st.code(f"tensorboard --log-dir {LogPathDAO().get().resolve()} --bind-all")
             df = self.training_store()
             self.save_new_df(df)
 

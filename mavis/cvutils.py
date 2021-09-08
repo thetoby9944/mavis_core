@@ -472,8 +472,8 @@ class MorphProcessor(CVProcessor):
         st.write(f"### Step {self.i + 1}: {self.name}")
         self.n_operations = st.slider("Number of Morph Operations", 0, 5, self.n_operations)
 
-        if st.button("Update Morph operations"):
-            self.morph_operations = [MorphProcessor.Morph(i) for i in range(self.n_operations)]
+        # if st.button("Update Morph operations"):
+        self.morph_operations = [MorphProcessor.Morph(i) for i in range(self.n_operations)]
 
         for m in self.morph_operations:
             m.configure()

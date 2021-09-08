@@ -125,6 +125,7 @@ class Preset(BasePreset):
         self.OPTIMIZER = ConfigDAO(None)["OPTIMIZER"]
         self.BATCH_SIZE = ConfigDAO(8)["BATCH_SIZE"]
         self.VAL_SPLIT = ConfigDAO(1)["VAL_SPLIT"]
+        self.WEIGHT_DECAY = ConfigDAO(0.0001)["WEIGHT_DECAY"]
 
     def update(self):
         ConfigDAO()["CLASS_NAMES"] = self.CLASS_NAMES
@@ -156,6 +157,7 @@ class Preset(BasePreset):
         ConfigDAO()["OPTIMIZER"] = self.OPTIMIZER
         ConfigDAO()["BATCH_SIZE"] = self.BATCH_SIZE
         ConfigDAO()["VAL_SPLIT"] = self.VAL_SPLIT
+        ConfigDAO()["WEIGHT_DECAY"] = self.WEIGHT_DECAY
 
     def _class_info_parameter_block(self, with_color=False):
         from stutils.widgets import rgb_picker
@@ -470,6 +472,13 @@ class Preset(BasePreset):
             else losses.index(model_processor.default_loss)
         )
 
+        self.WEIGHT_DECAY = st.number_input(
+            "L2 Kernel Regularization",
+            0., 1.,
+            self.WEIGHT_DECAY,
+            format="%0.5f"
+        )
+
     def _backbone_parameter_block(self, model_processor):
         backbones = model_processor.all_backbones
 
@@ -513,9 +522,11 @@ class Preset(BasePreset):
             st.selectbox(f"Select Processor for step {i}", list(all_processors.keys())) for i in
             range(n_steps)
         ]
+        ConfigDAO()["MORPH_PIPELINE"] = self.MORPH_PIPELINE
 
         if st.button("Update Pipeline"):
             self.MORPH_SETTINGS = [all_processors[step](i) for i, step in enumerate(self.MORPH_PIPELINE)]
+            ConfigDAO()["MORPH_SETTINGS"] = self.MORPH_SETTINGS
 
         [loaded_processor.configure_opt() for loaded_processor in self.MORPH_SETTINGS]
 
