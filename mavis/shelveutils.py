@@ -1,3 +1,4 @@
+import datetime
 import glob
 import json
 import os
@@ -70,6 +71,10 @@ def config_path():
     path = Path("data") / "config" / username
     path.mkdir(exist_ok=True, parents=True)
     return str(path / "CONFIG")
+
+
+def log_path():
+    return str(LogPathDAO().get())
 
 
 def save_df(df, base_path, new_dir, suffix, dir_name=None):
@@ -202,6 +207,12 @@ class ProjectDAO(BaseDAO):
         return list(names)
 
     def get(self):
+        """
+
+        Returns
+        -------
+        pathlib.Path The current project path
+        """
         with shelve.open(config_path()) as c:
             if "Last" not in c or c["Last"] is None:
                 c["Last"] = "Default"
@@ -509,6 +520,34 @@ class WorkflowDAO:
         self.activate("Default")
 
 
+class LogDAO:
+    def __init__(self, inputs=None, outputs=None):
+        self.logdata = {
+            "User": st.session_state.username,
+            "Project": Path(ProjectDAO().get()).stem,
+            "Preset": ActivePresetDAO().get(),
+            "Preset Values": ConfigDAO().preset_dict(),
+            "Activity": BaseDAO.ACTIVE_PIPELINE,
+            "Time": datetime.datetime.now(),
+            "Inputs": inputs,
+            "Outputs": outputs,
+        }
+        with shelve.open(log_path()) as db:
+            if "logs" not in db:
+                db["logs"] = []
+
+    def add(self):
+        with shelve.open(log_path()) as db:
+            logs = db["logs"]
+            logs += [self.logdata]
+            db["logs"] = logs
+
+    def get_all(self):
+        with shelve.open(log_path()) as db:
+            logs = db["logs"]
+        return logs
+
+
 class ConfigDAO:
     def __init__(self, default=None):
         self.default = default
@@ -531,13 +570,16 @@ class ConfigDAO:
             return self.default
         return config[key]
 
-    def print_preset(self):
+    def preset_dict(self):
         with shelve.open(config_path()) as db:
             config = db[self.active]
-        formatted = pprint.pformat({
-            k: v.get_config() if k == "OPTIMIZER" and v is not None else v
-            for k, v in config.items() if "__" not in k and k.isupper()
-        })
+            return {
+                k: v.get_config() if k == "OPTIMIZER" and v is not None else v
+                for k, v in config.items() if "__" not in k and k.isupper()
+            }
+
+    def print_preset(self):
+        formatted = pprint.pformat(self.preset_dict())
         return formatted
 
     def reset(self):

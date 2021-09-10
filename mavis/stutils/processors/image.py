@@ -9,7 +9,7 @@ import streamlit as st
 from PIL import Image
 
 from pdutils import fill_column, overwrite_modes
-from shelveutils import save_pil
+from shelveutils import save_pil, LogDAO
 from stutils.processors.base import BaseProcessor
 
 
@@ -113,5 +113,6 @@ class ImageProcessor(BaseProcessor):
         st.write("--- \n ### Run ")
         st.markdown("Start Processing")
         if st.button(" ▶ "):
+            LogDAO(self.input_columns, self.column_out).add()
             df2 = self.process_all()
             self.save_new_df(df2)

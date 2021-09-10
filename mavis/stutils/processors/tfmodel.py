@@ -6,7 +6,7 @@ from PIL import Image
 from tensorflow.python.keras.models import load_model
 
 import config
-from shelveutils import ConfigDAO, ActivePresetDAO, PresetListDAO, LogPathDAO
+from shelveutils import ConfigDAO, ActivePresetDAO, PresetListDAO, LogPathDAO, LogDAO
 from stutils.processors.base import BaseProcessor
 from tfutils.train import train_model
 
@@ -130,12 +130,13 @@ class TfModelProcessor(BaseProcessor):
             self.presets
         )
 
-        # self.continue_training = st.checkbox("Continue Training", False)
+        self.continue_training = ConfigDAO(False)["CONTINUE_TRAINING"]
         # self.inference_after_training = st.checkbox("Run inference after Training", False)
         st.write("Try a dry-run with checking the preset to see the data augmentation and if the model compiles.")
         self.dry_run = st.button("Check preset")
 
         if st.button("Start Training") or self.dry_run:
+            LogDAO(self.input_columns, self.column_out).add()
             self.presets = preset_names
             if len(self.presets) is 0:
                 st.warning("No presets selected!")
