@@ -15,11 +15,12 @@
 
 [theme]
 base="light"
-primaryColor="#0080ec"
-backgroundColor="#ffffff"
-secondaryBackgroundColor="#f4f8ff"
-textColor="#283d5a"
+primaryColor="#0080ec" # Dark blue
+backgroundColor="#ffffff" # White
+secondaryBackgroundColor="#f4f8ff" # Light gray
+textColor="#283d5a" #Black blue
 font="sans serif"
+#M = #04f5e4 cyan
 
 
 [global]

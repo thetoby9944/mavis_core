@@ -3,9 +3,9 @@ import streamlit as st
 import tensorflow as tf
 
 from pilutils import pil
-from shelveutils import ConfigDAO
-from tfutils.dataset.base import TFDatasetWrapper
-from tfutils.dataset.preprocessing import resnet_preprocess_img, one_hot, auto, paths_to_image_ds
+from db import ConfigDAO
+from ml.dataset.base import TFDatasetWrapper
+from ml.dataset.preprocessing import resnet_preprocess_img, one_hot, auto, paths_to_image_ds
 
 
 class ImageToCategoryDataset(TFDatasetWrapper):

@@ -7,8 +7,8 @@ from pixellib.mask_rcnn import MaskRCNN
 from tensorflow.python.keras import regularizers
 
 from cvutils import LabelMeJsonWrapper
-from shelveutils import ConfigDAO
-from tfutils.dataset.pixellib import PixelLibDataset
+from db import ConfigDAO
+from ml.dataset.pixellib import PixelLibDataset
 
 
 class PixelLibWrapper:

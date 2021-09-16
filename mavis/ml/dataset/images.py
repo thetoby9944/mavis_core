@@ -4,9 +4,9 @@ import tensorflow as tf
 from imgaug import SegmentationMapsOnImage
 
 from pilutils import pil
-from shelveutils import ConfigDAO
-from tfutils.dataset.base import TFDatasetWrapper
-from tfutils.dataset.preprocessing import resnet_preprocess_img, masking, process_image_path, normalize_minus_one
+from db import ConfigDAO
+from ml.dataset.base import TFDatasetWrapper
+from ml.dataset.preprocessing import resnet_preprocess_img, masking, process_image_path, normalize_minus_one
 
 
 class ImageToImageDataset(TFDatasetWrapper):
@@ -31,7 +31,11 @@ class ImageToImageDataset(TFDatasetWrapper):
         paths = tf.data.Dataset.zip((
             image_paths,
             label_paths)
-        ).shuffle(buffer_size=ConfigDAO()["BUFFER_SIZE"])
+        ).shuffle(
+            buffer_size=ConfigDAO()["BUFFER_SIZE"],
+            reshuffle_each_iteration=False,
+            seed=0,
+        )
 
         self.ds = paths.map(lambda x, y: (
             process_image_path(x),

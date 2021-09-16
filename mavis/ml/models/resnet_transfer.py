@@ -1,7 +1,7 @@
 import tensorflow as tf
 from tensorflow.python.keras.models import Sequential
 
-from shelveutils import ConfigDAO
+from db import ConfigDAO
 
 
 def ResNet_Transfer(len_classes, dropout_rate=0.2):

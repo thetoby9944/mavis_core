@@ -5,7 +5,7 @@ import PIL
 import cairo
 from PIL import Image
 
-from shelveutils import ConfigDAO
+from db import ConfigDAO
 
 Image.MAX_IMAGE_PIXELS = None
 

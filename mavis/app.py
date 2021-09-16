@@ -37,7 +37,17 @@ def init_streamlit():
 
     hide_decoration_bar_style = '''
         <style>
-                header {visibility: hidden;}
+            .css-kywgdc {
+                position: absolute;
+                top: 0px;
+                right: 0px;
+                left: 0px;
+                height: 0.125rem;
+                background-image: linear-gradient(
+            90deg
+            , #04f5e4, #0080ec);
+                z-index: 1000020;
+            }
         </style>
     '''
 
@@ -48,7 +58,7 @@ def init_tensorflow():
     """
         Tensorflow configuration,
 
-        initializes the devices.
+        initializes devices, without blocking to reserve all availbale memory
         To disable GPU add:
 
 
@@ -80,18 +90,16 @@ def run():
     # _config.set_option("server.headless", True)
     args = [str(Path(os.curdir).resolve()), str(Path(__file__).resolve())]
     os.chdir(dirname)
-    print(os.getcwd())
-    import streamlit.bootstrap
+    print("Running streamlit from", os.getcwd())
 
-    # streamlit.cli.main_run(filename, args)
-    streamlit.bootstrap.run(filename, '', args, flag_options={})
+    os.system("streamlit run app.py")
 
 
 if __name__ == "__main__":
     init_streamlit()
     init_tensorflow()
 
-    from stutils.widgets import LoginWidget, BodyWidget, ModuleWidget
+    from ui.widgets import LoginWidget, BodyWidget, ModuleWidget
 
     if LoginWidget().check():
         BodyWidget()

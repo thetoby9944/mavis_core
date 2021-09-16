@@ -12,7 +12,7 @@ from pixellib.mask_rcnn import MaskRCNN, DataGenerator, load_image_gt
 from tensorflow.python.keras.utils.data_utils import Sequence
 
 from pilutils import pil
-from tfutils.dataset.base import TFDatasetWrapper
+from ml.dataset.base import TFDatasetWrapper
 
 
 def hex_2_rgb(hex_str:str)-> (int, int, int):

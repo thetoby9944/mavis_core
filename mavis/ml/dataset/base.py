@@ -4,9 +4,9 @@ import tensorflow as tf
 import streamlit as st
 from tensorflow.python.keras.utils.data_utils import Sequence
 
-from tfutils.dataset.preprocessing import auto, prepare_batch, paths_to_image_ds
+from ml.dataset.preprocessing import auto, prepare_batch, paths_to_image_ds
 from config import BasePreset
-from shelveutils import ConfigDAO
+from db import ConfigDAO
 
 
 class DatasetSettings(BasePreset):
@@ -54,10 +54,13 @@ class DatasetSettings(BasePreset):
             all_aug,
             [a for a in self.AUGMENTATIONS if a in all_aug]
         )
+        rotate_opts = ["constant", "edge", "symmetric", "reflect", "wrap"]
         self.AUG_ROTATE = st.selectbox(
-            "Rotation Border Treatment",
-            ["zeros", "mirror"],
-            ["zeros", "mirror"].index(self.AUG_ROTATE)
+            "Void Area Treatment. Extend border values:",
+            rotate_opts,
+            rotate_opts.index(self.AUG_ROTATE)
+            if self.AUG_ROTATE in rotate_opts
+            else 0
         )
         self.AUG_SATURATION_MIN = st.slider(
             "Random Saturation - Minimum multiplier", 0., 1.,
@@ -134,6 +137,9 @@ class TFDatasetWrapper:
         self.augment_label = True
         # ImgAug sequential pipeline
         self.iaa = None
+        self.border_mode = ConfigDAO()["AUG_ROTATE"] if ConfigDAO()["AUG_ROTATE"] in {
+            "constant", "edge", "symmetric", "reflect", "wrap"
+        } else "constant"
 
         DatasetSettings().dataset_options(self)
 
@@ -149,6 +155,8 @@ class TFDatasetWrapper:
         "Zoom Out": iaa.CropAndPad(
             sample_independently=False,
             percent=(0, ConfigDAO()["AUG_ZOOM_PERCENT"]),
+            pad_mode=self.border_mode
+
         ),
         "Gaussian Blur": iaa.GaussianBlur(
             sigma=(0.0, ConfigDAO()["AUG_GAUSS_SIGMA"])
@@ -170,6 +178,7 @@ class TFDatasetWrapper:
             scale=(0.0, ConfigDAO()["AUG_NOISE"]),
             per_channel=0.1
         ),
+        "Color Temperature": iaa.ChangeColorTemperature(),
         # Make some images brighter and some darker.
         # In 20% of all cases, we sample the multiplier once per channel,
         # which can end up changing the color of the images.
@@ -183,6 +192,7 @@ class TFDatasetWrapper:
             # translate_percent={"x": (-0.2, 0.2), "y": (-0.2, 0.2)},
             rotate=(-180, 180),
             # shear=(-8, 8)
+            mode=self.border_mode
         ),
         "Invert Blend": iaa.BlendAlphaMask(
             iaa.InvertMaskGen(0.5, iaa.VerticalLinearGradientMaskGen()),
@@ -253,12 +263,12 @@ class TFDatasetWrapper:
             self.val_ds = prepare_batch(self.val_ds)
             self.val_ds = self.val_ds.repeat()
             self.ds = self.ds.skip(n_val)
-            self.ds = self.ds.repeat()
 
-        else:
-            self.ds = self.ds.repeat()
-
-        print("Preparing Batches")
+        self.ds = self.ds.shuffle(
+            buffer_size=ConfigDAO()["BUFFER_SIZE"],
+            reshuffle_each_iteration=True
+        )
+        self.ds = self.ds.repeat()
         self.ds = prepare_batch(self.ds)
 
     def create(self, img_paths, labels):

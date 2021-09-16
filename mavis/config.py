@@ -1,12 +1,8 @@
-import base64
-import glob
 import json
-import os
 import traceback
 from datetime import datetime
 from functools import wraps
 from pathlib import Path
-from zipfile import ZipFile, ZIP_STORED
 
 import numpy as np
 import seaborn as sns
@@ -16,8 +12,7 @@ from tensorflow.python.keras.optimizer_v2.adam import Adam
 from tensorflow.python.keras.optimizer_v2.gradient_descent import SGD
 from tensorflow.python.keras.optimizer_v2.learning_rate_schedule import PolynomialDecay, ExponentialDecay
 
-from shelveutils import current_model_dir, ModelDAO, ProjectDAO, PresetListDAO, ActivePresetDAO, ConfigDAO, \
-    DOWNLOADS_PATH, DFDAO
+from db import current_model_dir, ModelDAO, ProjectDAO, PresetListDAO, ActivePresetDAO, ConfigDAO
 
 
 class BasePreset:
@@ -96,12 +91,12 @@ class Preset(BasePreset):
     def __init__(self):
         self.name = "Default"
 
-        self.CLASS_NAMES = ConfigDAO([])["CLASS_NAMES"]
-        self.CLASS_INDICES = ConfigDAO([])["CLASS_INDICES"]
-        self.CLASS_COLORS = ConfigDAO([])["CLASS_COLORS"]
+        self.CLASS_NAMES = ConfigDAO(np.array(["Background", "Foreground"]))["CLASS_NAMES"]
+        self.CLASS_INDICES = ConfigDAO(np.array([0, 1], dtype=np.uint8))["CLASS_INDICES"]
+        self.CLASS_COLORS = ConfigDAO(np.array([(0,0,0), (255,255,255)], dtype=np.uint8))["CLASS_COLORS"]
         self.RECONSTRUCTION_CLASS = ConfigDAO("")["RECONSTRUCTION_CLASS"]
         self.SIZE = ConfigDAO(512)["SIZE"]
-        self.MODEL_PATH = ConfigDAO("")["MODEL_PATH"]
+        self.MODEL_PATH = ConfigDAO(ModelDAO().get_all()[0])["MODEL_PATH"]
         self.TRAIN_ROIS_PER_IMAGE = ConfigDAO(512)["TRAIN_ROIS_PER_IMAGE"]
         self.ANCHOR_SCALES = ConfigDAO((1, 4, 8, 16, 32, 64, 128, 256))["ANCHOR_SCALES"]
         self.RPN_NMS_THRESHOLD = ConfigDAO(0.8)["RPN_NMS_THRESHOLD"]
@@ -126,6 +121,7 @@ class Preset(BasePreset):
         self.BATCH_SIZE = ConfigDAO(8)["BATCH_SIZE"]
         self.VAL_SPLIT = ConfigDAO(1)["VAL_SPLIT"]
         self.WEIGHT_DECAY = ConfigDAO(0.0001)["WEIGHT_DECAY"]
+        self.CONTINUE_TRAINING = ConfigDAO("")["CONTINUE_TRAINING"]
 
     def update(self):
         ConfigDAO()["CLASS_NAMES"] = self.CLASS_NAMES
@@ -158,9 +154,10 @@ class Preset(BasePreset):
         ConfigDAO()["BATCH_SIZE"] = self.BATCH_SIZE
         ConfigDAO()["VAL_SPLIT"] = self.VAL_SPLIT
         ConfigDAO()["WEIGHT_DECAY"] = self.WEIGHT_DECAY
+        ConfigDAO()["CONTINUE_TRAINING"] = self.CONTINUE_TRAINING
 
     def _class_info_parameter_block(self, with_color=False):
-        from stutils.widgets import rgb_picker
+        from ui.widgets import rgb_picker
 
         column_list = ["Class Indices", "Class Names", "Class Colors"]
 
@@ -236,15 +233,15 @@ class Preset(BasePreset):
         class_colors = [self.CLASS_COLORS[list(self.CLASS_NAMES).index(name)] for name in class_names]
         return class_names, class_colors
 
-
     def _model_path(self):
-        btn = st.empty()
         new_path = Path(current_model_dir()) / f"{datetime.now():%y%m%d_%H-%M}_{Path(ProjectDAO().get()).stem}.h5"
+
         if st.checkbox("Custom Model Path"):
             new_path = Path(st.text_input(
                 "Path", Path(current_model_dir()) / "new_model.h5"
             ))
-        if btn.button(f"Add new model name: `{new_path.name}`"):
+
+        if st.button(f"Add new model named: `{new_path.name}`"):
             ModelDAO().add(new_path)
 
         all_model_paths = ModelDAO().get_all()
@@ -256,7 +253,12 @@ class Preset(BasePreset):
         )
         if Path(self.MODEL_PATH).is_file() and st.button("Get download link"):
             path = Path(self.MODEL_PATH)
-            ExportWidget(path.name).model_link(path)
+            with open(path, "rb") as f:
+                st.download_button(
+                    label="Download Model",
+                    data=f,
+                    file_name=path.name,
+                )
 
     def overlap_information_block(self):
         if self.OVERLAP_PERCENTAGE is None:
@@ -494,6 +496,13 @@ class Preset(BasePreset):
             self.ENCODER_FREEZE or self.TRAIN_HEADS_ONLY
         )
 
+        all_model_paths = ModelDAO().get_all()
+        self.CONTINUE_TRAINING = st.selectbox(
+            "Select Model as base. Leave empty to train the model from scratch",
+            [""] + all_model_paths,
+            all_model_paths.index(self.CONTINUE_TRAINING)
+            if self.CONTINUE_TRAINING in all_model_paths else 0
+        )
     def _output_mask_opts(self):
         self.BINARY = st.checkbox(
             "Check to use Sigmoid Output. Default is Softmax",
@@ -594,40 +603,3 @@ class Preset(BasePreset):
         pass
 
 
-class ExportWidget:
-    def __init__(self, name):
-        self.name = name
-
-    def _zip_dir(self, source_dirs, folder_names, pattern="*", verbose=True, recursive=False):
-        remove_files = glob.glob(str(DOWNLOADS_PATH / "**"))
-        [os.remove(f) for f in remove_files]
-        st.info(f"Removed {len(remove_files)} old archvies")
-
-        target_file = str(DOWNLOADS_PATH / self.name)
-
-        with ZipFile(target_file, 'w', ZIP_STORED) as zf:
-            for source_dir, folder_name in zip(source_dirs, folder_names):
-                src_path = Path(source_dir).expanduser().resolve(strict=True)
-                files = list(src_path.rglob(pattern) if recursive else src_path.glob(pattern))
-                if verbose:
-                    bar = st.progress(0)
-                for i, file in enumerate(files):
-                    if verbose:
-                        bar.progress(i / len(files))
-                    zf.write(file, Path(folder_name) / file.relative_to(src_path))
-
-        st.markdown(f"Download [{self.name}](downloads/{self.name})", unsafe_allow_html=True)
-
-    def df_link(self, csv_args):
-        csv_args["header"] = True
-        csv = DFDAO().get(ProjectDAO().get()).to_csv(index=False, **csv_args)
-        b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
-        href = f'<a download="{self.name}.csv" href="data:file/csv;base64,{b64}">' \
-               f'Download {self.name}.csv</a>'
-        st.markdown(href, unsafe_allow_html=True)
-
-    def ds_link(self, paths, folder_names, recursive=False):
-        self._zip_dir(paths, folder_names, recursive=recursive)
-
-    def model_link(self, path: Path):
-        self._zip_dir([path.parent], ["model"], pattern=path.name+"*")

@@ -2,7 +2,7 @@ import numpy as np
 import segmentation_models as sm
 import tensorflow as tf
 
-from shelveutils import ConfigDAO
+from db import ConfigDAO
 
 auto = tf.data.experimental.AUTOTUNE
 

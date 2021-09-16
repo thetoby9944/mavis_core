@@ -2,10 +2,11 @@ import glob
 import pkgutil
 import sys
 import traceback
+from io import BytesIO
 from os.path import join, dirname, basename, isfile
 from pathlib import Path
 from runpy import run_module
-from zipfile import ZipFile
+from zipfile import ZipFile, ZIP_STORED
 
 import numpy as np
 import pandas as pd
@@ -15,15 +16,11 @@ from natsort import os_sorted
 from st_aggrid import GridOptionsBuilder, AgGrid
 
 import config
-import shelveutils
-from config import ExportWidget
+import db
 from pdutils import overwrite_modes, fill_column, image_columns
 from pilutils import FILETYPE_EXTENSIONS, IMAGE_FILETYPE_EXTENSIONS
-from shelveutils import ProjectDAO, DFDAO, config_path, LoginDAO, LocalFolderBrowserMixin
-
-
-# import mavis
-from stutils.sessionstate import get
+from db import ProjectDAO, DFDAO, config_path, LoginDAO, LocalFolderBrowserMixin
+from ui.sessionstate import get
 
 
 def icon(icon_name):
@@ -79,7 +76,7 @@ class FileUpload:
                 paths += [target_path]
 
             elif suffix in [".zip"]:
-                target_dir = (self.target_dir / Path(file.name).stem).resolve()
+                target_dir = self.target_dir.resolve()# / Path(file.name).stem).resolve()
                 target_dir.mkdir(parents=True, exist_ok=True)
                 ZipFile(file).extractall(target_dir)
                 st.info(f"Extracted Archive to host into {target_dir}")
@@ -238,8 +235,8 @@ class ImportExportTableWidget:
         with export_col:
             st.markdown("### Export table")
             download_name = st.text_input("Export Name", Path(ProjectDAO().get()).stem)
-            if st.button("Generate Download Link"):
-                ExportWidget(download_name).df_link(csv_args)
+            if st.button("Create .csv download"):
+                ExportWidget(f"{download_name}.csv").df_link(csv_args)
 
 
 class GalleryWidget:
@@ -373,13 +370,12 @@ class LoginWidget:
         if not result:
             column = login_column.columns(3)[1]
 
-            #form = column.form("Login")
-            #with form:
-            with column:
+            form = column.form("Login")
+            with form:
                 st.write("### Login")
                 username = st.text_input("Username:", key="userlogin")
                 password = st.text_input("Password:", type="password", key="userpw")
-                if st.button("Login"):
+                if st.form_submit_button("Login"):
 
                     result, username, password = LoginDAO().check_session(username, password)
                     if password and not result:
@@ -409,30 +405,11 @@ class BodyWidget:
                 st.write("---")
                 col1, col2 = st.columns(2)
                 with col1:
-                    st.markdown("### 🞥 Add Files")
-                    st.write("  ")
-                    # local = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(sys.argv[0]).parent.resolve()
-
-                    local = LocalFolderBrowserMixin().browse()
-
-                    if local is not None and local:
-                        file_list = [
-                            str(local_file)
-                            for local_file in
-                            list(local.glob("*"))
-                            if local_file.is_file()
-                        ]
-
-                        df2 = fill_column(
-                            df,
-                            f"{local.name} ({local.parent.name})",
-                            file_list,
-                            overwrite_modes["opt_w"]
-                        )
-                        DFDAO().set(df2, project, )
+                    st.markdown("### 🞥 Add File Paths")
+                    AddWidget(df, project)
 
                 with col2:
-                    st.write("### ✎ Edit")
+                    st.write("### ✎ Edit Table")
                     EditWidget(df)
 
                 st.write("---")
@@ -452,10 +429,32 @@ class BodyWidget:
             st.code(traceback.format_exc())
 
 
+class AddWidget:
+    def __init__(self, df, project):
+        st.write("  ")
+        # local = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(sys.argv[0]).parent.resolve()
+        local = LocalFolderBrowserMixin().browse()
+        if local is not None and local:
+            file_list = [
+                str(local_file)
+                for local_file in
+                list(local.glob("*"))
+                if local_file.is_file()
+            ]
+
+            df2 = fill_column(
+                df,
+                f"{local.name} ({local.parent.name})",
+                file_list,
+                overwrite_modes["opt_w"]
+            )
+            DFDAO().set(df2, project)
+
+
 class ModuleWidget:
     def __init__(self):
         # Packages
-        package_path = shelveutils.ModulePathDAO().get() or "pipelines"
+        package_path = db.ModulePathDAO().get() or "pipelines"
         # print(f"Looking for mavis modules in {package_path}")
         if str(package_path) not in sys.path:
             sys.path.append(str(package_path))
@@ -486,30 +485,24 @@ class ModuleWidget:
                 yield full_module_name
 
     def get_modules_interactive(self):
-        package_path = shelveutils.ModulePathDAO().get() or "pipelines"
+        package_path = db.ModulePathDAO().get()
 
         search = st.sidebar.text_input("What do you want to do?")
-        with st.sidebar.expander("Settings"):
-            module_path = shelveutils.ModulePathDAO().get()
-            module_path = st.text_input("Module path", module_path or "pipelines")
-            shelveutils.ModulePathDAO().set(module_path)
-
-            log_path = shelveutils.LogPathDAO().get()
-            log_path = st.text_input("Log path", log_path or "logs")
-            shelveutils.LogPathDAO().set(log_path)
-
-            data_path = shelveutils.DataPathDAO().get()
-            # with st.form("Data path"):
-            data_path = st.text_input("Data path", data_path or "data")
-            #    if st.form_submit_button("Update data path"):
-            shelveutils.DataPathDAO().set(data_path)
+        with st.sidebar.expander("⚙️"):
+            db.ModulePathDAO().edit_widget()
+            db.LogPathDAO().edit_widget()
+            db.DataPathDAO().edit_widget()
 
             st.write("---")
-
+            st.write("### Reset")
             if st.button("Reset Presets"):
                 config.PresetListDAO().reset()
+                config.ModelDAO().reset()
                 config.ActivePresetDAO().reset()
+
+            if st.button("Reset Model Paths"):
                 config.ConfigDAO().reset()
+
             st.write("---")
 
             upload_widget = st.empty()
@@ -546,7 +539,7 @@ class ModuleWidget:
 
                 if expander.checkbox(module_name):
                     name = module_name.split('.')[-1]
-                    shelveutils.BaseDAO.ACTIVE_PIPELINE = name
+                    db.BaseDAO.ACTIVE_PIPELINE = name
                     st.markdown(f"# {name}")
                     self.execute(full_module_name)
 
@@ -557,3 +550,37 @@ class ModuleWidget:
         run_module(module_name)
 
 
+class ExportWidget:
+    def __init__(self, name):
+        self.name = name
+
+    def _zip_dir(self, source_dirs, folder_names, pattern="*", verbose=True, recursive=False):
+        target_file = BytesIO()
+        with ZipFile(target_file, 'w', ZIP_STORED) as zf:
+            for source_dir, folder_name in zip(source_dirs, folder_names):
+                src_path = Path(source_dir).expanduser().resolve(strict=True)
+                files = list(src_path.rglob(pattern) if recursive else src_path.glob(pattern))
+                if verbose:
+                    bar = st.progress(0)
+                for i, file in enumerate(files):
+                    if verbose:
+                        bar.progress(i / len(files))
+                    zf.write(file, Path(folder_name) / file.relative_to(src_path))
+        target_file.seek(0)
+        st.download_button(
+            label=f"Download {self.name}",
+            data=target_file,
+            file_name=self.name
+        )
+
+    def df_link(self, csv_args):
+        csv_args["header"] = True
+        csv = DFDAO().get(ProjectDAO().get()).to_csv(index=False, **csv_args)
+        st.download_button(
+            label=f"Download",
+            data=csv,
+            file_name=self.name
+        )
+
+    def ds_link(self, paths, folder_names, recursive=False):
+        self._zip_dir(paths, folder_names, recursive=recursive)

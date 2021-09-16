@@ -31,7 +31,7 @@ shelve.Pickler = Pickler
 shelve.Unpickler = Unpickler
 
 # Use session state hack for login
-from stutils.sessionstate import get
+from ui.sessionstate import get
 
 
 def credential_path():
@@ -341,8 +341,16 @@ class ModelDAO(SimpleListDAO):
     def key(self):
         return f"{BaseDAO.ACTIVE_PIPELINE}_models"
 
+    @property
+    def default(self):
+        return [Path(current_model_dir()) / f"{datetime.datetime.now():%y%m%d_%H-%M}_{Path(ProjectDAO().get()).stem}.h5"]
+
 
 class SimpleKeyDAO(BaseDAO):
+    @property
+    def label(self):
+        raise NotImplementedError
+
     @property
     def key(self):
         raise NotImplementedError
@@ -395,8 +403,19 @@ class SimplePathDAO(SimpleKeyDAO, ABC, LocalFolderBrowserMixin):
             module_path = db[self.key]
         return Path(module_path)
 
+    def edit_widget(self):
+        path = self.get()
+        with st.form(self.label):
+            log_path = st.text_input(self.label, str(path))
+            if st.form_submit_button("Update"):
+                self.set(log_path)
+
 
 class ModulePathDAO(SimplePathDAO):
+    @property
+    def label(self):
+        return "Module Path"
+
     @property
     def key(self):
         return "module_path"
@@ -408,6 +427,10 @@ class ModulePathDAO(SimplePathDAO):
 
 class LogPathDAO(SimplePathDAO):
     @property
+    def label(self):
+        return "Log Path"
+
+    @property
     def key(self):
         return "log_path"
 
@@ -417,6 +440,10 @@ class LogPathDAO(SimplePathDAO):
 
 
 class DataPathDAO(SimplePathDAO):
+    @property
+    def label(self):
+        return "Data Path"
+
     @property
     def key(self):
         return "data_path"
@@ -536,9 +563,10 @@ class LogDAO:
             if "logs" not in db:
                 db["logs"] = []
 
-    def add(self):
+    def add(self, activity_type=None):
         with shelve.open(log_path()) as db:
             logs = db["logs"]
+            self.logdata["Activity Type"] = activity_type
             logs += [self.logdata]
             db["logs"] = logs
 

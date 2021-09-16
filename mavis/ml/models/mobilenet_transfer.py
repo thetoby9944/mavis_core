@@ -1,6 +1,6 @@
 import tensorflow as tf
 
-from shelveutils import ConfigDAO
+from db import ConfigDAO
 
 
 def MobileNet_Transfer(len_classes, dropout_rate=0.2):

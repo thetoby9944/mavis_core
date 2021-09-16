@@ -5,7 +5,7 @@ import streamlit as st
 import tensorflow as tf
 
 from pilutils import pil
-from shelveutils import LogPathDAO
+from db import LogPathDAO
 
 
 class Pix2Pix(tf.keras.Model):

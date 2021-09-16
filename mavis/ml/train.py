@@ -8,8 +8,8 @@ import streamlit as st
 import tensorflow as tf
 from tensorflow.python.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
-from shelveutils import ProjectDAO, LogPathDAO, ConfigDAO, ActivePresetDAO
-from tfutils.callbacks import CheckPoint
+from db import ProjectDAO, LogPathDAO, ConfigDAO, ActivePresetDAO
+from ml.callbacks import CheckPoint
 
 
 def get_model_summary(model):

@@ -6,9 +6,9 @@ from PIL import Image
 from tensorflow.python.keras.models import load_model
 
 import config
-from shelveutils import ConfigDAO, ActivePresetDAO, PresetListDAO, LogPathDAO, LogDAO
-from stutils.processors.base import BaseProcessor
-from tfutils.train import train_model
+from db import ConfigDAO, ActivePresetDAO, PresetListDAO, LogPathDAO, LogDAO
+from ui.processors.base import BaseProcessor
+from ml.train import train_model
 
 
 class TfModelProcessor(BaseProcessor):
@@ -23,8 +23,11 @@ class TfModelProcessor(BaseProcessor):
         self.save_weights_only = False
         self.dry_run = False
 
-    def model_from_path(self):
-        return load_model(ConfigDAO()["MODEL_PATH"], compile=False)
+    def model_from_path(self, model_path=None):
+        if model_path is None:
+            model_path = ConfigDAO()["MODEL_PATH"]
+
+        return load_model(model_path, compile=False)
 
     def inference(self, img_paths):
         model = self.model_from_path()
@@ -69,19 +72,28 @@ class TfModelProcessor(BaseProcessor):
             ActivePresetDAO().set(preset)
 
             st.info(f"Loaded preset {ActivePresetDAO().get()}")
+            # Create a MirroredStrategy.
+            strategy = tf.distribute.MirroredStrategy()
+            print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
 
-            if ConfigDAO()["MODEL_PATH"] is not None and self.continue_training:
-                model = self.model_from_path()
-            else:
-                model = self.models()[0]
+            # Open a strategy scope.
+            with strategy.scope():
+                # Everything that creates variables should be under the strategy scope.
+                # In general this is only model construction & `compile()`.
 
-            # Name the model (not relevant for mask rcnn)
-            model._name = ActivePresetDAO().get() + model._name
-            st.code(ConfigDAO().print_preset())
+                base_model = ConfigDAO()["CONTINUE_TRAINING"]
+                if base_model:
+                    model = self.model_from_path(base_model)
+                else:
+                    model = self.models()[0]
 
-            # First Compile the model, so that all variables for dataset creation have been initialized
-            with st.spinner("Compiling Model"):
-                model.compile(**self.compile_args())
+                # Name the model (not relevant for mask rcnn)
+                model._name = ActivePresetDAO().get() + model._name
+                st.code(ConfigDAO().print_preset())
+
+                # First Compile the model, so that all variables for dataset creation have been initialized
+                with st.spinner("Compiling Model"):
+                    model.compile(**self.compile_args())
 
             self.dataset.create(*self.input_args())
             self.dataset.peek()
@@ -120,6 +132,7 @@ class TfModelProcessor(BaseProcessor):
 
     def inference_block(self):
         if st.button("Inference"):
+            LogDAO(self.input_columns, self.column_out).add("Inference")
             df = self.inference_store()
             self.save_new_df(df)
 
@@ -130,21 +143,22 @@ class TfModelProcessor(BaseProcessor):
             self.presets
         )
 
-        self.continue_training = ConfigDAO(False)["CONTINUE_TRAINING"]
+        self.continue_training = ConfigDAO()["CONTINUE_TRAINING"]
         # self.inference_after_training = st.checkbox("Run inference after Training", False)
         st.write("Try a dry-run with checking the preset to see the data augmentation and if the model compiles.")
         self.dry_run = st.button("Check preset")
 
         if st.button("Start Training") or self.dry_run:
-            LogDAO(self.input_columns, self.column_out).add()
             self.presets = preset_names
             if len(self.presets) is 0:
                 st.warning("No presets selected!")
                 return
 
             if not self.dry_run:
+                LogDAO(self.input_columns, self.column_out).add("Training")
                 st.markdown(f"Started Training. Run tensorboard to see progress.")
                 st.code(f"tensorboard --log-dir {LogPathDAO().get().resolve()} --bind-all")
+                LogDAO(self.input_columns, self.column_out).add("Dry Run")
             df = self.training_store()
             self.save_new_df(df)
 

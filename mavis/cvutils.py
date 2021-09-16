@@ -14,7 +14,7 @@ from skimage.morphology import skeletonize
 from sklearn.metrics import pairwise_distances_argmin
 
 from pilutils import pil
-from shelveutils import ConfigDAO
+from db import ConfigDAO
 
 
 def load_label(path, inverted=False):
