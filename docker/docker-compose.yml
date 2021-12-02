@@ -1,0 +1,19 @@
+version: '3.7'
+
+services:
+    app:
+        image: thetoby/mavis:latest
+        volumes:
+            #- ~/Projects/mavis/src/data:/usr/mavis/src/data                      # Main Mavis Data
+            #- ~/Projects/mavis/src/logs:/usr/mavis/src/logs                      # Streamlit & Tensorboard Logs Location
+            - ~/mavis/pipelines:/usr/pipelines  # Addons Location
+            #- /data:/data                                                        # Any persistent data location that should be accessible
+        ports:
+            - 8501:8501
+        # user: ${UID}
+        # use gpu all
+        deploy:
+            resources:
+                reservations:
+                    devices:
+                        - capabilities: [ gpu ]

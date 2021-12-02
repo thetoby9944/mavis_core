@@ -44,21 +44,22 @@ class BasePreset:
         PresetListDAO().add(new_config)
         # st.experimental_rerun()
         st.success(f"Preset is: {new_config}. Press **`R`** for refresh.")
+        st.button("Refresh")
 
     @staticmethod
     def select(key_name):
         current = ActivePresetDAO().get()
         st.write("#### Preset")
-        col1, col2 = st.columns(2)
-        with col1:
-            all_preset_names = PresetListDAO().get_all()
-            selection = st.selectbox(
-                "Select Presets",
-                all_preset_names,
-                all_preset_names.index(current)
-                if current in all_preset_names else 0,
-                key="sel_pres" + key_name
-            )
+        #col1, col2 = st.columns(2)
+        #with col1:
+        all_preset_names = PresetListDAO().get_all()
+        selection = st.selectbox(
+            "Select Presets",
+            all_preset_names,
+            all_preset_names.index(current)
+            if current in all_preset_names else 0,
+            key="sel_pres" + key_name
+        )
         if current != selection:
             BasePreset._set(selection)
 
@@ -215,7 +216,7 @@ class Preset(BasePreset):
             ]))]
 
     def _reconstruction_class(self):
-        all_classes = list(self.CLASS_NAMES) + ["None"]
+        all_classes = ["None"] + list(self.CLASS_NAMES)
         self.RECONSTRUCTION_CLASS = st.selectbox(
             "Choose Reference Class for Reconstruction."
             "Only Images of this class will be used for training. E.g. 'Good'. "

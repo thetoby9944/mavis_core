@@ -7,15 +7,17 @@ import tensorflow as tf
 
 def init_streamlit():
     import streamlit as st
-    from mavis import __version__
+
+    if not hasattr(st.session_state, "layout"):
+        st.session_state.layout = "wide"
 
     st.set_page_config(
         page_title="Mavis",
         page_icon="assets/images/icon.png",
-        layout="wide",
+        layout=st.session_state.layout,
     )
     st.sidebar.image("assets/images/logo.svg", output_format="JPG", width=300)
-    st.sidebar.code(f"\t\t\t  {__version__}")
+    # st.sidebar.code(f"\t\t\t  {__version__}")
 
     def get_base64(bin_file):
         with open(bin_file, 'rb') as f:
@@ -35,13 +37,29 @@ def init_streamlit():
         </style>
     '''
 
-    hide_decoration_bar_style = '''
+
+    nav_bar_style = """
+    <style>
+    div[data-stale="false"] > iframe[title="hydralit_components.NavBar.nav_bar"] {
+    position: fixed;
+    width: 100%;
+    z-index: 1000 !important;
+    box-sizing: border-box;
+    top: 0;
+    left: 00px;
+}
+    </style>
+    """
+
+
+    decoration_bar_style = '''
         <style>
             .css-kywgdc {
                 position: absolute;
                 top: 0px;
                 right: 0px;
                 left: 0px;
+                z-index: 1001 !important;  
                 height: 0.125rem;
                 background-image: linear-gradient(
             90deg
@@ -51,7 +69,8 @@ def init_streamlit():
         </style>
     '''
 
-    st.markdown(hide_decoration_bar_style, unsafe_allow_html=True)
+    #st.markdown(decoration_bar_style, unsafe_allow_html=True)
+    #st.markdown(nav_bar_style, unsafe_allow_html=True)
 
 
 def init_tensorflow():
@@ -96,11 +115,18 @@ def run():
 
 
 if __name__ == "__main__":
+    from pathlib import Path
+    import sys
+
     init_streamlit()
     init_tensorflow()
 
-    from ui.widgets import LoginWidget, BodyWidget, ModuleWidget
+    prefer_local_install = Path("..").resolve(strict=True).__str__()
+    if prefer_local_install not in sys.path:
+        sys.path.insert(0, prefer_local_install)
+        print(sys.path)
+
+    from ui.widgets import LoginWidget, ModuleWidget
 
     if LoginWidget().check():
-        BodyWidget()
-        list(ModuleWidget().get_modules_interactive())
+        ModuleWidget().execute()

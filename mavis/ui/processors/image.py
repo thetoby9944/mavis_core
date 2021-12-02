@@ -1,8 +1,13 @@
+import glob
 import json
 import os
 import types
+from abc import ABC
 from multiprocessing.pool import ThreadPool
+from pathlib import Path
+from typing import List
 
+import PIL
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -13,9 +18,34 @@ from db import save_pil, LogDAO
 from ui.processors.base import BaseProcessor
 
 
-class ImageProcessor(BaseProcessor):
-    def __init__(self, multiprocessing=True, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+class ImageProcessor(BaseProcessor, ABC):
+    def __init__(
+            self,
+            input_labels=None,
+            inputs_column_filter=None,
+            output_label=None,
+            output_new_dir=True,
+            output_suffix="",
+            class_info_required=False,
+            class_subset_required=False,
+            color_info_required=True,
+            preview=True,
+            save_numeric=False,
+
+            multiprocessing=True,
+    ):
+        super().__init__(
+            input_labels=input_labels,
+            inputs_column_filter=inputs_column_filter,
+            output_label=output_label,
+            output_new_dir=output_new_dir,
+            output_suffix=output_suffix,
+            class_info_required=class_info_required,
+            class_subset_required=class_subset_required,
+            color_info_required=color_info_required,
+            preview=preview,
+            save_numeric=save_numeric
+        )
         self.multiprocessing = multiprocessing
         self.flatten_result = False
 
@@ -116,3 +146,69 @@ class ImageProcessor(BaseProcessor):
             LogDAO(self.input_columns, self.column_out).add("Batch Run")
             df2 = self.process_all()
             self.save_new_df(df2)
+
+
+class ImageGroupProcessor(ImageProcessor, ABC):
+    def __init__(self, *args, **kwargs):
+        super().__init__(
+            input_labels=["Select Input Paths"],
+            preview=False,
+            multiprocessing=False,
+            *args, **kwargs
+        )
+
+        self.split_at = st.text_input("Split path names at", "_")
+        sample_path = self.input_args()[0][0]
+        sample_path_parts = self.parts(sample_path)
+
+        self.path_parts_indices_with_samples = list(zip(
+            range(len(sample_path_parts)),
+            sample_path_parts)
+        )
+
+        group_values = st.multiselect(
+            "Grouping Identifier for images at positions",
+            self.path_parts_indices_with_samples,
+            self.path_parts_indices_with_samples
+        )
+        self.group_positions = [
+            i
+            for i, val in group_values
+            if (i, val) in self.path_parts_indices_with_samples
+        ]
+        self.processed = {}
+
+    def parts(self, full_path):
+        return Path(full_path).stem.split(self.split_at)
+
+    def tasks(self, args):
+        # Local Vars
+        path = args[0]
+
+        # Get grouped image name and check if done
+        base_image_name = self.split_at.join([self.parts(path)[int(i)] for i in self.group_positions])
+        if str(Path(path).parent) + base_image_name in self.processed:
+            return None
+
+        group_selector = f"*{base_image_name.replace(self.split_at, '*')}*"
+        paths = glob.glob(str(Path(path).parent / group_selector))
+        result = self.process_group(paths)
+
+        val = save_pil(
+            img=result,
+            base_path=path,
+            new_dir=True,
+            suffix=self.suffix,
+            dir_name=self.column_out,
+            stem=base_image_name
+        )
+
+        self.processed[str(Path(path).parent) + base_image_name] = True
+        return val
+
+    def process_group(self, paths: List[str]) -> PIL.Image:
+        raise NotImplementedError
+
+    def process_one(self):
+        """Process one is replaced by process_group in the GroupImageProcessor"""
+        pass

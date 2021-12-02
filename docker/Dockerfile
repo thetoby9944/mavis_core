@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:2.3.2-gpu
+FROM tensorflow/tensorflow:2.4.1-gpu
 
 # dont write pyc files
 # dont buffer to stdout/stderr
@@ -22,6 +22,7 @@ RUN DEBIAN_FRONTEND=noninteractive; \
 
 # pip installs
 RUN pip install -r /requirements.txt \
+    && pip install pycairo
     && pip install mavis_core \
     && rm -rf /root/.cache/pip /tmp/* /var/tmp/*
 

@@ -4,7 +4,7 @@ IMAGE_NAME=mavis
 VERSION=latest
 
 read -p 'Docker ID: ' DOCKERHUB_USERNAME
-read -sp 'Password: ' DOCKERHUB_PASSWORD
+read -p 'Password: ' DOCKERHUB_PASSWORD
 
 echo ${DOCKERHUB_PASSWORD} | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
 docker build . --file Dockerfile --tag ${IMAGE_NAME}

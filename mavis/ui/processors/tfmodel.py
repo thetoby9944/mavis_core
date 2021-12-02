@@ -1,3 +1,5 @@
+from contextlib import nullcontext
+
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -7,8 +9,8 @@ from tensorflow.python.keras.models import load_model
 
 import config
 from db import ConfigDAO, ActivePresetDAO, PresetListDAO, LogPathDAO, LogDAO
-from ui.processors.base import BaseProcessor
 from ml.train import train_model
+from ui.processors.base import BaseProcessor
 
 
 class TfModelProcessor(BaseProcessor):
@@ -74,10 +76,17 @@ class TfModelProcessor(BaseProcessor):
             st.info(f"Loaded preset {ActivePresetDAO().get()}")
             # Create a MirroredStrategy.
             strategy = tf.distribute.MirroredStrategy()
-            print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
+            scope = (
+                strategy.scope()
+                if ConfigDAO()["ARCHITECTURE"] not in 'Reconstruction'
+                else nullcontext()
+            )
+            st.write(scope)
+            print('Number of replicas in sync: {}'.format(strategy.num_replicas_in_sync))
 
-            # Open a strategy scope.
-            with strategy.scope():
+            # Open a strategy scope in case its not a GAN
+            # Todo FIX GANS for multi gpu
+            with scope:
                 # Everything that creates variables should be under the strategy scope.
                 # In general this is only model construction & `compile()`.
 
@@ -92,8 +101,11 @@ class TfModelProcessor(BaseProcessor):
                 st.code(ConfigDAO().print_preset())
 
                 # First Compile the model, so that all variables for dataset creation have been initialized
+                st.write("compiling model")
                 with st.spinner("Compiling Model"):
                     model.compile(**self.compile_args())
+
+            ### end strategy
 
             self.dataset.create(*self.input_args())
             self.dataset.peek()

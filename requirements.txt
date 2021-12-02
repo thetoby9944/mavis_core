@@ -1,28 +1,32 @@
-#python==3.7
+#python==3.8
 numpy>=1.19.2
 natsort>=7.1.1
+xmltodict>=0.12.0
+dill>=0.3.3
+wget>=3.2
 matplotlib>=3.2.2
+plotly
 pandas>=1.2.3
 seaborn>=0.11.1
 Pillow>=8.1.2
-scikit-learn>=0.24.1
 scikit-image>=0.18.1
 opencv-python>=4.5.1
 image-quality>=1.2.7
 
-# tensorflow==2.3 -- install based on hardware
-tensorflow-addons==0.11.2
-
+tensorflow-addons==0.12.1
 segmentation-models>=1.0.1
 pixellib>=0.6.0
+scikit-learn>=0.24.1
 
 streamlit>=0.87
 streamlit-drawable-canvas>=0.6.0
 streamlit-pandas-profiling>=0.1.1
 streamlit-aggrid>=0.1.9
-xmltodict>=0.12.0
-dill>=0.3.3
-wget>=3.2
+streamlit-labelstudio
+hydralit-components
+label-studio
 
+# tensorflow==2.4 -- install with conda
+# pycairo -- install with conda
 #pycairo # convert polgons to segmap
-#pyelastix
+#pyelastix # registration pipeline

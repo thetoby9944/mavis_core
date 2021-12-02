@@ -28,6 +28,7 @@ class BaseProcessor:
             preview=True,
             save_numeric=False
     ):
+
         if self.__doc__:
             with st.expander("Description"):
                 st.markdown(self.__doc__, unsafe_allow_html=True)
@@ -42,6 +43,7 @@ class BaseProcessor:
         self.inplace = False
         self.df = DFDAO.get(ProjectDAO().get())
 
+
         if input_labels is not None:
             st.markdown("### Data")
             if inputs_column_filter is None:
@@ -51,6 +53,10 @@ class BaseProcessor:
                 st.selectbox(label, column_filter(self.df) if column_filter is not None else self.df.columns)
                 for label, column_filter in zip(input_labels, inputs_column_filter)
             ]
+
+            if not all(self.input_columns):
+                st.info("Upload files first")
+                self.create_preview = False
 
         if output_label is not None:
             self.column_out_block(label=output_label, new_dir=output_new_dir, suffix=output_suffix)
@@ -62,6 +68,7 @@ class BaseProcessor:
 
             if class_subset_required:
                 self.class_names, self.class_colors = config.Preset().class_subset_block()
+
 
     def save_new_df(self, df):
         self.df = DFDAO().set(df, ProjectDAO().get())

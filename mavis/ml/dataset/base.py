@@ -1,12 +1,12 @@
 import imgaug.augmenters as iaa
 import numpy as np
-import tensorflow as tf
 import streamlit as st
+import tensorflow as tf
 from tensorflow.python.keras.utils.data_utils import Sequence
 
-from ml.dataset.preprocessing import auto, prepare_batch, paths_to_image_ds
 from config import BasePreset
 from db import ConfigDAO
+from ml.dataset.preprocessing import auto, prepare_batch, paths_to_image_ds
 
 
 class DatasetSettings(BasePreset):
@@ -24,6 +24,7 @@ class DatasetSettings(BasePreset):
         self.AUG_GAUSS_SIGMA = ConfigDAO(1.)["AUG_GAUSS_SIGMA"]
         self.AUG_GAUSS_FILTER_RADIUS = ConfigDAO(1)["AUG_GAUSS_FILTER_RADIUS"]
         self.BUFFER_SIZE = ConfigDAO(1000)["BUFFER_SIZE"]
+        self.RESHUFFLE_EACH_ITERATION = ConfigDAO(False)["RESHUFFLE_EACH_ITERATION"]
         self.AUG_PROBABILITY = ConfigDAO(0.5)["AUG_PROBABILITY"]
         self.AUG_RANDOM_ORDER = ConfigDAO(False)["AUG_RANDOM_ORDER"]
 
@@ -41,6 +42,7 @@ class DatasetSettings(BasePreset):
         ConfigDAO()["AUG_GAUSS_SIGMA"] = self.AUG_GAUSS_SIGMA
         ConfigDAO()["AUG_GAUSS_FILTER_RADIUS"] = self.AUG_GAUSS_FILTER_RADIUS
         ConfigDAO()["BUFFER_SIZE"] = self.BUFFER_SIZE
+        ConfigDAO(False)["RESHUFFLE_EACH_ITERATION"] = self.RESHUFFLE_EACH_ITERATION
         ConfigDAO()["AUG_PROBABILITY"] = self.AUG_PROBABILITY
         ConfigDAO()["AUG_RANDOM_ORDER"] = self.AUG_RANDOM_ORDER
 
@@ -112,6 +114,14 @@ class DatasetSettings(BasePreset):
         )
 
     def _advanced_training_duration_parameter_block(self):
+        self.RESHUFFLE_EACH_ITERATION = st.checkbox(
+            "Reshuffle between epochs.",
+            self.RESHUFFLE_EACH_ITERATION,
+            help="If selected, the training dataset will be re-shuffled between epochs. "
+                 "This is additionally to shuffling at the beginning. "
+                 "Validation data will be left out form shuffling. "
+                 "Depending on the buffer size, this may take a while."
+        )
         self.BUFFER_SIZE = st.number_input(
             "Shuffle Buffer Size. 1 - no shuffling", 1, 100 * 1000,
             int(self.BUFFER_SIZE)
@@ -144,66 +154,71 @@ class TFDatasetWrapper:
         DatasetSettings().dataset_options(self)
 
     @property
-    def all_augmentations(self): return {
-        "Flip Left Right": iaa.Fliplr(1),
-        "Flip Up Down": iaa.Flipud(1),
-        # random crops
-        "Crop (Zoom In)": iaa.CropAndPad(
-            sample_independently=False,
-            percent=(-ConfigDAO()["AUG_ZOOM_PERCENT"], 0),
-        ),
-        "Zoom Out": iaa.CropAndPad(
-            sample_independently=False,
-            percent=(0, ConfigDAO()["AUG_ZOOM_PERCENT"]),
-            pad_mode=self.border_mode
+    def all_augmentations(self):
+        return {
+            "Random Crop": iaa.CropToFixedSize(
+                width=ConfigDAO()["SIZE"],
+                height=ConfigDAO()["SIZE"]
+            ),
+            "Flip Left Right": iaa.Fliplr(1),
+            "Flip Up Down": iaa.Flipud(1),
+            # random crops
+            "Crop (Zoom In)": iaa.CropAndPad(
+                sample_independently=False,
+                percent=(-ConfigDAO()["AUG_ZOOM_PERCENT"], 0),
+            ),
+            "Zoom Out": iaa.CropAndPad(
+                sample_independently=False,
+                percent=(0, ConfigDAO()["AUG_ZOOM_PERCENT"]),
+                pad_mode=self.border_mode
 
-        ),
-        "Gaussian Blur": iaa.GaussianBlur(
-            sigma=(0.0, ConfigDAO()["AUG_GAUSS_SIGMA"])
-        ),
-        # Strengthen or weaken the contrast in each image.
-        "Contrast": iaa.LinearContrast(
-            alpha=(ConfigDAO()["AUG_CONTRAST_MIN"], ConfigDAO()["AUG_CONTRAST_MAX"])
-        ),
-        "JPG Compression": iaa.JpegCompression(
-            compression=(0, int(100 - ConfigDAO()["AUG_MIN_JPG_QUALITY"]))
-        ),
-        # Add gaussian noise.
-        # For 50% of all images, we sample the noise once per pixel.
-        # For the other 50% of all images, we sample the noise per pixel AND
-        # channel. This can change the color (not only brightness) of the
-        # pixels.
-        "Additive Gaussian Noise": iaa.AdditiveGaussianNoise(
-            loc=0,
-            scale=(0.0, ConfigDAO()["AUG_NOISE"]),
-            per_channel=0.1
-        ),
-        "Color Temperature": iaa.ChangeColorTemperature(),
-        # Make some images brighter and some darker.
-        # In 20% of all cases, we sample the multiplier once per channel,
-        # which can end up changing the color of the images.
-        "Brightness": iaa.Multiply(
-            mul=(1 - ConfigDAO()["AUG_BRIGHTNESS"], 1 + ConfigDAO()["AUG_BRIGHTNESS"]),
-            per_channel=0.1),
-        # Apply affine transformations to each image.
-        # Scale/zoom them, translate/move them, rotate them and shear them.
-        "Affine Transform": iaa.Affine(
-            # scale={"x": (0.8, 1.2), "y": (0.8, 1.2)},
-            # translate_percent={"x": (-0.2, 0.2), "y": (-0.2, 0.2)},
-            rotate=(-180, 180),
-            # shear=(-8, 8)
-            mode=self.border_mode
-        ),
-        "Invert Blend": iaa.BlendAlphaMask(
-            iaa.InvertMaskGen(0.5, iaa.VerticalLinearGradientMaskGen()),
-            iaa.Clouds()
-        ),
-        "Elastic Transform": iaa.ElasticTransformation(
-            alpha=(0, 10),
-            sigma=(2, 4)
-        )
+            ),
+            "Gaussian Blur": iaa.GaussianBlur(
+                sigma=(0.0, ConfigDAO()["AUG_GAUSS_SIGMA"])
+            ),
+            # Strengthen or weaken the contrast in each image.
+            "Contrast": iaa.LinearContrast(
+                alpha=(ConfigDAO()["AUG_CONTRAST_MIN"], ConfigDAO()["AUG_CONTRAST_MAX"])
+            ),
+            "JPG Compression": iaa.JpegCompression(
+                compression=(0, int(100 - ConfigDAO()["AUG_MIN_JPG_QUALITY"]))
+            ),
+            # Add gaussian noise.
+            # For 50% of all images, we sample the noise once per pixel.
+            # For the other 50% of all images, we sample the noise per pixel AND
+            # channel. This can change the color (not only brightness) of the
+            # pixels.
+            "Additive Gaussian Noise": iaa.AdditiveGaussianNoise(
+                loc=0,
+                scale=(0.0, ConfigDAO()["AUG_NOISE"]),
+                per_channel=0.1
+            ),
+            "Color Temperature": iaa.ChangeColorTemperature(),
+            # Make some images brighter and some darker.
+            # In 10% of all cases, we sample the multiplier once per channel,
+            # which can end up changing the color of the images.
+            "Brightness": iaa.Multiply(
+                mul=(1 - ConfigDAO()["AUG_BRIGHTNESS"], 1 + ConfigDAO()["AUG_BRIGHTNESS"]),
+                per_channel=0.1),
+            # Apply affine transformations to each image.
+            # Scale/zoom them, translate/move them, rotate them and shear them.
+            "Affine Transform": iaa.Affine(
+                # scale={"x": (0.8, 1.2), "y": (0.8, 1.2)},
+                # translate_percent={"x": (-0.2, 0.2), "y": (-0.2, 0.2)},
+                rotate=(-180, 180),
+                # shear=(-8, 8)
+                mode=self.border_mode
+            ),
+            "Invert Blend": iaa.BlendAlphaMask(
+                iaa.InvertMaskGen(0.5, iaa.VerticalLinearGradientMaskGen()),
+                iaa.Clouds()
+            ),
+            "Elastic Transform": iaa.ElasticTransformation(
+                alpha=(0, 10),
+                sigma=(2, 4)
+            )
 
-    }
+        }
 
     def _init_iaa_augmentor(self):
         self.iaa = iaa.Sequential([
@@ -233,8 +248,8 @@ class TFDatasetWrapper:
             [img_dtype, lbl_dtype]
         )
 
-        img_tensor = tf.reshape(img_tensor, shape=img_shape)
-        lbl_tensor = tf.reshape(lbl_tensor, shape=lbl_shape)
+        #img_tensor = tf.reshape(img_tensor, shape=tf.shape())
+        #lbl_tensor = tf.reshape(lbl_tensor, shape=lbl_shape)
 
         if self.augment_label:
             lbl_tensor = tf.image.convert_image_dtype(lbl_tensor, tf.float32)
@@ -264,10 +279,12 @@ class TFDatasetWrapper:
             self.val_ds = self.val_ds.repeat()
             self.ds = self.ds.skip(n_val)
 
-        self.ds = self.ds.shuffle(
-            buffer_size=ConfigDAO()["BUFFER_SIZE"],
-            reshuffle_each_iteration=True
-        )
+        if ConfigDAO(False)["RESHUFFLE_EACH_ITERATION"]:
+            self.ds = self.ds.shuffle(
+                buffer_size=ConfigDAO()["BUFFER_SIZE"],
+                reshuffle_each_iteration=True
+            )
+
         self.ds = self.ds.repeat()
         self.ds = prepare_batch(self.ds)
 

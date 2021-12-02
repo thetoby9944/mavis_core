@@ -2,13 +2,15 @@ import glob
 import pkgutil
 import sys
 import traceback
+from collections import defaultdict
+from datetime import datetime
 from io import BytesIO
 from os.path import join, dirname, basename, isfile
 from pathlib import Path
 from runpy import run_module
 from zipfile import ZipFile, ZIP_STORED
 
-import numpy as np
+import hydralit_components as hc
 import pandas as pd
 import streamlit as st
 from PIL import Image
@@ -17,9 +19,11 @@ from st_aggrid import GridOptionsBuilder, AgGrid
 
 import config
 import db
-from pdutils import overwrite_modes, fill_column, image_columns
+from db import ProjectDAO, current_data_dir, DFDAO, ConfigDAO
+from db import config_path, LoginDAO, LocalFolderBrowserMixin
+from pdutils import image_columns
+from pdutils import overwrite_modes, fill_column
 from pilutils import FILETYPE_EXTENSIONS, IMAGE_FILETYPE_EXTENSIONS
-from db import ProjectDAO, DFDAO, config_path, LoginDAO, LocalFolderBrowserMixin
 from ui.sessionstate import get
 
 
@@ -49,12 +53,18 @@ def contour_filter_options():
 
 
 class FileUpload:
-    def __init__(self, target_dir, label="Upload Files", type=FILETYPE_EXTENSIONS,
-                 accept_multiple_files=True):
+    def __init__(
+            self,
+            target_dir,
+            label="Upload Files",
+            type=FILETYPE_EXTENSIONS,
+            accept_multiple_files=True,
+            help="The files will be uploaded to the mavis data path in the corresponding project directory. "
+                 "You can set the mavis data root in the side panel under settings. "
+    ):
         self.target_dir = Path(target_dir)
         self.accept_multiple_files = accept_multiple_files
-        self.uploaded_files = st.file_uploader(label, type, accept_multiple_files)
-
+        self.uploaded_files = st.file_uploader(label, type, accept_multiple_files, help=help)
         if not self.accept_multiple_files:
             self.uploaded_files = [self.uploaded_files]
 
@@ -76,7 +86,7 @@ class FileUpload:
                 paths += [target_path]
 
             elif suffix in [".zip"]:
-                target_dir = self.target_dir.resolve()# / Path(file.name).stem).resolve()
+                target_dir = self.target_dir.resolve()  # / Path(file.name).stem).resolve()
                 target_dir.mkdir(parents=True, exist_ok=True)
                 ZipFile(file).extractall(target_dir)
                 st.info(f"Extracted Archive to host into {target_dir}")
@@ -94,149 +104,163 @@ class FileUpload:
             return next(iter(paths), None)
 
 
-class EditWidget:
-    def __init__(self, df):
-        project = ProjectDAO().get()
+class ImportFromHostWidget:
 
-        if not df.empty:
-            columns_to_remove = st.multiselect("Remove column(s)", list(df.columns))
-            delete_files = False  # st.checkbox("Delete associated files.")
-            if st.button("Remove"):
-                for column in columns_to_remove:
-                    if delete_files:
-                        for path in df[column]:
-                            try:
-                                path = Path(path)
-                                if path.is_file():
-                                    path.unlink()
-                            except:
-                                pass
-                    df = df.drop(column, axis=1)
-                    st.info(column + " removed")
-                DFDAO().set(df, project, allow_loss=True)
-            st.write("---")
-            if not st.checkbox("More", False, key="showmoreedit"):
-                return
+    @staticmethod
+    def get_folders(directory: Path):
+        return [directory, ".."] + os_sorted([path for path in glob.glob(str(directory / "**")) if Path(path).is_dir()])
 
-            st.markdown("--- \n ### Duplicate a column")
-            column = st.selectbox("Duplicate column", df.columns)
-            name = st.text_input("New Column Name")
-            if st.button("Duplicate"):
-                df[name] = df[column]
-                DFDAO().set(df, project)
-                st.info(column + " duplicated to " + name)
+    def __init__(self):
+        st.markdown("#### Import from Host")
 
-            if len(df) > 1:
-                st.markdown("--- \n ### Keep First *n* Rows only")
-                keep_rows = st.slider("Number of rows to keep", 1, len(df))
-                if st.button("Drop Remaining"):
-                    len_old = len(df)
-                    DFDAO().set(df.head(keep_rows), project)
-                    st.info(f"Dropped {len_old - len(df)} rows")
+        help = (
+            "This pipeline allows to select images from the file system of the host system.\n"
+            "Upload the images to the host machine or a network drive which is available there.\n"
+            "You can use WinSCP, the explorer, or FTP and then select the images here by providing a path.\n"
+            "TIPS: "
+            " - You can paste the exact path under windows by clicking SHIFT-Right Click and select:  \n"
+            "   `Copy as path`\n"
+            " - Select multiple images at once by using a placeholder `*`\n"
+            " - You can use `regular expression` to find all desired files on your system."
+        )
+        if st.checkbox("List and browse directory"):
+            empty_radio = st.empty()
+            old_root_dir_selection = ConfigDAO()["root_dir"]
+            root_dir_selection = empty_radio.radio("Go To", self.get_folders(ConfigDAO()["root_dir"]))
+            if root_dir_selection != old_root_dir_selection:
+                ConfigDAO()["root_dir"] = (ConfigDAO()["root_dir"] / root_dir_selection).resolve()
+                root_dir_selection = empty_radio.radio("Go To", self.get_folders(ConfigDAO()["root_dir"]))
 
-            st.markdown("--- \n ### Drop rows by value")
-            drop_column = st.selectbox("Select filter column", df.columns)
-            drop_value = st.selectbox("Drop rows with value", list(df[drop_column].unique()))
-            if st.button("Drop rows"):
-                len_old = len(df)
-                df = df[df[drop_column] != drop_value]
-                DFDAO().set(df, project)
-                st.info(f"Dropped {len_old - len(df)} rows")
+            old_root_dir_selection = ConfigDAO()["root_dir"]
+            ConfigDAO()["root_dir"] = Path(st.text_input("Current Directory", ConfigDAO()["root_dir"]))
+            # if ConfigDAO()["root_dir != old_root_dir_selection:
+            #    root_dir_selection = empty_radio.selectbox("Go To", [ConfigDAO()["root_dir] + list(glob.glob(str(ConfigDAO()["root_dir / "**"))))
 
-            st.markdown("--- \n ### Move NaNs to Bottom")
-            drop_column = st.selectbox("Select column", df.columns)
-            if st.button("Move NaNs to Bottom"):
-                df[drop_column] = df[drop_column].dropna().reset_index()
-                DFDAO().set(df, project)
+            if st.button("Use Current Directory"):
+                ConfigDAO()["selection"] = str(ConfigDAO()["root_dir"] / "**")
 
-            st.markdown("--- \n ### Shuffle Rows")
-            shuffle_columns = st.multiselect("Select columns to shuffle synchronously", list(df.columns))
-            if st.button("Shuffle Rows"):
-                df_temp = df[shuffle_columns].sample(frac=1)
-                df_temp.reset_index(drop=True, inplace=True)
-                df[shuffle_columns] = df_temp
-                DFDAO().set(df, project)
-                st.info("Shuffled rows of columns: " + ", ".join(shuffle_columns))
+        ConfigDAO()["selection"] = st.text_input("File selection expression", ConfigDAO()["selection"], help=help)
 
-            st.markdown("--- \n ### Order By")
-            ignore_cols = [
-                "Class Names", "Class Indices", "Class Colors", "Models",
-                "Training Configurations", "Overlap Percentage"
-            ]
-            order_columns = [col for col in df.columns if col not in ignore_cols]
-            order_column = st.selectbox("Order table by column", order_columns)
-            desc = st.checkbox("Descending", False)
-            numeric = st.checkbox("Convert Column to numeric. Invalid values will result in NaN.")
-            if numeric:
-                max_rounding = st.number_input("Round to fixed number of decimal places", 0, 10, 4)
-            if st.button("Order"):
-                temp_df = df
-                if numeric:
-                    temp_df[order_column] = pd.to_numeric(temp_df[order_column], errors="coerce")
-                    if max_rounding != 0:
-                        temp_df[order_column] = temp_df[order_column].map(
-                            ('{:,.' + str(max_rounding) + 'f}').format)
-                temp_df[order_columns] = df[order_columns].sort_values(order_column,
-                                                                       ascending=not desc).reset_index(drop=True)
-                DFDAO().set(df, project)
-                st.info("Ordered by " + order_column)
+        ConfigDAO()["load_folders_as_columns"] = st.checkbox("Load matching folders as separate columns. "
+                                                             "Uncheck to load all matching files in one column.",
+                                                             ConfigDAO()["load_folders_as_columns"])
 
-            st.markdown("--- \n ### Offset Columns")
-            math_opts = {
-                "Add": np.add,
-                "Subtract": np.subtract,
-                "Divide": np.divide,
-                "Multiply": np.multiply
-            }
-            math_opt_selection = st.radio("Select Operation", list(math_opts.keys()))
-            math_opt = math_opts[math_opt_selection]
-            math_opt_in_1 = st.selectbox("Select Left Hand Side", list(df.columns))
-            math_opt_in_2 = st.selectbox("Select Right Hand Side", list(df.columns))
-            math_opt_out = st.text_input("Name of Output Column",
-                                         f"{math_opt_in_1} {math_opt_selection} {math_opt_in_2}")
-            if st.button("Math Op"):
-                df[math_opt_out] = math_opt(df[math_opt_in_1], df[math_opt_in_2])
-                DFDAO().set(df, project)
-                st.info(f"Added column: {math_opt_out}")
+        if not ConfigDAO()["load_folders_as_columns"]:
+            ConfigDAO()["column"] = st.text_input("Remember matched paths in:", ConfigDAO()["column"])
 
-        else:
-            st.info("Editing not available. Project empty")
+        config_min_file_size = 0.
+        if st.checkbox("Show Extended options"):
+            ConfigDAO()["is_sbi"] = not ConfigDAO()["load_folders_as_columns"] and st.checkbox("Folder is SBI",
+                                                                                               ConfigDAO()["is_sbi"])
+            ConfigDAO()["recursive"] = not ConfigDAO()["is_sbi"] and st.checkbox(
+                "Collect files recursively. Uncheck to match exact expression.",
+                ConfigDAO()["recursive"])
+            ConfigDAO()["sort"] = st.checkbox("Keep file order sorted OS-style", ConfigDAO()["sort"])
+            config_min_file_size = float(st.number_input("Minimum file size in KB. Zero to ignore.", 0.))
+            ConfigDAO()["overwrite_modes"] = st.radio("When creating a column which is already present",
+                                                      list(overwrite_modes.values()),
+                                                      list(overwrite_modes.values()).index(
+                                                          ConfigDAO()["overwrite_modes"]))
+
+        if st.button("Load"):
+            df = DFDAO().get(ProjectDAO().get())
+
+            selection = ConfigDAO()["selection"]
+            if ConfigDAO()["is_sbi"]:
+                selection = str(Path(ConfigDAO()["selection"]) / "0" / "**" / "**" / "*.png")
+            files = glob.glob(selection, recursive=ConfigDAO()["recursive"])
+
+            if ConfigDAO()["sort"]:
+                files = os_sorted(files)
+
+            if ConfigDAO()["load_folders_as_columns"]:
+                files_per_folder = defaultdict(list)
+                for file in files:
+                    if Path(file).is_file() and (config_min_file_size == 0
+                                                 or config_min_file_size < Path(file).stat().st_size / 1024):
+                        folder = Path(file).parent.stem
+                        files_per_folder[folder] += [file]
+                for folder in list(files_per_folder.keys()):
+                    df = fill_column(df, folder, files_per_folder[folder], ConfigDAO()["overwrite_modes"])
+                    st.info(f"Loaded {len(files_per_folder[folder])} paths from folder **{folder}**")
+            else:
+                df = fill_column(df, ConfigDAO()["column"], files, ConfigDAO()["overwrite_modes"])
+                st.info(f"Loaded a total of {len(files)} paths.")
+            DFDAO().set(df, ProjectDAO().get())
+
+        # st.write(DFDAO().get(ProjectDAO().get()))
+
+
+class FileUploaderWidget:
+    def __init__(self, verbose=False):
+        st.write("#### Upload files")
+
+        # st.markdown("### Upload Files")
+        column = st.text_input(
+            "Upload files. New Folder Name:", "Images",
+            help="Uploads files when mavis is running on a remote server. "
+                 "It will create a new folder under the project with the files."
+        )
+        uploader = FileUpload(Path(current_data_dir()) / column)
+        overwrite_mode = overwrite_modes["opt_a"]
+        if verbose:
+            overwrite_mode = st.radio("When creating a column which is already present",
+                                      list(overwrite_modes.values()), 0)
+
+        if st.button("Upload"):
+            df = DFDAO().get(ProjectDAO().get())
+            paths = uploader.start()
+            if paths:
+                df = fill_column(df, column, paths, overwrite_mode)
+                DFDAO().set(df, ProjectDAO().get())
+
+
+class UploadZipWidget:
+    def __init__(self):
+        st.markdown("#### Upload .zip")
+        uploader = FileUpload(current_data_dir(), "Upload Archive", type=[".zip"], accept_multiple_files=False)
+
+        if st.button("Extract Archive"):
+            target_dir = uploader.start()
+            if target_dir:
+                st.warning(f"Use 'import from host' functionality to access desired files")
+                ConfigDAO()["selection"] = str(target_dir / "**" / "**")
+
+
+class FileImportWidget:
+    ConfigDAO()["selection"] = ConfigDAO("/home/**/Desktop/*/*.jpg")["selection"]
+    ConfigDAO()["recursive"] = ConfigDAO(False)["recursive"]
+    ConfigDAO()["column"] = ConfigDAO("Images")["column"]
+    ConfigDAO()["load_folders_as_columns"] = ConfigDAO(True)["load_folders_as_columns"]
+    ConfigDAO()["sort"] = ConfigDAO(True)["sort"]
+    ConfigDAO()["overwrite_modes"] = ConfigDAO(list(overwrite_modes.values())[0])["overwrite_modes"]
+    ConfigDAO()["root_dir"] = ConfigDAO(Path.home())["root_dir"]
+    ConfigDAO()["is_sbi"] = ConfigDAO(False)["is_sbi"]
+
+    def __init__(self):
+        folder_picker_column, upload_files_column, upload_zip_column, regex_column = st.columns(4)
+        with folder_picker_column:
+            project = ProjectDAO().get()
+            df = DFDAO.get(project)
+            AddWidget(df, project)
+
+        with upload_files_column:
+            FileUploaderWidget()
+
+        with upload_zip_column:
+            UploadZipWidget()
+
+        with regex_column:
+            ImportFromHostWidget()
 
 
 class SlimProjectWidget:
     def __init__(self):
-        col1, col2 = st.columns([1, 2])
         current = Path(ProjectDAO().get()).stem
         projects = os_sorted(ProjectDAO().get_all())
-        selection = col1.selectbox("Select Project", projects, projects.index(current) if current in projects else 0)
+        selection = st.selectbox("Select Project", projects, projects.index(current) if current in projects else 0)
         if selection != current:
             ProjectDAO().set(selection)
-
-
-class ImportExportTableWidget:
-    def __init__(self):
-        opt_col, import_col, export_col = st.columns(3)
-        with opt_col:
-            st.markdown("### ⭳⭱ Options")
-            csv_args = {
-                "sep": st.text_input(".CSV Column Separator", ";"),
-                "decimal": st.text_input(".CSV Decimal Separator", ","),
-                "header": 0 if st.checkbox(".CSV with Header", True) else None
-            }
-        with import_col:
-            st.markdown("### Import table")
-            name = st.text_input("Project Name. Warning! Setting the same name will overwrite.",
-                                 Path(ProjectDAO().get()).stem)
-            uploaded_file = st.file_uploader("Upload .csv file", type=".csv")
-            if st.button("Import"):
-                ProjectDAO().add(name, overwrite=True)
-                DFDAO().set(pd.read_csv(uploaded_file, **csv_args), name)
-
-        with export_col:
-            st.markdown("### Export table")
-            download_name = st.text_input("Export Name", Path(ProjectDAO().get()).stem)
-            if st.button("Create .csv download"):
-                ExportWidget(f"{download_name}.csv").df_link(csv_args)
 
 
 class GalleryWidget:
@@ -330,11 +354,26 @@ class GalleryWidget:
 
 class TableWidget:
     def __init__(self, df):
+        if len(df) == 0:
+            return
         table = st.empty()
         max_items = min(len(df), 10)
-        if len(df) > max_items:
-            max_items = len(df) if st.checkbox("Some rows have been ommited from "
-                                               "display due to performance. Check to view all") else max_items
+        omit_col, import_col, export_col = st.columns([10, 1, 1])
+        with omit_col:
+            if len(df) > max_items:
+                max_items = len(df) if st.checkbox("Some rows have been ommited from "
+                                                   "display due to performance. Check to view all") else max_items
+        csv_args = {
+            "sep": ";",
+            "decimal": ",",
+            "header": True
+        }
+        name = Path(ProjectDAO().get()).stem
+
+        with export_col:
+            if st.button("Download .csv"):
+                ExportWidget(f"{name}.csv").df_link(csv_args)
+
         temp_df = df.head(max_items)[df.columns[::-1]].round(2)
         pd.set_option('display.max_colwidth', None)
         pd.set_option("display.precision", 2)
@@ -355,6 +394,7 @@ class TableWidget:
             with table:
                 AgGrid(
                     temp_df,
+                    # update_mode=GridUpdateMode.MANUAL,
                     gridOptions=grid.build(),
                     fit_columns_on_grid_load=True,
                     allow_unsafe_jscode=True,
@@ -390,47 +430,9 @@ class LoginWidget:
         return result
 
 
-class BodyWidget:
-    def __init__(self):
-        try:
-            project = ProjectDAO().get()
-            df = DFDAO().get(project)
-
-            with st.expander(f"🗀  {Path(ProjectDAO().get()).stem}"):
-
-                SlimProjectWidget()
-
-                TableWidget(df)
-
-                st.write("---")
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.markdown("### 🞥 Add File Paths")
-                    AddWidget(df, project)
-
-                with col2:
-                    st.write("### ✎ Edit Table")
-                    EditWidget(df)
-
-                st.write("---")
-                if st.checkbox("Show ⭳⭱ Options", False):
-                    ImportExportTableWidget()
-
-            if len(image_columns(df)):
-                GalleryWidget(df)
-
-            if df.empty:
-                st.info("Start by uploading images to **🗀** the project, `\n` or use the **`Project`** module to "
-                        "import .zip archives or locate files on the host system.")
-
-        except:
-            st.error("Display raised a message. "
-                     "Try **'R'** to rerun")
-            st.code(traceback.format_exc())
-
-
 class AddWidget:
     def __init__(self, df, project):
+        st.write("#### Localhost Browser")
         st.write("  ")
         # local = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(sys.argv[0]).parent.resolve()
         local = LocalFolderBrowserMixin().browse()
@@ -449,6 +451,79 @@ class AddWidget:
                 overwrite_modes["opt_w"]
             )
             DFDAO().set(df2, project)
+
+
+class BodyWidget:
+    def __init__(self):
+        try:
+            project = ProjectDAO().get()
+            st.write(f"# 🗀  {Path(ProjectDAO().get()).stem}")
+
+            col1, col2, col3, col4 = st.columns([2, 1, 2, 1])
+            with col1:
+                SlimProjectWidget()
+            with col2:
+                st.write("  ")
+                st.write("  ")
+                if st.button(" Reload Project"):
+                    DFDAO().get(None)
+            with col3:
+                name = st.text_input("New Project Name", f"{datetime.now():%y%m%d}")
+            with col4:
+                st.write("  ")
+                st.write("  ")
+                if st.button("🞥 Create Project"):
+                    ProjectDAO().add(name)
+
+            df = DFDAO().get(project)
+            TableWidget(df)
+
+            if df.empty:
+                cols = st.columns(3)
+                with cols[1]:
+                    st.image("assets/images/wowsuchemtpy.png")
+                    st.write("### Wow, such empty")
+                    st.info("Start by uploading images to **🗀** the project, `\n` or use the **`Project`** module to "
+                            "import .zip archives or locate files on the host system.")
+
+            with st.expander("🞥 Add Files"):
+                FileImportWidget()
+                st.write("---")
+                with st.columns(4)[0]:
+                    st.write("#### Upload .csv")
+                    csv_args = {
+                        "sep": ";",
+                        "decimal": ",",
+                        "header": True
+                    }
+                    name = Path(ProjectDAO().get()).stem
+                    uploaded_file = st.file_uploader(
+                        "",
+                        type=".csv",
+                        help="Upload .csv which contains any information or paths you want to process with Mavis.  \n"
+                             "** WARNING: THIS WILL OVERWRITE THE CURRENT PROJECT **  \n"
+                             "Default encoding of .csv is:  \n"
+                             "- Decimal separator `,` \n"
+                             "- Column separator `;`  \n"
+                             "- header: `True`"
+                    )
+                    if uploaded_file is not None and st.button("⭱ .csv"):
+                        ProjectDAO().add(name, overwrite=True)
+                        DFDAO().set(pd.read_csv(uploaded_file, **csv_args), name)
+            st.write("  \n")
+
+            if len(image_columns(df)):
+                GalleryWidget(df)
+
+
+        except:
+            st.error(
+                "Display raised a message. "
+                "Try **'R'** to rerun"
+            )
+            st.button("Refresh")
+            with st.expander("Message"):
+                st.code(traceback.format_exc())
 
 
 class ModuleWidget:
@@ -485,39 +560,13 @@ class ModuleWidget:
                 yield full_module_name
 
     def get_modules_interactive(self):
-        package_path = db.ModulePathDAO().get()
-
-        search = st.sidebar.text_input("What do you want to do?")
-        with st.sidebar.expander("⚙️"):
-            db.ModulePathDAO().edit_widget()
-            db.LogPathDAO().edit_widget()
-            db.DataPathDAO().edit_widget()
-
-            st.write("---")
-            st.write("### Reset")
-            if st.button("Reset Presets"):
-                config.PresetListDAO().reset()
-                config.ModelDAO().reset()
-                config.ActivePresetDAO().reset()
-
-            if st.button("Reset Model Paths"):
-                config.ConfigDAO().reset()
-
-            st.write("---")
-
-            upload_widget = st.empty()
-            with upload_widget:
-                uploader = FileUpload(str(package_path), f"Upload package", ".zip")
-
-            if st.button(f"Upload package"):
-                uploader.start()
-
-            # st.write("---")
-            # uploader = FileUpload(Path(self.license_path).parent, "Upload a License file", ".txt", False)
-            # if st.button("Upload License"):
-            #     target_dir = uploader.start()
-            #     if target_dir:
-            #         st.success("Uploaded a license file. Press **`R`** to refresh.")
+        search = st.sidebar.text_input(f"What do you want to do?")
+        # st.write("---")
+        # uploader = FileUpload(Path(self.license_path).parent, "Upload a License file", ".txt", False)
+        # if st.button("Upload License"):
+        #     target_dir = uploader.start()
+        #     if target_dir:
+        #         st.success("Uploaded a license file. Press **`R`** to refresh.")
 
         for pack, pack_name in zip(self.packages, self.pack_names):
             # if pack_name not in self.licenses:
@@ -525,7 +574,7 @@ class ModuleWidget:
             #     continue
             #     pass
 
-            expander = st.sidebar.expander(pack_name, expanded=bool(search))
+            # expander = st.sidebar.expander(pack_name, expanded=bool(search))
 
             modules = glob.glob(join(dirname(pack.__file__), "*.py"))
             modules = [basename(f)[:-3] for f in modules if isfile(f)
@@ -537,17 +586,109 @@ class ModuleWidget:
 
                 full_module_name = f"{pack.__name__}.{module_name}"
 
-                if expander.checkbox(module_name):
-                    name = module_name.split('.')[-1]
-                    db.BaseDAO.ACTIVE_PIPELINE = name
-                    st.markdown(f"# {name}")
-                    self.execute(full_module_name)
+                yield full_module_name, module_name, pack_name
 
-                yield full_module_name
+    def execute(self):
 
-    @staticmethod
-    def execute(module_name):
-        run_module(module_name)
+        modules_by_pack = defaultdict(list)
+        modules_by_id = {}
+        for full_module_name, module_name, pack_name in self.get_modules_interactive():
+            modules_by_pack[pack_name] += [(full_module_name, module_name, pack_name)]
+            modules_by_id[full_module_name] = [module_name, pack_name]
+
+        menu_data = [
+            {
+                'label': pack_name,
+                'submenu': [
+                    {
+                        'label': module_name,
+                        "id": full_module_name
+
+                    }
+                    for full_module_name, module_name, pack_name
+                    in pack
+                ]
+
+            }
+            for pack_name, pack
+            in modules_by_pack.items()
+        ]
+
+        over_theme = {'txc_inactive': '#FFFFFF'}
+        over_theme = {
+            'txc_inactive': '#000000',
+            'menu_background': '#FFFFFF',
+            'txc_active': 'lightblue',
+            # 'option_active':'blue'
+        }
+
+        menu_id = hc.nav_bar(menu_definition=menu_data, override_theme=over_theme, sticky_nav=True, home_name="Home")
+
+        if menu_id in modules_by_id:
+            # if "centered" != st.session_state.layout:
+            #    st.session_state.layout = "centered"
+            #    st.experimental_rerun()
+
+            name, full_name = modules_by_id[menu_id]
+            db.BaseDAO.ACTIVE_PIPELINE = name
+            st.markdown(f"# {name}")
+            run_module(menu_id)
+
+        if menu_id == "Home":
+            # if "wide" != st.session_state.layout:
+            #    st.session_state.layout = "wide"
+            #    st.experimental_rerun()
+
+            BodyWidget()
+
+        with st.sidebar:
+            package_path = db.ModulePathDAO().get()
+
+            st.write("---")
+            with st.expander("🞥 Add functionality"):
+                upload_widget = st.empty()
+                with upload_widget:
+                    uploader = FileUpload(
+                        str(package_path), f"Upload package", ".zip",
+                        help="Add functionality by uploading zipped python packages. "
+                        # "The python packages can contain arbitrary python scripts."
+                        # "After uploading a package, all its contents will be added to the menu."
+                        # "Clicking on a script in the menu will import and execute that script. "
+                        # "Hence, preferably you add stremalit scripts that run on import."
+                    )
+
+                if st.button(f"Upload package"):
+                    uploader.start()
+
+            # st.write("---")
+            with st.expander("⚙ Settings"):
+                db.ModulePathDAO().edit_widget()
+                db.LogPathDAO().edit_widget()
+                db.DataPathDAO().edit_widget()
+
+                st.write("---")
+                st.write("### Reset")
+                if st.button(
+                        f"Reset Presets",
+                        help=f"Resets {db.BaseDAO.ACTIVE_PIPELINE}"
+                ):
+                    config.PresetListDAO().reset()
+                    config.ActivePresetDAO().reset()
+                    config.ModelDAO().reset()
+                    config.ConfigDAO().reset()
+
+                st.write("---")
+                st.write("### Versions")
+
+                from mavis import __version__
+                import tensorflow
+
+                versions = pd.DataFrame([
+                    {f"Version": f"{__version__}"},
+                    {f"Version": f"{tensorflow.__version__}"}
+                ], index=["Mavis", "Tensorflow"])
+
+                st.write(versions)
 
 
 class ExportWidget:

@@ -17,25 +17,18 @@ import streamlit as st
 from PIL import Image
 from dill import Pickler, Unpickler
 
-# HACK This only works when we've installed streamlit with pipenv, so the
-# permissions during install are the same as the running process
-
-STREAMLIT_STATIC_PATH = Path(st.__path__[0]) / 'static'
-DOWNLOADS_PATH = (STREAMLIT_STATIC_PATH / "downloads")
-# We create a downloads directory within the streamlit static asset directory
-# and we write output files to it
-DOWNLOADS_PATH.mkdir(exist_ok=True)
-
 # Use dill for shelve to be able to pickle more complex objects
 shelve.Pickler = Pickler
 shelve.Unpickler = Unpickler
 
-# Use session state hack for login
+# Use session state for login
 from ui.sessionstate import get
 
 
 def credential_path():
-    return str(DataPathDAO().get() / "login")
+    path = DataPathDAO().get() / "login"
+    path.mkdir(parents=True, exist_ok=True)
+    return str(path)
 
 
 def projects_path():
@@ -47,6 +40,7 @@ def projects_path():
 def project_path(name):
     path = DataPathDAO().get() / get(username="default") / name
     path.mkdir(parents=True, exist_ok=True)
+    path = path.resolve()
     return str(path)
 
 
@@ -67,10 +61,11 @@ def workflow_path():
 
 
 def config_path():
-    username = "default" # get(username="default")
+    username = "default"  # get(username="default")
     path = Path("data") / "config" / username
     path.mkdir(exist_ok=True, parents=True)
-    return str(path / "CONFIG")
+    res = str(path / "CONFIG")
+    return res
 
 
 def log_path():
@@ -177,7 +172,9 @@ class DFDAO(BaseDAO):
                     db["df"] = pd.DataFrame({})
 
                 df = db["df"]
-        st.success("Success. Press **`R`** to reload.")
+        # st.success("Success. Press **`R`** to reload.")
+        # st.button("Refresh")
+        # st.write(df)
         return df
 
     def check_len(self, df1, df2):
@@ -234,6 +231,8 @@ class ProjectDAO(BaseDAO):
         return all_projects
 
     def add(self, name, overwrite=False):
+        st.write(f"Opening {config_path()}")
+
         with shelve.open(config_path()) as c:
             if name in self._project_names():
                 st.info(f"Project {name} already exists")
@@ -241,8 +240,10 @@ class ProjectDAO(BaseDAO):
                     return
             c["Last"] = name
 
+        st.write(f"Opening {project_path(name)}")
         with shelve.open(project_path(name)) as d:
             d["df"] = pd.DataFrame({})
+
         st.info("Created project " + name)
         st.info("Selected project" + name)
         time.sleep(0.1)
@@ -343,7 +344,8 @@ class ModelDAO(SimpleListDAO):
 
     @property
     def default(self):
-        return [Path(current_model_dir()) / f"{datetime.datetime.now():%y%m%d_%H-%M}_{Path(ProjectDAO().get()).stem}.h5"]
+        return [
+            Path(current_model_dir()) / f"{datetime.datetime.now():%y%m%d_%H-%M}_{Path(ProjectDAO().get()).stem}.h5"]
 
 
 class SimpleKeyDAO(BaseDAO):
@@ -377,7 +379,12 @@ class SimpleKeyDAO(BaseDAO):
 
 class LocalFolderBrowserMixin:
     def browse(self) -> None or Path:
-        clicked = st.button('Select Folder')
+        clicked = st.button(
+            'Select Folder',
+            help="Locally hosted systems can directly access the folder browser here. "
+                 "I.e. when hosted on your local windows machine, "
+                 "it opens the  windows explorer."
+        )
         if clicked:
             root = tk.Tk()
             root.wm_attributes('-topmost', 1)
@@ -414,7 +421,7 @@ class SimplePathDAO(SimpleKeyDAO, ABC, LocalFolderBrowserMixin):
 class ModulePathDAO(SimplePathDAO):
     @property
     def label(self):
-        return "Module Path"
+        return "Packages Path"
 
     @property
     def key(self):
@@ -422,7 +429,7 @@ class ModulePathDAO(SimplePathDAO):
 
     @property
     def default(self):
-        return "pipelines"
+        return str(Path.home() / "mavis" / "packages")
 
 
 class LogPathDAO(SimplePathDAO):
@@ -436,7 +443,7 @@ class LogPathDAO(SimplePathDAO):
 
     @property
     def default(self):
-        return "logs"
+        return str(Path.home() / "mavis" / "logs")
 
 
 class DataPathDAO(SimplePathDAO):
@@ -450,7 +457,7 @@ class DataPathDAO(SimplePathDAO):
 
     @property
     def default(self):
-        return "data"
+        return str(Path.home() / "mavis" / "data")
 
 
 class ActivePresetDAO(SimpleKeyDAO):
@@ -613,4 +620,3 @@ class ConfigDAO:
     def reset(self):
         with shelve.open(config_path()) as db:
             db[self.active] = {}
-

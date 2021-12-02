@@ -57,7 +57,7 @@ def masking(img: tf.Tensor) -> tf.Tensor:
 def decode_img(file_path):
     img = tf.io.read_file(file_path)
     # convert the compressed string to a 3D uint8 tensor
-    img = tf.image.decode_png(img, channels=3)
+    img = tf.image.decode_image(img, channels=3, expand_animations=False)
     img = tf.image.convert_image_dtype(img, tf.float32, saturate=True)
     return img
 
@@ -65,7 +65,7 @@ def decode_img(file_path):
 def process_image_path(file_path):
     # load the raw data from the file as a string
     img = decode_img(file_path)
-    img = resize(img)
+    #img = resize(img)
     return img
 
 

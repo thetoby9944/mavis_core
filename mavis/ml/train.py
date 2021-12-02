@@ -102,12 +102,19 @@ def train_model(
         validation_data if validation_data else train_data,
         steps=ConfigDAO()["VAL_SPLIT"]
     )
-
-    if "iou_score" in model.metrics_names:
+    if "accuracy" in model.metrics_names:
+        loss = 1 - ev[model.metrics_names.index("accuracy")]
+    elif "iou_score" in model.metrics_names:
         loss = 1 - ev[model.metrics_names.index("iou_score")]
     elif "rpn_bbox_loss" in model.metrics_names:
         loss = ev[model.metrics_names.index("rpn_bbox_loss")]
-    else:
+    elif len(ev) > 0:
         loss = ev[0]
+    else:
+        st.warning(
+            "No evaluation possible, "
+            "please specify a evaluation metric during compile"
+        )
+        loss = 0
 
     return model, loss

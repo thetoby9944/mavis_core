@@ -252,7 +252,7 @@ class LabelMeJsonWrapper:
 
     def _prepare(self) -> dict:
         """
-        Prepares an empty labelme.json
+        Prepares an empty labelme.json dict
 
         Returns
         -------
