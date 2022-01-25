@@ -2,7 +2,6 @@ import base64
 from io import BytesIO
 
 import PIL
-import cairo
 from PIL import Image
 
 from db import ConfigDAO
@@ -15,16 +14,18 @@ IMAGE_FILETYPE_EXTENSIONS = [".bmp", ".png", ".jpg", ".jpeg", ".tif"]
 FILETYPE_EXTENSIONS = IMAGE_FILETYPE_EXTENSIONS + [".xml", ".json"]
 
 
-def pil(img: np.ndarray, normalize=True):
+def pil(img: np.ndarray, normalize=True, verbose=True):
     """
     Convert any 1 or 3 channel ndarray to uint8 RGB pil image
 
     :param img: ndarray
     :param normalize: Uses a scaler to bring image to [0,255] uint8 first
+    :param verbose: Wethr to print min, max, shape and dtype of image to convert
     :return: pil image
     """
     # Show image values
-    print(np.max(img), np.min(img), img.shape, img.dtype)
+    if verbose:
+        print(np.max(img), np.min(img), img.shape, img.dtype)
 
     # Handle empty dimensions
     img = img.squeeze()
@@ -129,6 +130,8 @@ def image_base64(im):
 
 
 def surface_to_pil(s):
+    import cairo
+
     cario_format = s.get_format()
     if cario_format == cairo.FORMAT_ARGB32:
         pil_mode = 'RGB'

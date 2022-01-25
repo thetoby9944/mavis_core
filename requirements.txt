@@ -5,28 +5,29 @@ xmltodict>=0.12.0
 dill>=0.3.3
 wget>=3.2
 matplotlib>=3.2.2
-plotly
+plotly>=5.5.0
 pandas>=1.2.3
 seaborn>=0.11.1
 Pillow>=8.1.2
 scikit-image>=0.18.1
-opencv-python>=4.5.1
+opencv-python>=4.5.4
 image-quality>=1.2.7
 
-tensorflow-addons==0.12.1
+tensorflow-addons>=0.11.2
 segmentation-models>=1.0.1
 pixellib>=0.6.0
 scikit-learn>=0.24.1
+albumentations>=1.1.0
 
 streamlit>=0.87
 streamlit-drawable-canvas>=0.6.0
 streamlit-pandas-profiling>=0.1.1
 streamlit-aggrid>=0.1.9
 streamlit-labelstudio
-hydralit-components
+hydralit-components>=1.0.6
 label-studio
-
-# tensorflow==2.4 -- install with conda
+python-pptx
+# tensorflow==2.5 -- install with conda
 # pycairo -- install with conda
 #pycairo # convert polgons to segmap
 #pyelastix # registration pipeline

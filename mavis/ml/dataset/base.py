@@ -2,7 +2,7 @@ import imgaug.augmenters as iaa
 import numpy as np
 import streamlit as st
 import tensorflow as tf
-from tensorflow.python.keras.utils.data_utils import Sequence
+from keras.utils.data_utils import Sequence
 
 from config import BasePreset
 from db import ConfigDAO
@@ -191,7 +191,7 @@ class TFDatasetWrapper:
             "Additive Gaussian Noise": iaa.AdditiveGaussianNoise(
                 loc=0,
                 scale=(0.0, ConfigDAO()["AUG_NOISE"]),
-                per_channel=0.1
+                per_channel=False
             ),
             "Color Temperature": iaa.ChangeColorTemperature(),
             # Make some images brighter and some darker.
@@ -199,7 +199,7 @@ class TFDatasetWrapper:
             # which can end up changing the color of the images.
             "Brightness": iaa.Multiply(
                 mul=(1 - ConfigDAO()["AUG_BRIGHTNESS"], 1 + ConfigDAO()["AUG_BRIGHTNESS"]),
-                per_channel=0.1),
+                per_channel=False),
             # Apply affine transformations to each image.
             # Scale/zoom them, translate/move them, rotate them and shear them.
             "Affine Transform": iaa.Affine(

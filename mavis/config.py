@@ -8,9 +8,10 @@ import numpy as np
 import seaborn as sns
 import streamlit as st
 import tensorflow_addons as tfa
-from tensorflow.python.keras.optimizer_v2.adam import Adam
-from tensorflow.python.keras.optimizer_v2.gradient_descent import SGD
-from tensorflow.python.keras.optimizer_v2.learning_rate_schedule import PolynomialDecay, ExponentialDecay
+from keras.optimizer_v2.adam import Adam
+from keras.optimizer_v2.gradient_descent import SGD
+from keras.optimizer_v2.learning_rate_schedule import PolynomialDecay, ExponentialDecay
+from tensorflow_addons.optimizers import SWA, Triangular2CyclicalLearningRate
 
 from db import current_model_dir, ModelDAO, ProjectDAO, PresetListDAO, ActivePresetDAO, ConfigDAO
 
@@ -367,6 +368,17 @@ class Preset(BasePreset):
                     "Discrete Decay (Stepwise)",
                     default_config("staircase", False)
                 )
+            ),
+            "Triangular2CyclicalLearningRate": lambda: Triangular2CyclicalLearningRate(
+                initial_learning_rate=10 ** st.slider(
+                    "Initial Learning Rate (10^x)", -6, 0,
+                    int(np.log10(lr))
+                ),
+                maximal_learning_rate=10 ** st.slider(
+                    "Max Learning Rate (10^x)", -6, 0,
+                    int(np.log10(lr))
+                ),
+                step_size=2*ConfigDAO()["STEPS_PER_EPOCH"]
             )
         }
         scheduler_name = st.selectbox(
@@ -440,7 +452,26 @@ class Preset(BasePreset):
                 ),
                 sync_period=6,
                 slow_step_size=0.5
-            )
+            ),
+            "SWA SGD": lambda:
+                SWA(
+                    optimizer=SGD(
+                        learning_rate=self._learning_rate_block(
+                            default_config("learning_rate", 0.001)
+                        ),
+                        momentum=st.slider(
+                            "Nestervor Momentum", 0., 1.,
+                            default_config("momentum", 0.9)
+                        ),
+                        nesterov=st.checkbox(
+                            "Use Nesterov Momentum",
+                            default_config("nesterov", False)
+                        ),
+                        clipnorm=5.0
+                    ),
+                    average_period=2*ConfigDAO()["STEPS_PER_EPOCH"]
+                )
+
         }
 
         optimizer_name = st.selectbox(
@@ -504,6 +535,7 @@ class Preset(BasePreset):
             all_model_paths.index(self.CONTINUE_TRAINING)
             if self.CONTINUE_TRAINING in all_model_paths else 0
         )
+
     def _output_mask_opts(self):
         self.BINARY = st.checkbox(
             "Check to use Sigmoid Output. Default is Softmax",

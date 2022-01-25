@@ -1,12 +1,13 @@
 import glob
 import pkgutil
 import sys
+import os
 import traceback
 from collections import defaultdict
 from datetime import datetime
 from io import BytesIO
 from os.path import join, dirname, basename, isfile
-from pathlib import Path
+from pathlib import Path, PureWindowsPath, PurePosixPath
 from runpy import run_module
 from zipfile import ZipFile, ZIP_STORED
 
@@ -25,6 +26,7 @@ from pdutils import image_columns
 from pdutils import overwrite_modes, fill_column
 from pilutils import FILETYPE_EXTENSIONS, IMAGE_FILETYPE_EXTENSIONS
 from ui.sessionstate import get
+from v2.ui.processors.ppt import PPTExportWidget
 
 
 def icon(icon_name):
@@ -89,7 +91,8 @@ class FileUpload:
                 target_dir = self.target_dir.resolve()  # / Path(file.name).stem).resolve()
                 target_dir.mkdir(parents=True, exist_ok=True)
                 ZipFile(file).extractall(target_dir)
-                st.info(f"Extracted Archive to host into {target_dir}")
+                st.info(f"Extracted Archive to host into:")
+                st.code(f"{target_dir}")
                 paths += [target_dir]
 
             else:
@@ -224,11 +227,64 @@ class UploadZipWidget:
             target_dir = uploader.start()
             if target_dir:
                 st.warning(f"Use 'import from host' functionality to access desired files")
-                ConfigDAO()["selection"] = str(target_dir / "**" / "**")
+                ConfigDAO()["selection"] = str(target_dir)
+
+
+class ImportHelperWidget:
+    def __init__(self):
+        st.markdown("#### Import Helper")
+        ConfigDAO()["selection"] = st.text_input(
+            "Select Directory to Analyze", ConfigDAO()["selection"],
+            help="Uploads files when mavis is running on a remote server. "
+                 "It will create a new folder under the project with the files."
+        )
+        selection = ConfigDAO()["selection"]
+        folders, sub_dirs, file_types_list = [], [], []
+        preview = st.checkbox("Preview")
+        resolve_existing = st.checkbox("Try to resolve existing columns", True)
+        st.write("###### Detected Folders")
+        for i, (folder, sub_dir, files) in enumerate(os.walk(selection)):
+            file_types = {Path(file).suffix.lower() for file in files}
+            stem = Path(folder).stem
+            st.write(f"Folder `{stem}`: {len(files)} Files {(f'of type {file_types}' if file_types else '')}")
+            image_file_types = set(IMAGE_FILETYPE_EXTENSIONS).intersection(file_types)
+
+            if len(image_file_types) > 0 and preview:
+                st.image(Image.open(next(Path(folder).glob(f"*{list(image_file_types)[0]}"))), width=100)
+            if file_types and st.checkbox(f"Import `{stem}`", key=f"{i}_{stem}"):
+                folders.append(folder)
+                if len(file_types) > 1:
+                    selected_file_types = st.multiselect("Select file types to import", list(file_types))
+                else:
+                    selected_file_types = list(file_types)
+                file_types_list.append(selected_file_types)
+
+        if st.button("Import Paths"):
+            df = DFDAO().get(ProjectDAO().get())
+            for folder, file_types in zip(folders, file_types_list):
+                stem = Path(folder).stem
+                if resolve_existing and stem in df.columns:
+                    df[f"{stem} Resolved"] = df[stem].dropna().apply(
+                        lambda x: str(Path(selection) / (PureWindowsPath(x) if "\\" in str(x) else PurePosixPath(x)))
+                    )
+                    st.info(f"Resolved column **{stem}**")
+
+                else:
+                    files = []
+                    for file_type in file_types:
+                        files.extend((Path(folder).glob(f"*{file_type}")))
+
+                    if ConfigDAO()["sort"]:
+                        files = os_sorted(files)
+
+                    df = fill_column(df, stem, [str(f) for f in files], ConfigDAO()["overwrite_modes"])
+                    st.info(f"Loaded {len(files)} paths from folder **{stem}**")
+
+            DFDAO().set(df, ProjectDAO().get())
 
 
 class FileImportWidget:
-    ConfigDAO()["selection"] = ConfigDAO("/home/**/Desktop/*/*.jpg")["selection"]
+    ConfigDAO()["selection"] = ConfigDAO(current_data_dir())["selection"]
     ConfigDAO()["recursive"] = ConfigDAO(False)["recursive"]
     ConfigDAO()["column"] = ConfigDAO("Images")["column"]
     ConfigDAO()["load_folders_as_columns"] = ConfigDAO(True)["load_folders_as_columns"]
@@ -238,7 +294,7 @@ class FileImportWidget:
     ConfigDAO()["is_sbi"] = ConfigDAO(False)["is_sbi"]
 
     def __init__(self):
-        folder_picker_column, upload_files_column, upload_zip_column, regex_column = st.columns(4)
+        folder_picker_column, upload_files_column, upload_zip_column = st.columns(3)
         with folder_picker_column:
             project = ProjectDAO().get()
             df = DFDAO.get(project)
@@ -249,6 +305,33 @@ class FileImportWidget:
 
         with upload_zip_column:
             UploadZipWidget()
+
+        st.write("---")
+        csv_upload_column, import_helper_column, regex_column = st.columns(3)
+        with csv_upload_column:
+            st.write("#### Upload .csv")
+            csv_args = {
+                "sep": st.text_input("Column Sep.", ";"),
+                "decimal": st.text_input("Decimal Sep", ","),
+                "header": 0
+            }
+            name = Path(ProjectDAO().get()).stem
+            uploaded_file = st.file_uploader(
+                "",
+                type=".csv",
+                help="Upload .csv which contains any information or paths you want to process with Mavis.  \n"
+                     "** WARNING: THIS WILL OVERWRITE THE CURRENT PROJECT **  \n"
+                     "Default encoding of .csv is:  \n"
+                     "- Decimal separator `,` \n"
+                     "- Column separator `;`  \n"
+                     "- header: `1`"
+            )
+            if uploaded_file is not None and st.button("⭱ .csv"):
+                ProjectDAO().add(name, overwrite=True)
+                DFDAO().set(pd.read_csv(uploaded_file, **csv_args), name)
+
+        with import_helper_column:
+            ImportHelperWidget()
 
         with regex_column:
             ImportFromHostWidget()
@@ -341,6 +424,9 @@ class GalleryWidget:
                         if current_ind >= max_index:
                             break
 
+                if st.button(".ppt"):
+                    PPTExportWidget(paths[columns][min_index: max_index])
+
             if is_selectable:
                 with display_options:
                     if flag_column not in df:
@@ -366,7 +452,7 @@ class TableWidget:
         csv_args = {
             "sep": ";",
             "decimal": ",",
-            "header": 0
+            "header": 1
         }
         name = Path(ProjectDAO().get()).stem
 
@@ -488,28 +574,7 @@ class BodyWidget:
 
             with st.expander("🞥 Add Files"):
                 FileImportWidget()
-                st.write("---")
-                with st.columns(4)[0]:
-                    st.write("#### Upload .csv")
-                    csv_args = {
-                        "sep": ";",
-                        "decimal": ",",
-                        "header": 1
-                    }
-                    name = Path(ProjectDAO().get()).stem
-                    uploaded_file = st.file_uploader(
-                        "",
-                        type=".csv",
-                        help="Upload .csv which contains any information or paths you want to process with Mavis.  \n"
-                             "** WARNING: THIS WILL OVERWRITE THE CURRENT PROJECT **  \n"
-                             "Default encoding of .csv is:  \n"
-                             "- Decimal separator `,` \n"
-                             "- Column separator `;`  \n"
-                             "- header: `True`"
-                    )
-                    if uploaded_file is not None and st.button("⭱ .csv"):
-                        ProjectDAO().add(name, overwrite=True)
-                        DFDAO().set(pd.read_csv(uploaded_file, **csv_args), name)
+
             st.write("  \n")
 
             if len(image_columns(df)):

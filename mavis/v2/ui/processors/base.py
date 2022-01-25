@@ -26,7 +26,7 @@ class BaseProcessor:
             class_subset_required=False,
             color_info_required=True,
             preview=True,
-            save_numeric=False
+            save_numeric=False,
     ):
 
         if self.__doc__:
@@ -42,7 +42,7 @@ class BaseProcessor:
         self.new_dir = True
         self.inplace = False
         self.df = DFDAO.get(ProjectDAO().get())
-
+        self.config = None
 
         if input_labels is not None:
             st.markdown("### Data")
@@ -68,6 +68,7 @@ class BaseProcessor:
 
             if class_subset_required:
                 self.class_names, self.class_colors = config.Preset().class_subset_block()
+
 
     def save_new_df(self, df):
         self.df = DFDAO().set(df, ProjectDAO().get())
@@ -120,6 +121,11 @@ class BaseProcessor:
         temp_df = self.df[self.input_columns]
         if dropna_jointly:
             temp_df = temp_df.dropna()
+
+        if hasattr(self.config, "FILTER_COLUMN") and self.config.FILTER_COLUMN is not "":
+            temp_df = self.df[
+                temp_df[self.config.FILTER_COLUMN] == self.config.FILTER_CALSS
+            ]
 
         temp_df.columns = [f"{i}_{c}" for i, c in enumerate(temp_df.columns)]
 

@@ -1,4 +1,4 @@
-from contextlib import nullcontext
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -7,10 +7,10 @@ import tensorflow as tf
 from PIL import Image
 from tensorflow.keras.models import load_model
 
-import config
-from db import ConfigDAO, ActivePresetDAO, PresetListDAO, LogPathDAO, LogDAO
-from ml.train import train_model
-from ui.processors.base import BaseProcessor
+from db import ActivePresetDAO, PresetListDAO, LogPathDAO, LogDAO
+from v2.config import MLConfig
+from v2.ml.train import TrainingHandler
+from v2.ui.processors.base import BaseProcessor
 
 
 class TfModelProcessor(BaseProcessor):
@@ -25,9 +25,11 @@ class TfModelProcessor(BaseProcessor):
         self.save_weights_only = False
         self.dry_run = False
 
+        self.config: Optional[MLConfig] = None
+
     def model_from_path(self, model_path=None):
         if model_path is None:
-            model_path = ConfigDAO()["MODEL_PATH"]
+            model_path = self.config.MODEL.MODEL_PATH
 
         return load_model(model_path, compile=False)
 
@@ -38,7 +40,7 @@ class TfModelProcessor(BaseProcessor):
         n = len(img_paths)
 
         def prog_perc(x):
-            return min(1., x / (n // ConfigDAO()["BATCH_SIZE"] - 1)) if n > ConfigDAO()["BATCH_SIZE"] else 1.
+            return min(1., x / (n // self.config.TRAIN.BATCH_SIZE - 1)) if n > self.config.TRAIN.BATCH_SIZE else 1.
 
         bar = st.progress(0)
         for i, batch in enumerate(ds):
@@ -64,11 +66,14 @@ class TfModelProcessor(BaseProcessor):
                     self.dataset.display_pred(pred)
 
     def train_keras(self, model, ds, val_ds):
-        return train_model(
-            ds, model, val_ds,
+        return TrainingHandler(
+            config=self.config,
+            model=model,
+            train_data=ds,
+            validation_data=val_ds,
             multiprocessing=self.multiprocessing,
             save_weights_only=self.save_weights_only
-        )
+        ).train_model()
 
     def training(self):
         final_model, final_loss = None, np.inf
@@ -78,36 +83,38 @@ class TfModelProcessor(BaseProcessor):
             st.info(f"Loaded preset {ActivePresetDAO().get()}")
             # Create a MirroredStrategy.
             strategy = tf.distribute.MirroredStrategy()
-            scope = (
-                strategy.scope()
-                if ConfigDAO()["ARCHITECTURE"] not in 'Reconstruction'
-                else nullcontext()
-            )
+            scope = strategy.scope()
+            st.write("Loaded Mirrored Strategy")
             st.write(scope)
-            print(f'Number of replicas in sync: {strategy.num_replicas_in_sync}')
-
+            st.write(f'Number of replicas in sync: `{strategy.num_replicas_in_sync}`')
+            st.code(tf.config.get_visible_devices())
+            try:
+                for device in tf.config.list_logical_devices("GPU"):
+                    st.code(tf.config.experimental.get_memory_info(device.name))
+            except Exception as e:
+                st.warning("Cannot display current memory info. Install tf>=2.5 for memory logging")
+                with st.expander("Details"):
+                    st.exception(e)
             # Open a strategy scope in case its not a GAN
-            with scope:
-                # Everything that creates variables should be under the strategy scope.
-                # In general this is only model construction & `compile()`.
+            with st.spinner("Compiling Model"):
+                with scope:
+                    # Everything that creates variables should be under the strategy scope.
+                    # In general this is only model construction & `compile()`.
 
-                base_model = ConfigDAO()["CONTINUE_TRAINING"]
-                if base_model:
-                    model = self.model_from_path(base_model)
-                else:
-                    model = self.models()[0]
+                    base_model = self.config.TRAIN.CONTINUE_TRAINING
+                    if base_model:
+                        model = self.model_from_path(base_model)
+                    else:
+                        model = self.models()[0]
 
-                # Name the model (not relevant for mask rcnn)
-                model._name = ActivePresetDAO().get() + model._name
-                st.code(ConfigDAO().print_preset())
-
-                # First Compile the model, so that all variables for dataset creation have been initialized
-                st.write("compiling model")
-                with st.spinner("Compiling Model"):
-                    model.compile(**self.compile_args())
+                    # Name the model (not relevant for mask rcnn)
+                    model._name = ActivePresetDAO().get() + model._name
+                    with st.expander("Settings"):
+                        st.write(self.config.dict())
+                    # First Compile the model, so that all variables for dataset creation have been initialized
+                    model.compile(**self.config.compile_args())
 
             ### end strategy
-
             self.dataset.create(*self.input_args())
             self.dataset.peek()
 
@@ -127,9 +134,9 @@ class TfModelProcessor(BaseProcessor):
 
             # Every iteration save the best model only
             if self.save_weights_only:
-                final_model.save_weights(ConfigDAO()["MODEL_PATH"])
+                final_model.save_weights(self.config.MODEL.MODEL_PATH)
             else:
-                final_model.save(ConfigDAO()["MODEL_PATH"])
+                final_model.save(self.config.MODEL.MODEL_PATH)
 
         return final_model
 
@@ -151,6 +158,28 @@ class TfModelProcessor(BaseProcessor):
             df = self.inference_store()
             self.save_new_df(df)
 
+    def tensorboard_info(self):
+        import socket
+        st.code(f"tensorboard --logdir {LogPathDAO().get().resolve()} --bind_all serve")
+
+        def get_ip():
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            try:
+                # doesn't even have to be reachable
+                s.connect(('10.255.255.255', 1))
+                IP = s.getsockname()[0]
+            except Exception:
+                IP = '127.0.0.1'
+            finally:
+                s.close()
+            return IP
+
+        st.markdown(
+            f"View tensorboard:  \n "
+            f"[http://{get_ip()}:6006](http://{get_ip()}:6006)  \n"
+            f"[http://127.0.0.1:6006](http://127.0.0.1:6006)"
+        )
+
     def training_block(self):
         preset_names = st.multiselect(
             "Run Training on these Presets",
@@ -158,7 +187,7 @@ class TfModelProcessor(BaseProcessor):
             self.presets
         )
 
-        self.continue_training = ConfigDAO()["CONTINUE_TRAINING"]
+        self.continue_training = self.config.TRAIN.CONTINUE_TRAINING
         # self.inference_after_training = st.checkbox("Run inference after Training", False)
         st.write(
             "Try a dry-run with checking the preset "
@@ -171,17 +200,15 @@ class TfModelProcessor(BaseProcessor):
             if len(self.presets) is 0:
                 st.warning("No presets selected!")
                 return
-
+            self.tensorboard_info()
             if not self.dry_run:
-                LogDAO(self.input_columns, self.column_out).add("Training")
-                st.markdown(f"Started Training. Run tensorboard to see progress.")
-                st.code(f"tensorboard --logdir {LogPathDAO().get().resolve()} --bind_all serve")
-                LogDAO(self.input_columns, self.column_out).add("Dry Run")
+                preset = self.config.dict()
+                LogDAO(self.input_columns, self.column_out, preset).add("Training")
+                LogDAO(self.input_columns, self.column_out, preset).add("Dry Run")
             df = self.training_store()
             self.save_new_df(df)
 
     def run(self):
-        config.Preset().common_model_parameter()
         st.write("--- \n ### Inference")
         # self.inference_parameter()
         self.preview_block(expanded=False)

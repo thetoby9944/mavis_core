@@ -6,8 +6,6 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV TZ=Europe/Kiev
 
-COPY requirements.txt /
-
 # system preparation
 RUN DEBIAN_FRONTEND=noninteractive; \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime \
@@ -21,8 +19,7 @@ RUN DEBIAN_FRONTEND=noninteractive; \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # pip installs
-RUN pip install -r /requirements.txt \
-    && pip install pycairo
+RUN pip install pycairo \
     && pip install mavis_core \
     && rm -rf /root/.cache/pip /tmp/* /var/tmp/*
 

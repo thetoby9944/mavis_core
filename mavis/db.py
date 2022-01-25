@@ -69,7 +69,9 @@ def config_path():
 
 
 def log_path():
-    return str(LogPathDAO().get())
+    path = LogPathDAO().get()
+    path.mkdir(parents=True, exist_ok=True)
+    return str(path / "ACTIVITY_LOGS")
 
 
 def save_df(df, base_path, new_dir, suffix, dir_name=None):
@@ -102,6 +104,7 @@ def save_pil(img, base_path, new_dir, suffix, dir_name=None, stem=None, prefix=N
     p = Path(base_path)
     prefix = "" if not prefix else (prefix + "_")
     stem = p.stem if not stem else stem
+    suffix = "" if suffix is None else suffix
     path = str(maybe_new_dir(p, dir_name, new_dir) / (prefix + stem + suffix))
     img.save(path)
     return path
@@ -203,12 +206,12 @@ class ProjectDAO(BaseDAO):
         ])
         return list(names)
 
-    def get(self):
+    def get(self) -> str:
         """
 
         Returns
         -------
-        pathlib.Path The current project path
+        str(pathlib.Path The current project path)
         """
         with shelve.open(config_path()) as c:
             if "Last" not in c or c["Last"] is None:
@@ -344,8 +347,28 @@ class ModelDAO(SimpleListDAO):
 
     @property
     def default(self):
-        return [
-            Path(current_model_dir()) / f"{datetime.datetime.now():%y%m%d_%H-%M}_{Path(ProjectDAO().get()).stem}.h5"]
+        return [self.new_path]
+
+    def save(
+            self,
+            model, #: tf.keras.models.Model,
+            name: str
+    ):
+        new_path = str(Path(current_model_dir()) / name)
+        if new_path not in self.get_all():
+            self.add(new_path)
+        model.save(new_path, include_optimizer=False)
+        return new_path
+
+    @property
+    def new_path(self) -> Path:
+        return Path(current_model_dir()) / (
+            f"{datetime.datetime.now():%y%m%d_%H-%M}_"
+            f"{Path(ProjectDAO().get()).stem}.h5"
+        )
+
+    def save_new(self, model):  # : tf.keras.models.Model):
+        return self.save(model, self.new_path.name)
 
 
 class SimpleKeyDAO(BaseDAO):
@@ -555,12 +578,14 @@ class WorkflowDAO:
 
 
 class LogDAO:
-    def __init__(self, inputs=None, outputs=None):
+    def __init__(self, inputs=None, outputs=None, preset=None):
+        if preset is None:
+            preset = ConfigDAO().preset_dict()
         self.logdata = {
             "User": st.session_state.username,
             "Project": Path(ProjectDAO().get()).stem,
             "Preset": ActivePresetDAO().get(),
-            "Preset Values": ConfigDAO().preset_dict(),
+            "Preset Values": preset,
             "Activity": BaseDAO.ACTIVE_PIPELINE,
             "Time": datetime.datetime.now(),
             "Inputs": inputs,
@@ -608,10 +633,15 @@ class ConfigDAO:
     def preset_dict(self):
         with shelve.open(config_path()) as db:
             config = db[self.active]
-            return {
-                k: v.get_config() if k == "OPTIMIZER" and v is not None else v
-                for k, v in config.items() if "__" not in k and k.isupper()
-            }
+            items = dict(config)
+            for k, v in items.items():
+                if not isinstance(k, str):
+                    config.pop(k)
+            db[self.active] = config
+        return {
+            k: v.get_config() if k == "OPTIMIZER" and v is not None else v
+            for k, v in config.items() if isinstance(k, str) and k.isupper() and "__" not in k
+        }
 
     def print_preset(self):
         formatted = pprint.pformat(self.preset_dict())
@@ -620,3 +650,4 @@ class ConfigDAO:
     def reset(self):
         with shelve.open(config_path()) as db:
             db[self.active] = {}
+

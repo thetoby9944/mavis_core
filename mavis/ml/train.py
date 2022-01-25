@@ -6,7 +6,7 @@ from pathlib import Path
 
 import streamlit as st
 import tensorflow as tf
-from tensorflow.python.keras.callbacks import EarlyStopping, ReduceLROnPlateau
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 
 from db import ProjectDAO, LogPathDAO, ConfigDAO, ActivePresetDAO
 from ml.callbacks import CheckPoint
@@ -30,9 +30,10 @@ def train_model(
     # local import to avoid circular
 
     log_dir = str(
-        Path(LogPathDAO().get())
-        / ProjectDAO().get()
-        / f'{datetime.now().strftime("%Y%m%d-%H%M%S")}-{model.name}'
+        Path(LogPathDAO().get()) /
+        "tensorboard" /
+        ProjectDAO().get() /
+        f'{datetime.now().strftime("%Y%m%d-%H%M%S")}-{model.name}'
     )
     tensorboard = tf.keras.callbacks.TensorBoard(log_dir=log_dir)
 

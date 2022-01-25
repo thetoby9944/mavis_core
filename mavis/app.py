@@ -1,12 +1,19 @@
 import base64
 import os
+import re
 from pathlib import Path
-
-import tensorflow as tf
 
 
 def init_streamlit():
     import streamlit as st
+    from pathlib import Path
+    import sys
+
+    prefer_local_install = Path("..").resolve(strict=True).__str__()
+    if prefer_local_install not in sys.path:
+        sys.path.insert(0, prefer_local_install)
+        print(sys.path)
+
 
     if not hasattr(st.session_state, "layout"):
         st.session_state.layout = "wide"
@@ -72,6 +79,14 @@ def init_streamlit():
     #st.markdown(decoration_bar_style, unsafe_allow_html=True)
     #st.markdown(nav_bar_style, unsafe_allow_html=True)
 
+    st.markdown(
+        """
+        <Style>
+            img {image-rendering: pixelated;}
+        </Style>
+        """,
+        unsafe_allow_html=True
+    )
 
 def init_tensorflow():
     """
@@ -85,8 +100,13 @@ def init_tensorflow():
             os.environ["CUDA_VISIBLE_DEVICES"]="-1"
 
     """
+    os.environ['TF_KERAS'] = '1'
 
+    import subprocess
+    import platform
     # tf.compat.v1.enable_eager_execution()
+
+    import tensorflow as tf
 
     gpus = tf.config.experimental.list_physical_devices('GPU')
     if gpus:
@@ -102,7 +122,49 @@ def init_tensorflow():
             print(e)
 
 
+    def process_exists(process_name):
+        '''
+        Check if process currently exists in OS System Takslist
+        '''
+        current_platform = platform.system()
+        if current_platform == "Windows":
+            call = 'TASKLIST /FI "IMAGENAME eq ' + process_name + '"'
+            run_obj = subprocess.run(call, capture_output=True)
+            if re.search(process_name,
+                         run_obj.stdout.decode('utf-8', 'backslashreplace')):
+                return True
+            else:
+                return False
+        else:
+            p = subprocess.Popen(['ps', '-A'], stdout=subprocess.PIPE)
+            out, err = p.communicate()
+            out = out.decode('utf-8', 'backslashreplace')
+            for line in out.splitlines():
+                if process_name in line:
+                    return True
+            return False
+
+    from db import LogPathDAO
+    logs_base_dir = str(LogPathDAO().get().resolve())
+
+    if process_exists('tensorboard.exe'):
+        pass
+    elif process_exists('tensorboard'):
+        pass
+    else:
+        print("launch tensorboard process...")
+        subprocess.Popen(
+            args=["tensorboard", "--logdir", logs_base_dir, "--bind_all", "serve"]
+        )
+
+
 def run():
+    """
+    Run function in case you want to start mavis from within a python function
+    Returns
+    -------
+
+    """
     dirname = Path(__file__).parent
     filename = 'app.py'
 
@@ -111,22 +173,16 @@ def run():
     os.chdir(dirname)
     print("Running streamlit from", os.getcwd())
 
-    os.system("streamlit run app.py")
+    os.system(f"streamlit run {filename}")
 
 
 if __name__ == "__main__":
-    from pathlib import Path
-    import sys
 
     init_streamlit()
     init_tensorflow()
 
-    prefer_local_install = Path("..").resolve(strict=True).__str__()
-    if prefer_local_install not in sys.path:
-        sys.path.insert(0, prefer_local_install)
-        print(sys.path)
-
-    from ui.widgets import LoginWidget, ModuleWidget
+    from v2.ui.widgets import LoginWidget, ModuleWidget
 
     if LoginWidget().check():
         ModuleWidget().execute()
+
