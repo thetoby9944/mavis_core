@@ -3,9 +3,10 @@ import os
 import re
 from pathlib import Path
 
+import streamlit as st
+
 
 def init_streamlit():
-    import streamlit as st
     from pathlib import Path
     import sys
 
@@ -14,17 +15,11 @@ def init_streamlit():
         sys.path.insert(0, prefer_local_install)
         print(sys.path)
 
-
-    if not hasattr(st.session_state, "layout"):
-        st.session_state.layout = "wide"
-
     st.set_page_config(
-        page_title="Mavis",
-        page_icon="assets/images/icon.png",
-        layout=st.session_state.layout,
+        page_title="MAVIS",
+        page_icon="assets/images/M_icon.png",
+        layout="wide"
     )
-    st.sidebar.image("assets/images/logo.svg", output_format="JPG", width=300)
-    # st.sidebar.code(f"\t\t\t  {__version__}")
 
     def get_base64(bin_file):
         with open(bin_file, 'rb') as f:
@@ -44,20 +39,13 @@ def init_streamlit():
         </style>
     '''
 
-
     nav_bar_style = """
-    <style>
-    div[data-stale="false"] > iframe[title="hydralit_components.NavBar.nav_bar"] {
-    position: fixed;
-    width: 100%;
-    z-index: 1000 !important;
-    box-sizing: border-box;
-    top: 0;
-    left: 00px;
-}
-    </style>
+        <style>
+            div[data-stale="false"] > iframe[title="hydralit_components.NavBar.nav_bar"] {
+            border-radius: 10px;
+        }
+        </style>
     """
-
 
     decoration_bar_style = '''
         <style>
@@ -76,18 +64,81 @@ def init_streamlit():
         </style>
     '''
 
-    #st.markdown(decoration_bar_style, unsafe_allow_html=True)
-    #st.markdown(nav_bar_style, unsafe_allow_html=True)
+    sidebar_stlye = '''
+        <style>
+        [data-testid="stSidebar"][aria-expanded="true"] > div:first-child {
+            width: 400px;
+        }
+        [data-testid="stSidebar"][aria-expanded="false"] > div:first-child {
+            width: 400px;
+            margin-left: -400px;
+        }
+        </style>
+    '''
 
-    st.markdown(
-        """
-        <Style>
-            img {image-rendering: pixelated;}
-        </Style>
-        """,
-        unsafe_allow_html=True
-    )
+    image_rendering_style = """
+    <Style>
+        img {image-rendering: pixelated;}
+    </Style>
+    """
 
+    menu_gradient_style = """
+    <Style>
+        :root{
+            --primary-color: blue;
+        }
+    </Style>
+    """
+
+    for style in [
+        # decoration_bar_style,
+        nav_bar_style,
+        sidebar_stlye,
+        menu_gradient_style,
+        image_rendering_style,
+    ]:
+        st.markdown(style, unsafe_allow_html=True)
+
+    with st.sidebar:
+        st.write("# ")
+        st.image("assets\\images\\MAVIS_logo.png", width=200)
+        st.session_state["settings_placeholder"] = st.empty().container()
+        st.session_state["settings_form_placeholder"] = st.empty().form("FORM")
+
+        st.write("***")
+        st.write("## Machine Learning & Computer Vision")
+        st.write("*Rapid Prototyping and Technology Transfer from Research to Industries*  \n"
+                 "Avoiding duplicate code **`est. 2020`**")
+
+
+def process_exists(process_name):
+    '''
+    Check if process currently exists in OS System Takslist
+    '''
+    import subprocess
+    import platform
+    # tf.compat.v1.enable_eager_execution()
+
+    current_platform = platform.system()
+    if current_platform == "Windows":
+        call = 'TASKLIST /FI "IMAGENAME eq ' + process_name + '"'
+        run_obj = subprocess.run(call, capture_output=True)
+        if re.search(process_name,
+                     run_obj.stdout.decode('utf-8', 'backslashreplace')):
+            return True
+        else:
+            return False
+    else:
+        p = subprocess.Popen(['ps', '-A'], stdout=subprocess.PIPE)
+        out, err = p.communicate()
+        out = out.decode('utf-8', 'backslashreplace')
+        for line in out.splitlines():
+            if process_name in line:
+                return True
+        return False
+
+
+@st.cache()
 def init_tensorflow():
     """
         Tensorflow configuration,
@@ -101,10 +152,6 @@ def init_tensorflow():
 
     """
     os.environ['TF_KERAS'] = '1'
-
-    import subprocess
-    import platform
-    # tf.compat.v1.enable_eager_execution()
 
     import tensorflow as tf
 
@@ -121,29 +168,6 @@ def init_tensorflow():
         except RuntimeError as e:
             print(e)
 
-
-    def process_exists(process_name):
-        '''
-        Check if process currently exists in OS System Takslist
-        '''
-        current_platform = platform.system()
-        if current_platform == "Windows":
-            call = 'TASKLIST /FI "IMAGENAME eq ' + process_name + '"'
-            run_obj = subprocess.run(call, capture_output=True)
-            if re.search(process_name,
-                         run_obj.stdout.decode('utf-8', 'backslashreplace')):
-                return True
-            else:
-                return False
-        else:
-            p = subprocess.Popen(['ps', '-A'], stdout=subprocess.PIPE)
-            out, err = p.communicate()
-            out = out.decode('utf-8', 'backslashreplace')
-            for line in out.splitlines():
-                if process_name in line:
-                    return True
-            return False
-
     from db import LogPathDAO
     logs_base_dir = str(LogPathDAO().get().resolve())
 
@@ -153,8 +177,23 @@ def init_tensorflow():
         pass
     else:
         print("launch tensorboard process...")
+        import subprocess
         subprocess.Popen(
             args=["tensorboard", "--logdir", logs_base_dir, "--bind_all", "serve"]
+        )
+
+
+@st.cache()
+def init_labelstudio():
+    if process_exists('label-studio.exe'):
+        pass
+    if process_exists('label-studio'):
+        pass
+    else:
+        print("launch label-studio process...")
+        import subprocess
+        subprocess.Popen(
+            args=["label-studio"]
         )
 
 
@@ -177,12 +216,14 @@ def run():
 
 
 if __name__ == "__main__":
+    import streamlit as st
 
     init_streamlit()
     init_tensorflow()
+    init_labelstudio()
 
-    from v2.ui.widgets import LoginWidget, ModuleWidget
+    from mavis.ui.widgets.main import ModuleWidget
+    from mavis.ui.widgets.login import LoginWidget
 
     if LoginWidget().check():
         ModuleWidget().execute()
-

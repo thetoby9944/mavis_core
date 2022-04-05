@@ -1,139 +1,93 @@
-import imgaug.augmenters as iaa
+from abc import ABC
+
+import albumentations as A
 import numpy as np
-import streamlit as st
+import segmentation_models as sm
 import tensorflow as tf
 from keras.utils.data_utils import Sequence
 
-from config import BasePreset
-from db import ConfigDAO
-from ml.dataset.preprocessing import auto, prepare_batch, paths_to_image_ds
+from mavis.config import MLConfig
+from mavis.pilutils import pil
+
+auto = tf.data.experimental.AUTOTUNE
 
 
-class DatasetSettings(BasePreset):
-    def __init__(self):
-        self.AUGMENTATIONS = ConfigDAO([])["AUGMENTATIONS"]
-        self.AUG_ROTATE = ConfigDAO("mirror")["AUG_ROTATE"]
-        self.AUG_MIN_JPG_QUALITY = ConfigDAO(65)["AUG_MIN_JPG_QUALITY"]
-        self.AUG_NOISE = ConfigDAO(10)["AUG_NOISE"]
-        self.AUG_CONTRAST_MIN = ConfigDAO(0.7)["AUG_CONTRAST_MIN"]
-        self.AUG_CONTRAST_MAX = ConfigDAO(1.3)["AUG_CONTRAST_MAX"]
-        self.AUG_SATURATION_MIN = ConfigDAO(0.6)["AUG_SATURATION_MIN"]
-        self.AUG_SATURATION_MAX = ConfigDAO(1.6)["AUG_SATURATION_MAX"]
-        self.AUG_BRIGHTNESS = ConfigDAO(0.05)["AUG_BRIGHTNESS"]
-        self.AUG_ZOOM_PERCENT = ConfigDAO(0.1)["AUG_ZOOM_PERCENT"]
-        self.AUG_GAUSS_SIGMA = ConfigDAO(1.)["AUG_GAUSS_SIGMA"]
-        self.AUG_GAUSS_FILTER_RADIUS = ConfigDAO(1)["AUG_GAUSS_FILTER_RADIUS"]
-        self.BUFFER_SIZE = ConfigDAO(1000)["BUFFER_SIZE"]
-        self.RESHUFFLE_EACH_ITERATION = ConfigDAO(False)["RESHUFFLE_EACH_ITERATION"]
-        self.AUG_PROBABILITY = ConfigDAO(0.5)["AUG_PROBABILITY"]
-        self.AUG_RANDOM_ORDER = ConfigDAO(False)["AUG_RANDOM_ORDER"]
+class TFDatasetWrapper(ABC):
+    config: MLConfig = None  # Inject from processor
 
-    def update(self):
-        ConfigDAO()["AUGMENTATIONS"] = self.AUGMENTATIONS
-        ConfigDAO()["AUG_ROTATE"] = self.AUG_ROTATE
-        ConfigDAO()["AUG_MIN_JPG_QUALITY"] = self.AUG_MIN_JPG_QUALITY
-        ConfigDAO()["AUG_NOISE"] = self.AUG_NOISE
-        ConfigDAO()["AUG_CONTRAST_MIN"] = self.AUG_CONTRAST_MIN
-        ConfigDAO()["AUG_CONTRAST_MAX"] = self.AUG_CONTRAST_MAX
-        ConfigDAO()["AUG_SATURATION_MIN"] = self.AUG_SATURATION_MIN
-        ConfigDAO()["AUG_SATURATION_MAX"] = self.AUG_SATURATION_MAX
-        ConfigDAO()["AUG_BRIGHTNESS"] = self.AUG_BRIGHTNESS
-        ConfigDAO()["AUG_ZOOM_PERCENT"] = self.AUG_ZOOM_PERCENT
-        ConfigDAO()["AUG_GAUSS_SIGMA"] = self.AUG_GAUSS_SIGMA
-        ConfigDAO()["AUG_GAUSS_FILTER_RADIUS"] = self.AUG_GAUSS_FILTER_RADIUS
-        ConfigDAO()["BUFFER_SIZE"] = self.BUFFER_SIZE
-        ConfigDAO(False)["RESHUFFLE_EACH_ITERATION"] = self.RESHUFFLE_EACH_ITERATION
-        ConfigDAO()["AUG_PROBABILITY"] = self.AUG_PROBABILITY
-        ConfigDAO()["AUG_RANDOM_ORDER"] = self.AUG_RANDOM_ORDER
+    @staticmethod
+    def py_unet_preprocessing(img: tf.Tensor) -> tf.Tensor:
+        if np.min(img) < 0:
+            img -= np.min(img)
+        return sm.get_preprocessing("resnet50")(img)
 
-    def _augmentation_parameter_block(self, model_processor):
-        st.markdown("### Data Augmentation")
-        all_aug = list(model_processor.all_augmentations.keys())
-        if st.button("Add all"):
-            self.AUGMENTATIONS = all_aug
-        self.AUGMENTATIONS = st.multiselect(
-            "Data Augmentations",
-            all_aug,
-            [a for a in self.AUGMENTATIONS if a in all_aug]
-        )
-        rotate_opts = ["constant", "edge", "symmetric", "reflect", "wrap"]
-        self.AUG_ROTATE = st.selectbox(
-            "Void Area Treatment. Extend border values:",
-            rotate_opts,
-            rotate_opts.index(self.AUG_ROTATE)
-            if self.AUG_ROTATE in rotate_opts
-            else 0
-        )
-        self.AUG_SATURATION_MIN = st.slider(
-            "Random Saturation - Minimum multiplier", 0., 1.,
-            self.AUG_SATURATION_MIN
-        )
-        self.AUG_SATURATION_MAX = st.slider(
-            "Random Saturation - Maximum multiplier", 1., 2.,
-            self.AUG_SATURATION_MAX
-        )
-        self.AUG_BRIGHTNESS = st.slider(
-            "Random Brightness - Maximum deviation in percent", 0., 1.,
-            self.AUG_BRIGHTNESS
-        )
-        self.AUG_CONTRAST_MIN = st.slider(
-            "Random Contrast - Minimum multiplier", 0., 1.,
-            self.AUG_CONTRAST_MIN
-        )
-        self.AUG_CONTRAST_MAX = st.slider(
-            "Random Contrast - Maximum multiplier", 1., 2.,
-            self.AUG_CONTRAST_MAX
-        )
-        self.AUG_MIN_JPG_QUALITY = st.slider(
-            "JPG Quality - Minimum Percentage", 0, 100,
-            self.AUG_MIN_JPG_QUALITY
-        )
-        self.AUG_NOISE = st.slider(
-            "Random Noise - Std. Deviation in pixel values", 0, 255,
-            self.AUG_NOISE
-        )
-        self.AUG_ZOOM_PERCENT = st.slider(
-            "Zoom Percentage - Maximum Zoom / Crop multiplier", 0., 1.,
-            self.AUG_ZOOM_PERCENT
-        )
-        self.AUG_GAUSS_FILTER_RADIUS = st.slider(
-            "Gauss Filter Radius", 0, 3,
-            self.AUG_GAUSS_FILTER_RADIUS
-        )
-        self.AUG_GAUSS_SIGMA = st.slider(
-            "Gauss Std Dev. of Sigma Value", 0., 3.,
-            self.AUG_GAUSS_SIGMA
-        )
-        self.AUG_RANDOM_ORDER = st.checkbox(
-            "Random order of Data Augmentations",
-            self.AUG_RANDOM_ORDER
-        )
-        self.AUG_PROBABILITY = st.slider(
-            "Probability factor for each augmentation to be applied", 0., 1.,
-            self.AUG_PROBABILITY
-        )
+    @staticmethod
+    def resnet_preprocess_img(img: tf.Tensor) -> tf.Tensor:
+        img = tf.py_function(TFDatasetWrapper.py_unet_preprocessing, [img], tf.float32)
+        img.set_shape([None for _ in range(3)])
+        return img
 
-    def _advanced_training_duration_parameter_block(self):
-        self.RESHUFFLE_EACH_ITERATION = st.checkbox(
-            "Reshuffle between epochs.",
-            self.RESHUFFLE_EACH_ITERATION,
-            help="If selected, the training dataset will be re-shuffled between epochs. "
-                 "This is additionally to shuffling at the beginning. "
-                 "Validation data will be left out form shuffling. "
-                 "Depending on the buffer size, this may take a while."
-        )
-        self.BUFFER_SIZE = st.number_input(
-            "Shuffle Buffer Size. 1 - no shuffling", 1, 100 * 1000,
-            int(self.BUFFER_SIZE)
-        )
+    @staticmethod
+    def pad_image_to_divisor(image: tf.Tensor, divisor=64) -> tf.Tensor:
+        """
+        Pads width and height with zeros to make them multiples of `divisor`.
+        E.g. The multiple of 64 is needed to ensure smooth scaling of feature
+        maps up and down a-6 leveled Encoder (2**6=64).
 
-    @BasePreset.access("Dataset Settings")
-    def dataset_options(self, processor):
-        self._advanced_training_duration_parameter_block()
-        self._augmentation_parameter_block(processor)
+        Returns:
+            image: the resized image
+            window: (y1, x1, y2, x2). Padding might
+                be added to the returned image. If so, this window is the
+                coordinates of the image part of the full image (excluding
+                the padding). The x2, y2 pixels are not included.
+            scale: The scale factor used to resize the image
+            padding: Padding added to the image [(top, bottom), (left, right), (0, 0)]
+        """
+        # Keep track of image dtype and return results in the same dtype
 
+        h, w = tf.shape(image)[0], tf.shape(image)[1]
+        # Both sides must be divisible by 64
+        # Height
+        if h % divisor > 0:
+            bottom_pad = divisor - (h % divisor)
+        else:
+            bottom_pad = 0
+        # Width
+        if w % divisor > 0:
+            right_pad = divisor - (w % divisor)
+        else:
+            right_pad = 0
+        padding = [(0, bottom_pad), (0, right_pad), (0, 0)]
+        # window = (0, 0, h, w)
+        image = tf.pad(image, padding, mode='constant', constant_values=0)
+        return image
 
-class TFDatasetWrapper:
+    @staticmethod
+    def decode_img(file_path):
+        img = tf.io.read_file(file_path)
+        # convert the compressed string to a 3D uint8 tensor
+        img = tf.image.decode_image(img, channels=3, expand_animations=False)
+        img = tf.image.convert_image_dtype(img, tf.float32, saturate=True)
+        return img
+
+    @staticmethod
+    def process_image_path(file_path):
+        # load the raw data from the file as a string
+        img = TFDatasetWrapper.decode_img(file_path)
+        # img = resize(img)
+        return img
+
+    @staticmethod
+    def prepare_batch(ds: tf.data.Dataset, batch_size=1) -> tf.data.Dataset:
+        ds = ds.batch(batch_size)
+        # `prefetch` lets the dataset fetch batches in the background while the model is training.
+        ds = ds.prefetch(buffer_size=auto)
+        return ds
+
+    @staticmethod
+    def paths_to_image_ds(paths):
+        return paths.map(TFDatasetWrapper.process_image_path, num_parallel_calls=auto)
+
     def __init__(self, *args, **kwargs):
         # List of tensorflow functions to preprocess labels
         self.label_preprocessing = []
@@ -145,93 +99,22 @@ class TFDatasetWrapper:
         self.val_ds = None
         # Whether labels are augmented (e.g. masks)
         self.augment_label = True
-        # ImgAug sequential pipeline
-        self.iaa = None
-        self.border_mode = ConfigDAO()["AUG_ROTATE"] if ConfigDAO()["AUG_ROTATE"] in {
-            "constant", "edge", "symmetric", "reflect", "wrap"
-        } else "constant"
-
-        DatasetSettings().dataset_options(self)
 
     @property
-    def all_augmentations(self):
-        return {
-            "Random Crop": iaa.CropToFixedSize(
-                width=ConfigDAO()["SIZE"],
-                height=ConfigDAO()["SIZE"]
-            ),
-            "Flip Left Right": iaa.Fliplr(1),
-            "Flip Up Down": iaa.Flipud(1),
-            # random crops
-            "Crop (Zoom In)": iaa.CropAndPad(
-                sample_independently=False,
-                percent=(-ConfigDAO()["AUG_ZOOM_PERCENT"], 0),
-            ),
-            "Zoom Out": iaa.CropAndPad(
-                sample_independently=False,
-                percent=(0, ConfigDAO()["AUG_ZOOM_PERCENT"]),
-                pad_mode=self.border_mode
+    def iaa(self) -> A.Compose:
+        """
+        Transform accepts named arguments in __call__ i.e.
+        image = img
+        mask = mask
+        label = label
 
-            ),
-            "Gaussian Blur": iaa.GaussianBlur(
-                sigma=(0.0, ConfigDAO()["AUG_GAUSS_SIGMA"])
-            ),
-            # Strengthen or weaken the contrast in each image.
-            "Contrast": iaa.LinearContrast(
-                alpha=(ConfigDAO()["AUG_CONTRAST_MIN"], ConfigDAO()["AUG_CONTRAST_MAX"])
-            ),
-            "JPG Compression": iaa.JpegCompression(
-                compression=(0, int(100 - ConfigDAO()["AUG_MIN_JPG_QUALITY"]))
-            ),
-            # Add gaussian noise.
-            # For 50% of all images, we sample the noise once per pixel.
-            # For the other 50% of all images, we sample the noise per pixel AND
-            # channel. This can change the color (not only brightness) of the
-            # pixels.
-            "Additive Gaussian Noise": iaa.AdditiveGaussianNoise(
-                loc=0,
-                scale=(0.0, ConfigDAO()["AUG_NOISE"]),
-                per_channel=False
-            ),
-            "Color Temperature": iaa.ChangeColorTemperature(),
-            # Make some images brighter and some darker.
-            # In 10% of all cases, we sample the multiplier once per channel,
-            # which can end up changing the color of the images.
-            "Brightness": iaa.Multiply(
-                mul=(1 - ConfigDAO()["AUG_BRIGHTNESS"], 1 + ConfigDAO()["AUG_BRIGHTNESS"]),
-                per_channel=False),
-            # Apply affine transformations to each image.
-            # Scale/zoom them, translate/move them, rotate them and shear them.
-            "Affine Transform": iaa.Affine(
-                # scale={"x": (0.8, 1.2), "y": (0.8, 1.2)},
-                # translate_percent={"x": (-0.2, 0.2), "y": (-0.2, 0.2)},
-                rotate=(-180, 180),
-                # shear=(-8, 8)
-                mode=self.border_mode
-            ),
-            "Invert Blend": iaa.BlendAlphaMask(
-                iaa.InvertMaskGen(0.5, iaa.VerticalLinearGradientMaskGen()),
-                iaa.Clouds()
-            ),
-            "Elastic Transform": iaa.ElasticTransformation(
-                alpha=(0, 10),
-                sigma=(2, 4)
-            )
-
-        }
-
-    def _init_iaa_augmentor(self):
-        self.iaa = iaa.Sequential([
-            iaa.Sometimes(
-                ConfigDAO()["AUG_PROBABILITY"],
-                self.all_augmentations[a]
-            )
-            for a in ConfigDAO()["AUGMENTATIONS"]
-            if a in self.all_augmentations
-        ], random_order=ConfigDAO()["AUG_RANDOM_ORDER"])
+        Returns
+        -------
+        an albumentations composed transform
+        """
+        return self.config.DATASET.AUGMENTATION.get()
 
     def _apply_img_aug(self, img_tensor, lbl_tensor):
-
         lbl_shape = tf.shape(lbl_tensor)
         if self.augment_label:
             lbl_tensor = tf.image.convert_image_dtype(lbl_tensor, tf.uint8)
@@ -248,8 +131,8 @@ class TFDatasetWrapper:
             [img_dtype, lbl_dtype]
         )
 
-        #img_tensor = tf.reshape(img_tensor, shape=tf.shape())
-        #lbl_tensor = tf.reshape(lbl_tensor, shape=lbl_shape)
+        # img_tensor = tf.reshape(img_tensor, shape=tf.shape())
+        # lbl_tensor = tf.reshape(lbl_tensor, shape=lbl_shape)
 
         if self.augment_label:
             lbl_tensor = tf.image.convert_image_dtype(lbl_tensor, tf.float32)
@@ -257,12 +140,10 @@ class TFDatasetWrapper:
 
         return img_tensor, lbl_tensor
 
-    def img_aug(self, image, label):
+    def img_aug(self, image: np.ndarray, label: np.ndarray) -> (np.ndarray, np.ndarray):
         raise NotImplementedError
 
     def augment(self):
-        self._init_iaa_augmentor()
-
         self.ds = self.ds.map(self._apply_img_aug, num_parallel_calls=auto)
 
         for fn in self.label_preprocessing:
@@ -272,24 +153,20 @@ class TFDatasetWrapper:
             self.ds = self.ds.map(lambda x, y: (fn(x), y), num_parallel_calls=auto)
 
     def split_and_batch(self):
-        n_val = ConfigDAO()["VAL_SPLIT"] * ConfigDAO()["BATCH_SIZE"]
+        batch_size = self.config.TRAIN.BATCH_SIZE
+
+        n_val = self.config.TRAIN.VAL_SPLIT
         if n_val != 0:
             self.val_ds = self.ds.take(n_val)
-            self.val_ds = prepare_batch(self.val_ds)
             self.val_ds = self.val_ds.repeat()
+            self.val_ds = self.prepare_batch(self.val_ds, batch_size)
             self.ds = self.ds.skip(n_val)
 
-        if ConfigDAO(False)["RESHUFFLE_EACH_ITERATION"]:
-            self.ds = self.ds.shuffle(
-                buffer_size=ConfigDAO()["BUFFER_SIZE"],
-                reshuffle_each_iteration=True
-            )
-
         self.ds = self.ds.repeat()
-        self.ds = prepare_batch(self.ds)
+        self.ds = self.prepare_batch(self.ds, batch_size)
 
     def create(self, img_paths, labels):
-        # Convert to str if is windows path
+        # Convert to str if paths are windows paths
         img_paths = [str(img_path) for img_path in img_paths]
         if labels is None:
             return self.create_inference(img_paths)
@@ -298,18 +175,49 @@ class TFDatasetWrapper:
 
     def create_inference(self, img_paths) -> (tf.data.Dataset or Sequence):
         """
-        Prepare Inference or Training Dataset, works with classes or segmentation maps
-        If you prepare a training dataset either pass image_label_path_list or class_label_list + CLASS_NAMES
+        Prepare Inference Dataset
         """
         image_paths = tf.data.Dataset.from_tensor_slices(img_paths)
-        ds = paths_to_image_ds(image_paths)
+        ds = self.paths_to_image_ds(image_paths)
+        print("Padding images")
+        ds = ds.map(self.pad_image_to_divisor, num_parallel_calls=auto)
 
+        print("Preprocessing")
         for fn in self.image_preprocessing:
             ds = ds.map(fn, num_parallel_calls=auto)
 
         print("Preparing Batches")
-        self.ds = prepare_batch(ds)
+        self.ds = self.prepare_batch(ds, batch_size=1)
+
         return self.ds
+
+    def peek_augmentation(self):
+        """
+        # TODO use peek during data augmentation pipeline
+        Parameters
+        ----------
+        ds
+
+        Returns
+        -------
+
+        """
+        import streamlit as st
+        for image_batch in self.ds.take(2):
+            batch = image_batch.numpy()
+            st.info(f"Batch Shape: {batch.shape}")
+            for i, img_np in zip(np.arange(20), batch):
+                st.image(
+                    pil(img_np),
+                    use_column_width=True,
+                    output_format="png"
+                )
+                st.info(
+                    f"Image: "
+                    f"Min {np.min(img_np)} "
+                    f"Max {np.max(img_np)} "
+                    f"Shape {img_np.shape}"
+                )
 
     def create_train(self, img_paths, labels) -> None:
         raise NotImplementedError

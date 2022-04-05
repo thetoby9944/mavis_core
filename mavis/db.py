@@ -2,11 +2,11 @@ import datetime
 import glob
 import json
 import os
-import pprint
 import shelve
 import time
 import tkinter as tk
 import traceback
+from time import sleep
 from abc import ABC
 from pathlib import Path
 from tkinter import filedialog
@@ -21,8 +21,22 @@ from dill import Pickler, Unpickler
 shelve.Pickler = Pickler
 shelve.Unpickler = Unpickler
 
-# Use session state for login
-from ui.sessionstate import get
+
+def get(**kwargs):
+    res = []
+    for key, val in kwargs.items():
+        if key not in st.session_state:
+            st.session_state[key] = val
+            sleep(1)
+            assert st.session_state[key] == val
+        res += [st.session_state[key]]
+
+    if len(res) == 0:
+        return st.session_state
+    if len(res) == 1:
+        return res[0]
+    if len(res) >= 1:
+        return tuple(res)
 
 
 def credential_path():
@@ -234,7 +248,7 @@ class ProjectDAO(BaseDAO):
         return all_projects
 
     def add(self, name, overwrite=False):
-        st.write(f"Opening {config_path()}")
+        # st.write(f"Opening {config_path()}")
 
         with shelve.open(config_path()) as c:
             if name in self._project_names():
@@ -243,12 +257,12 @@ class ProjectDAO(BaseDAO):
                     return
             c["Last"] = name
 
-        st.write(f"Opening {project_path(name)}")
+        # st.write(f"Opening {project_path(name)}")
         with shelve.open(project_path(name)) as d:
             d["df"] = pd.DataFrame({})
 
-        st.info("Created project " + name)
-        st.info("Selected project" + name)
+        st.info(f"Created project {name}")
+        st.info(f"Selected project {name}")
         time.sleep(0.1)
 
     def delete(self, name):
@@ -364,7 +378,7 @@ class ModelDAO(SimpleListDAO):
     def new_path(self) -> Path:
         return Path(current_model_dir()) / (
             f"{datetime.datetime.now():%y%m%d_%H-%M}_"
-            f"{Path(ProjectDAO().get()).stem}.h5"
+            f"{Path(ProjectDAO().get()).stem}.tf"
         )
 
     def save_new(self, model):  # : tf.keras.models.Model):
@@ -485,6 +499,10 @@ class DataPathDAO(SimplePathDAO):
 
 class ActivePresetDAO(SimpleKeyDAO):
     @property
+    def label(self):
+        return "Active Preset"
+
+    @property
     def key(self):
         return f"{BaseDAO.ACTIVE_PIPELINE}_active_preset"
 
@@ -558,7 +576,7 @@ class WorkflowDAO:
 
     def iterate(self):
         with shelve.open(workflow_path()) as d:
-            if st.button("Next Pipeline"):
+            if st.button("Next Module"):
                 self.pipeline = (self.pipeline + 1) % len(self.workflow)
                 d["pipeline"] = self.pipeline
 
@@ -579,8 +597,6 @@ class WorkflowDAO:
 
 class LogDAO:
     def __init__(self, inputs=None, outputs=None, preset=None):
-        if preset is None:
-            preset = ConfigDAO().preset_dict()
         self.logdata = {
             "User": st.session_state.username,
             "Project": Path(ProjectDAO().get()).stem,
@@ -591,9 +607,13 @@ class LogDAO:
             "Inputs": inputs,
             "Outputs": outputs,
         }
-        with shelve.open(log_path()) as db:
-            if "logs" not in db:
+        try:
+            with shelve.open(log_path()) as db:
+                logs = db["logs"]
+        except:
+            with shelve.open(log_path()) as db:
                 db["logs"] = []
+                logs = db["logs"]
 
     def add(self, activity_type=None):
         with shelve.open(log_path()) as db:
@@ -630,24 +650,6 @@ class ConfigDAO:
             return self.default
         return config[key]
 
-    def preset_dict(self):
-        with shelve.open(config_path()) as db:
-            config = db[self.active]
-            items = dict(config)
-            for k, v in items.items():
-                if not isinstance(k, str):
-                    config.pop(k)
-            db[self.active] = config
-        return {
-            k: v.get_config() if k == "OPTIMIZER" and v is not None else v
-            for k, v in config.items() if isinstance(k, str) and k.isupper() and "__" not in k
-        }
-
-    def print_preset(self):
-        formatted = pprint.pformat(self.preset_dict())
-        return formatted
-
     def reset(self):
         with shelve.open(config_path()) as db:
             db[self.active] = {}
-

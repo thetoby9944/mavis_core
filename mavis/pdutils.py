@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from pilutils import IMAGE_FILETYPE_EXTENSIONS
+from mavis.pilutils import IMAGE_FILETYPE_EXTENSIONS
 
 overwrite_modes = {
     "opt_w": "Remove Existing Values (Overwrite)",
@@ -31,9 +31,13 @@ def fill_column(df, col, values, overwrite_mode=overwrite_modes["opt_a"]):
 
 
 def file_columns(df, filter_list):
-    x = [col for col in df.columns
-            if any([t in Path(str(df[col][df[col].first_valid_index()])).suffix.lower()
-                    for t in filter_list if df[col].first_valid_index() is not None])]
+    x = [
+        col for col in df.columns
+        if any([
+            t in Path(str(df[col][df[col].first_valid_index()])).suffix.lower()
+            for t in filter_list if df[col].first_valid_index() is not None
+        ])
+    ]
     return x[::-1]
 
 
@@ -47,3 +51,7 @@ def document_columns(df):
 
 def image_and_doc_columns(df):
     return document_columns(df) + image_columns(df)
+
+
+def numeric_columns(df: pd.DataFrame):
+    return list(df.select_dtypes('number').columns.values)[::-1]

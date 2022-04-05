@@ -13,14 +13,15 @@
 
 
 
+
 [theme]
 base="light"
-primaryColor="#0080ec" # Dark blue
+primaryColor="#bd37ba" # "#ff0060" #"#ff00ae" # "#66DDEE"teal  # "#3d3e3f"black # "#FF5757" # RED
 backgroundColor="#ffffff" # White
 secondaryBackgroundColor="#f4f8ff" # Light gray
 textColor="#283d5a" #Black blue
 font="sans serif"
-#M = #04f5e4 cyan
+# secondaryColor = "#04f5e4" # cyan
 
 
 [global]

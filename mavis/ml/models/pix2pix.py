@@ -6,7 +6,7 @@ import tensorflow as tf
 from keras.engine import data_adapter
 from tensorflow.keras.models import load_model
 
-from pilutils import pil
+from mavis.pilutils import pil
 
 
 class Pix2Pix(tf.keras.Model):
@@ -155,7 +155,6 @@ class Pix2Pix(tf.keras.Model):
 
         return tf.keras.Model(inputs=inputs, outputs=x)
 
-    @tf.function
     def train_step(self, data):
         """
         The logic for one training step.
@@ -205,14 +204,13 @@ class Pix2Pix(tf.keras.Model):
 
         return {
             "loss": gen_total_loss,
-            "accuracy": 1-disc_loss,
+            "accuracy": 1 - disc_loss,
             "gen_total_loss": gen_total_loss,
             "gen_l2_loss": gen_l1_loss,
             "gen_gan_los": gen_gan_loss,
             "disc_loss": disc_loss,
         }
 
-    @tf.function
     def test_step(self, data):
         """The logic for one evaluation step.
 
@@ -249,14 +247,13 @@ class Pix2Pix(tf.keras.Model):
 
         return {
             "loss": gen_total_loss,
-            "accuracy": 1-disc_loss,
+            "accuracy": 1 - disc_loss,
             "gen_total_loss": gen_total_loss,
             "gen_l2_loss": gen_l1_loss,
             "gen_gan_los": gen_gan_loss,
             "disc_loss": disc_loss,
         }
 
-    @tf.function
     def predict_step(self, data):
         """The logic for one inference step.
 
@@ -281,12 +278,57 @@ class Pix2Pix(tf.keras.Model):
         x, _, _ = data_adapter.unpack_x_y_sample_weight(data)
         return self.generator(x, training=False)
 
-    def compile(self, **kwargs):
-        super().compile("sgd", "mse", ["accuracy"])
-        self.loss_object = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-        self.generator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
-        self.discriminator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
-        self._is_compiled = True
+    def compile(
+            self,
+            optimizer='rmsprop',
+            loss=None,
+            metrics=None,
+            loss_weights=None,
+            weighted_metrics=None,
+            run_eagerly=None,
+            steps_per_execution=None,
+            **kwargs):
+        from keras.engine import base_layer
+        from keras.engine import compile_utils
+
+        base_layer.keras_api_gauge.get_cell('compile').set(True)
+        with self.distribute_strategy.scope():
+            if 'experimental_steps_per_execution' in kwargs:
+                if not steps_per_execution:
+                    steps_per_execution = kwargs.pop('experimental_steps_per_execution')
+
+            # When compiling from an already-serialized model, we do not want to
+            # reapply some processing steps (e.g. metric renaming for multi-output
+            # models, which have prefixes added for each corresponding output name).
+            from_serialized = kwargs.pop('from_serialized', False)
+
+            self._validate_compile(optimizer, metrics, **kwargs)
+            self._run_eagerly = run_eagerly
+
+            self.optimizer = self._get_optimizer(optimizer)
+            self.compiled_loss = compile_utils.LossesContainer(
+                losses="MSE",
+                loss_weights=loss_weights,
+                output_names=self.output_names
+            )
+            self.compiled_metrics = compile_utils.MetricsContainer(
+                metrics, weighted_metrics, output_names=self.output_names,
+                from_serialized=from_serialized)
+
+            self.loss_object = tf.keras.losses.BinaryCrossentropy(
+                from_logits=True,
+                reduction=tf.keras.losses.Reduction.SUM
+            )
+            self.generator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
+            self.discriminator_optimizer = tf.keras.optimizers.Adam(2e-4, beta_1=0.5)
+
+            self._configure_steps_per_execution(steps_per_execution or 1)
+
+            # Initializes attrs that are reset each time `compile` is called.
+            self._reset_compile_cache()
+            self._is_compiled = True
+
+            self.loss = loss or {}  # Backwards compat.
 
     def _handle_file_path(self, filepath):
         filepath = Path(filepath)
@@ -336,13 +378,6 @@ class Pix2Pix(tf.keras.Model):
         self.discriminator.save(disc_path, include_optimizer=False, **kwargs)
         self.generator.save(gen_path, include_optimizer=False, **kwargs)
 
-
-
-
-
-
-
-
     def predict_old(
             self,
             x,
@@ -356,8 +391,6 @@ class Pix2Pix(tf.keras.Model):
     ):
         print("Started Prediction")
         return self.generator(x).numpy()
-
-
 
     def evaluate_old(
             self,

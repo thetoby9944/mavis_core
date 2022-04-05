@@ -1,14 +1,12 @@
 import base64
 from io import BytesIO
 
+import numpy as np
 import PIL
 from PIL import Image
 
-from db import ConfigDAO
-
 Image.MAX_IMAGE_PIXELS = None
 
-import numpy as np
 
 IMAGE_FILETYPE_EXTENSIONS = [".bmp", ".png", ".jpg", ".jpeg", ".tif"]
 FILETYPE_EXTENSIONS = IMAGE_FILETYPE_EXTENSIONS + [".xml", ".json"]
@@ -48,22 +46,22 @@ def pil(img: np.ndarray, normalize=True, verbose=True):
     return pil_img
 
 
-def to_integer_encoding(path):
+def to_integer_encoding(path, class_colors: list):
     img = Image.open(path).convert("RGB")
     img = np.array(img)
     res = np.zeros_like(img)
-    for i, col in enumerate(ConfigDAO()["CLASS_COLORS"]):
+    for i, col in enumerate(class_colors):
         res[(img == tuple(col)).all(axis=-1)] = (i, 0, 0)
     res = Image.fromarray(res, mode="RGB")
     return res
 
 
-def to_color_encoding(path):
+def to_color_encoding(path, class_colors: list):
     img = Image.open(path).convert("RGB")
     img = np.array(img)
     res = np.zeros_like(img)
-    for i in range(len(ConfigDAO()["CLASS_COLORS"])):
-        res[(img == (i, 0, 0)).all(axis=-1)] = tuple(ConfigDAO()["CLASS_COLORS"][i])
+    for i in range(len(class_colors)):
+        res[(img == (i, 0, 0)).all(axis=-1)] = tuple(class_colors[i])
     res = Image.fromarray(res, mode="RGB")
     return res
 
@@ -72,12 +70,12 @@ def thumbnail_inverse(img, x_min_size, y_min_size):
     if img.size[0] < x_min_size:
         wpercent = (x_min_size / float(img.size[0]))
         hsize = int((float(img.size[1]) * float(wpercent)))
-        img = img.resize((x_min_size, hsize), Image.ANTIALIAS)
+        img = img.resize((x_min_size, hsize), Image.NEAREST)
 
     if img.size[1] < y_min_size:
         hpercent = (y_min_size / float(img.size[1]))
         wsize = int((float(img.size[0]) * float(hpercent)))
-        img = img.resize((wsize, y_min_size), Image.ANTIALIAS)
+        img = img.resize((wsize, y_min_size), Image.NEAREST)
 
     return img
 

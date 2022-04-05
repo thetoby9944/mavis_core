@@ -6,15 +6,10 @@ import cv2
 import cv2 as cv
 import numpy as np
 import pandas as pd
-import streamlit as st
 from PIL import Image
 from scipy.ndimage import gaussian_filter1d as gauss, median_filter
-from skimage.filters import sobel
 from skimage.morphology import skeletonize
 from sklearn.metrics import pairwise_distances_argmin
-
-from pilutils import pil
-from db import ConfigDAO
 
 
 def load_label(path, inverted=False):
@@ -77,6 +72,7 @@ def to_contours(markers,
     :param out_image: Image to draw the contours, if None, no contours are drawn
     :param contour_color: Contour Color
     :param std_dev: Gaussian Smoothing of the contour
+    :param contour_thickness: Contour Thickness in pixel
     :param calculate_properties: Flag whether to calculate opencv contour properties
     :return:
         - modified out_image or None if out_image is None
@@ -195,17 +191,23 @@ def filtered_contours(mask, min_circularity, min_area, max_area, ignore_border_c
     return filtered_cnts, areas, filtered_ext_cnts
 
 
-def color_coded_to_labelme(img_path: Union[Path, str],
-                           seg_map: Union[str, Image.Image],
-                           exclude_classes: str,
-                           save_with_contents=False,
-                           save_full_path=False):
+def color_coded_to_labelme(
+        img_path: Union[Path, str],
+        seg_map: Union[str, Image.Image],
+        exclude_classes: str,
+        class_colors: list,
+        class_names: list,
+        save_with_contents=False,
+        save_full_path=False,
+):
     """
     Converts a coler encdoed image to labelme.json
 
 
     Parameters
     ----------
+    class_colors
+    class_names
     img_path: Path to the image
     seg_map: Segmentation map to the image
     exclude_classes: str, classes to exclude, by name
@@ -217,10 +219,15 @@ def color_coded_to_labelme(img_path: Union[Path, str],
 
     """
     lbl = np.array(seg_map if type(seg_map) == Image else Image.open(seg_map).convert("RGB"))
-    label_me = LabelMeJsonWrapper(img_path, save_with_contents, save_full_path)
+    label_me = LabelMeJsonWrapper(
+        img_path,
+        class_names=class_names,
+        save_with_contents=save_with_contents,
+        save_full_path=save_full_path
+    )
 
-    for i, col in enumerate(ConfigDAO()["CLASS_COLORS"]):
-        if ConfigDAO()["CLASS_NAMES"][i] in exclude_classes:
+    for i, col in enumerate(class_colors):
+        if class_names[i] in exclude_classes:
             continue
         mask = np.zeros(lbl.shape[:-1]).astype(np.uint8)
         mask[(lbl == tuple(col)).all(axis=-1)] = 1
@@ -230,10 +237,13 @@ def color_coded_to_labelme(img_path: Union[Path, str],
 
 
 class LabelMeJsonWrapper:
-    def __init__(self,
-                 path,
-                 save_with_contents=False,
-                 save_full_path=False):
+    def __init__(
+            self,
+            path,
+            class_names,
+            save_with_contents=False,
+            save_full_path=False,
+    ):
         """
         Wrapper for labelme files
 
@@ -243,7 +253,7 @@ class LabelMeJsonWrapper:
         save_with_contents: Wether to save the image as byte string to the labelme.json
         save_full_path: Wether to include the full path. Otherwise relative path is written to labelme.json
         """
-
+        self.class_names = class_names
         self.save_with_contents = save_with_contents
         self.save_full_path = save_full_path
         self.path = path
@@ -288,7 +298,7 @@ class LabelMeJsonWrapper:
         """
         for cnt in external_contours(mask):
             self.labels["shapes"] += [{
-                "label": str(ConfigDAO()["CLASS_NAMES"][class_id]),
+                "label": str(self.class_names[class_id]),
                 "points": np.squeeze(cnt).astype(float).tolist(),
                 "group_id": int(class_id),
                 "shape_type": "polygon",
@@ -342,252 +352,6 @@ class ConnectedComponentSkeletonize(ConnectedComponentCleaner):
         result = cv2.erode(result, self.kernel)
         result = cv2.bitwise_not(result)
         return result
-
-
-class CVProcessor:
-    def __init__(self):
-        self.name = None
-        self.i = None
-        self.opts = None
-        self.selection = None
-        self.opt = None
-
-    def configure_opt(self):
-        st.write(f"--- \n ### Step {self.i + 1}: {self.name}")
-        values = list(self.opts.keys())
-        default = values.index(self.selection) if hasattr(self, "selection") and self.selection in values else 0
-        self.selection = st.selectbox("Type", values, default, key=f"{self.name}{self.i}type")
-        self.opt = self.opts[self.selection]()
-
-    def run(self, gray):
-        gray = np.array(gray.convert("L")).astype(np.uint8)
-        return pil(self.opt(gray))
-
-
-class BlurProcessor(CVProcessor):
-    def __init__(self, i):
-        super().__init__()
-        self.i = i
-        self.name = "Blur"
-        self.m_blur = 5
-        self.g_blur = 5
-        self.opts = {
-            "Median": lambda: self.median_blur_config(),
-            "Gaussian": lambda: self.gaussian_blur_config(),
-        }
-
-    def gaussian_blur_config(self):
-        self.g_blur = st.number_input(
-            "Gaussian Blur Radius",
-            1, 15, (self.g_blur + 1) // 2,
-            key=f"g_blur{self.i}"
-        ) * 2 - 1
-        return self.gaussian_blur
-
-    def median_blur_config(self):
-        self.m_blur = st.number_input(
-            "Median Blur Radius",
-            1, 15, (self.m_blur + 1) // 2,
-            key=f"m_blur{self.i}"
-        ) * 2 - 1
-        return self.median_blur
-
-    def gaussian_blur(self, gray):
-        return cv2.GaussianBlur(gray, (self.g_blur, self.g_blur), sigmaX=0, sigmaY=0)
-
-    def median_blur(self, gray):
-        return cv2.medianBlur(gray, self.m_blur)
-
-
-class MorphProcessor(CVProcessor):
-    class Morph:
-        structuring_element_cv_types = {
-            "Rectangle": cv.MORPH_RECT,
-            "Cross": cv.MORPH_RECT,
-            "Ellipse": cv.MORPH_ELLIPSE
-        }
-
-        morph_type_cv = {
-            "Erosion": cv.MORPH_ERODE,
-            "Dilation": cv.MORPH_DILATE,
-            "Opening": cv.MORPH_OPEN,
-            "Closing": cv.MORPH_CLOSE,
-            "Top-Hat": cv.MORPH_TOPHAT,
-            "Black-Hat": cv.MORPH_BLACKHAT,
-            "Morphological Gradient": cv.MORPH_GRADIENT
-        }
-
-        def __init__(self, i):
-            self.i = i
-            self.kernel_size = 3
-            self.iterations = 1
-            self.structuring_element = list(MorphProcessor.Morph.structuring_element_cv_types.keys())[0]
-            self.morph_type = list(MorphProcessor.Morph.morph_type_cv.keys())[0]
-
-        def configure(self):
-            st.write(f"Morph Operation {self.i + 1}")
-            self.kernel_size = st.slider(
-                "Kernel Radius", 0, 21,
-                self.kernel_size,
-                key=f"kernel_size_{self.i}"
-            )
-            se_values = list(MorphProcessor.Morph.structuring_element_cv_types.keys())
-            se_default = se_values.index(self.structuring_element)
-            self.structuring_element = st.selectbox(
-                "Structuring Element",
-                se_values, se_default,
-                key=f"structuring_element_{self.i}"
-            )
-            self.iterations = st.slider(
-                "Iteration",
-                0, 10, self.iterations,
-                key=f"iterations_{self.i}"
-            )
-            mt_values = list(MorphProcessor.Morph.morph_type_cv.keys())
-            mt_default = mt_values.index(self.morph_type)
-            self.morph_type = st.selectbox(
-                "Morph Type",
-                mt_values, mt_default,
-                key=f"morph_type_{self.i}"
-            )
-
-        def run(self, img):
-            structuring_cv_type = MorphProcessor.Morph.structuring_element_cv_types[self.structuring_element]
-            element = cv.getStructuringElement(
-                structuring_cv_type,
-                (2 * self.kernel_size + 1, 2 * self.kernel_size + 1),
-                (self.kernel_size, self.kernel_size)
-            )
-            return cv.morphologyEx(img, MorphProcessor.Morph.morph_type_cv[self.morph_type], element)
-
-    def __init__(self, i):
-        super().__init__()
-        self.i = i
-        self.name = "Morph"
-        self.n_operations = 0
-        self.morph_operations = []
-        self.opt = self.opt_fn
-
-    def configure_opt(self):
-        st.write(f"### Step {self.i + 1}: {self.name}")
-        self.n_operations = st.slider("Number of Morph Operations", 0, 5, self.n_operations)
-
-        # if st.button("Update Morph operations"):
-        self.morph_operations = [MorphProcessor.Morph(i) for i in range(self.n_operations)]
-
-        for m in self.morph_operations:
-            m.configure()
-
-    def opt_fn(self, gray):
-        for m in self.morph_operations:
-            gray = m.run(gray)
-        return gray
-
-
-class InverterProcessor(CVProcessor):
-    def __init__(self, i):
-        super().__init__()
-        self.i = i
-        self.name = "Invert"
-        self.opt = lambda gray: 255 - gray
-
-    def configure_opt(self):
-        st.write(f"### Step {self.i + 1}: {self.name}")
-
-
-class ThresholdProcessor(CVProcessor):
-    def __init__(self, i):
-        super().__init__()
-        self.i = i
-        self.name = "Threshold"
-        self.threshold = 127
-        self.use_hsv = False
-        self.d_size = 1
-        self.block_size = 5
-        self.opts = {
-            "Binary Thresholding": lambda: self.binary_config(),
-            "Adaptive Gaussian Thresholding": lambda: self.adaptive_gaussian_config(),
-            "OTSU Thresholding": lambda: self.otsu
-        }
-
-    def binary_config(self):
-        self.use_hsv = st.checkbox("Use HSV", self.use_hsv)
-        self.threshold = st.slider(
-            f"Threshold limit",
-            0, 255, self.threshold,
-            key=f"binary_threshold{self.i}"
-        )
-        return self.binary
-
-    def adaptive_gaussian_config(self):
-        self.d_size = st.number_input(
-            "Block Radius",
-            0, 400, self.d_size,
-            key=f"adaptive_threshold{self.i}"
-        )
-        self.block_size = self.d_size * 2 + 1
-        return self.adaptive_gaussian
-
-    def binary(self, gray):
-        ret, gray = cv2.threshold(gray, self.threshold, 255, cv2.THRESH_BINARY)
-        return gray
-
-    def adaptive_gaussian(self, gray):
-        gray = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                     cv2.THRESH_BINARY, self.block_size, 2)
-        return gray
-
-    @staticmethod
-    def otsu(gray):
-        ret, gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        return gray
-
-
-class EdgeProcessor(CVProcessor):
-    def __init__(self, i):
-        super().__init__()
-        self.i = i
-        self.name = "Edge"
-        self.k_size = 5
-        self.upper_threshold = 100
-        self.lower_threshold = 100
-        self.opts = {
-            "Laplacian": lambda: self.lap_config(),
-            "Canny": lambda: self.canny_config(),
-            "Sobel": lambda: self.sob
-        }
-
-    def lap_config(self):
-        self.k_size = st.number_input("Kernel Radius", 0, 255, (self.k_size + 1) // 2, key=f"lks_{self.i}") * 2 - 1
-        return self.laplacian
-
-    def canny_config(self):
-        self.lower_threshold = st.slider("Lower Threshold", 0, 255, self.lower_threshold, key=f"clt_{self.i}"),
-        self.upper_threshold = st.slider("Upper Threshold", 0, 255, self.upper_threshold, key=f"cut_{self.i}")
-        return self.canny
-
-    @staticmethod
-    def normalize(gray):
-        mx = gray.max()
-        mask = gray > 0
-        gray = (gray / mx) * 255
-        gray *= mask
-        return gray
-
-    def laplacian(self, gray):
-        gray = -cv2.Laplacian(gray, cv2.CV_64F, ksize=self.k_size)
-        gray = self.normalize(gray)
-        return gray
-
-    def canny(self, gray):
-        print(gray.shape)
-        gray = cv2.Canny(image=gray, threshold1=self.lower_threshold, threshold2=self.upper_threshold)
-        return gray
-
-    @staticmethod
-    def sob(gray):
-        gray = sobel(gray)
-        return gray
 
 
 def color_compress(np_img, n_bins=4, median_kernel=10):
