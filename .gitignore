@@ -57,5 +57,10 @@ coverage.xml
 *.pot
 
 # Sphinx documentation
-_build/
-autoapi/
+/docs/_build/
+/docs/autoapi/
+
+# Mavis data
+/mavis/data/
+/mavis/logs/
+
