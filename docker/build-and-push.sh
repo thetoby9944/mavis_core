@@ -11,5 +11,3 @@ docker build . --file Dockerfile --tag ${IMAGE_NAME}
 IMAGE=${DOCKERHUB_USERNAME}/${IMAGE_NAME}
 docker tag "${IMAGE_NAME}" "${IMAGE}:${VERSION}"
 docker push "${IMAGE}:${VERSION}"
-
-
