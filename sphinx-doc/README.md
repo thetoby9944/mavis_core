@@ -79,6 +79,7 @@ Now, elements like
 can be used.
 
 
+
 #### The bibliography
 
 The bibliography has been build with sphinx by
