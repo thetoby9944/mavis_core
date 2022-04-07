@@ -4,23 +4,40 @@
    contain the root `toctree` directive.
 
 
-Welcome
-=================================
-
-.. _imgUploadJobs:
-.. figure:: images/logo.png
-   :align: center
-   :alt:
-   :scale: 50 %
+MAVIS
+=====
 
 
+.. include:: gettingstarted/readme.rst
 
 
 .. toctree::
-   :maxdepth: 1
-   :caption: Hidden
+   :maxdepth: 2
+   :caption: MAVIS Documentation
 
+   gettingstarted/index
    userguide/index
    developerguide/index
+   processors/index
    about/index
-   sdk/index
+
+.. toctree::
+   :maxdepth: 4
+   :titlesonly:
+
+   sdk/examples
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -152,6 +152,31 @@ def load_globals(name):
         return d[base_key]
 
 
+def get_df() -> pd.DataFrame:
+    """
+    Get the dataframe of the current project
+    Returns
+    -------
+    (pd.DataFrame) current dataframe
+    """
+    return DFDAO().get(ProjectDAO().get())
+
+
+def set_df(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Set the dataframe of the active project
+
+    Parameters
+    ----------
+    df (pd.DataFrame) the new dataframe
+
+    Returns
+    -------
+    the new dataframe
+    """
+    return DFDAO().set(df, ProjectDAO().get(), allow_loss=True)
+
+
 class BaseDAO:
     ACTIVE_PIPELINE = None
 

@@ -12,8 +12,8 @@
 #
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../../src'))
-
+sys.path.insert(0, os.path.abspath('../mavis'))
+sys.path.insert(0, os.path.abspath('../../modules/'))
 
 
 # -- Project information -----------------------------------------------------
@@ -24,6 +24,10 @@ author = 'Tobias Schiele'
 
 # The full version, including alpha/beta/rc tags
 release = '1.0'
+
+# -- Internationalization ------------------------------------------------
+# specifying the natural language populates some key tags
+language = "en"
 
 
 # -- General configuration ---------------------------------------------------
@@ -50,7 +54,7 @@ extensions = [
 ]
 
 
-# Register markdown file-extensions
+# Map file-extensions to sphinx parser
 source_suffix = {
     '.rst': 'restructuredtext',
     '.txt': 'markdown',
@@ -66,15 +70,24 @@ autoapi_dirs = [
 ]
 autoapi_ignore = []#"*/lib/*", "*/playground/*", "*/model/*", "*/models/*", "*/nima/*", "*/qtclient/*", "*webclient/config*"]
 autoapi_template_dir = '_templates'
-autoapi_add_toctree_entry = True
+autoapi_add_toctree_entry = False
 autoapi_member_order = "groupwise"
 autoapi_keep_files = True
+
+# autodoc_inherit_docstrings = False
 
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', "autoapi/index"]
+exclude_patterns = [
+    '_build',
+    'Thumbs.db',
+    '.DS_Store',
+    "autoapi/index.rst",
+    "requirements.txt",
+    "README.md"
+]
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -83,17 +96,43 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', "autoapi/index"]
 # a list of builtin themes.
 #
 html_theme = "pydata_sphinx_theme"
-html_logo = "images/logo.png"
-
+html_logo = "../mavis/assets/images/MAVIS_logo.png"
+html_favicon = '../mavis/assets/images/M_icon.png'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+html_sidebars = {'index': ["search-field.html", 'sidebar-nav-bs.html']}
 
+
+html_theme_options = {
+    "github_url": "https://github.com/thetoby9944/mavis_core",
+    "icon_links": [
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/mavis_core",
+            "icon": "fas fa-box",
+        },
+    ],
+    "use_edit_page_button": True,
+    "show_toc_level": 2,
+    "show_nav_level": 2,
+    # "search_bar_position": "navbar",  # TODO: Deprecated - remove in future version
+    # "navbar_align": "left",  # [left, content, right] For testing that the navbar items align properly
+    # "navbar_start": ["navbar-logo", "navbar-version"],
+    # "navbar_center": ["navbar-nav", "navbar-version"],  # Just for testing
+    "navbar_end": ["navbar-icon-links"],
+}
+
+html_context = {
+    "github_user": "thetoby9944",
+    "github_repo": "mavis_core",
+    "github_version": "master",
+    "doc_path": "sphinx-doc",
+}
 
 # -- Options for Latex output -------------------------------------------------
-
 
 #latex_docclass = {
 #   'howto': 'ausarbeitung',

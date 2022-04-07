@@ -3,10 +3,14 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Showcases
-=====================================
+SDK
+===
 
-.. The user guide contains an introduction to the application and everything to get you started.
+.. This section displays features and functionality of MAVIS.
+
+Using the mavis SDK
+---------------------------
+
 
 .. toctree::
    :maxdepth: 2
@@ -15,12 +19,10 @@ Showcases
    how
    what
 
+SDK reference documentation
+--------------------------------
 
-.. .. highlights::
-   Test
+.. toctree::
+   :maxdepth: 2
 
-.. .. code-block:: python
-..   this is code
-
-
-
+   ../sdk/index

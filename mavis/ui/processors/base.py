@@ -68,7 +68,7 @@ class BaseProcessor:
             st.warning("Input columns are empty")
             return None, 1
 
-    def preview_block(self, expanded=True) -> None:
+    def preview_block(self, expanded=False) -> None:
         if self.create_preview:
             with st.expander("Preview", expanded):
                 try:
