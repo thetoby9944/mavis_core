@@ -23,14 +23,13 @@ class TfModelProcessor(BaseProcessor, ABC):
     dataset: TFDatasetWrapper = None  # Abstract Field
 
     def __init__(self, *args, **kwargs):
-        self.dataset.config = self.config
-        super().__init__(*args, **kwargs)
         self.continue_training = False
         self.inference_after_training = False
-        # self.presets = []
         self.multiprocessing = True
         self.save_weights_only = False
         self.dry_run = False
+
+        super().__init__(*args, **kwargs)
 
     def model_from_path(self, model_path=None):
         if model_path is None:
@@ -246,6 +245,7 @@ class TfModelProcessor(BaseProcessor, ABC):
             self.save_new_df(df)
 
     def core(self):
+        self.dataset.config = self.config
         st.write("--- \n ### Inference")
         # self.inference_parameter()
         self.preview_block(expanded=False)

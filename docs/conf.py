@@ -66,7 +66,7 @@ source_suffix = {
 autoapi_type = 'python'
 autoapi_dirs = [
     "../mavis",
-    "../../modules/"
+    #"../../modules/"
 ]
 autoapi_ignore = []#"*/lib/*", "*/playground/*", "*/model/*", "*/models/*", "*/nima/*", "*/qtclient/*", "*webclient/config*"]
 autoapi_template_dir = '_templates'

@@ -216,11 +216,9 @@ def run():
 
 
 if __name__ == "__main__":
-    import streamlit as st
-
     init_streamlit()
     init_tensorflow()
-    init_labelstudio()
+    # init_labelstudio()
 
     from mavis.ui.widgets.main import ModuleWidget
     from mavis.ui.widgets.login import LoginWidget
