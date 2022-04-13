@@ -10,4 +10,3 @@ Platform
    why
    how
    what
-   mavis
