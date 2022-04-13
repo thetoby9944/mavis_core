@@ -350,14 +350,15 @@ latex_elements = {
     %
         \includegraphics[scale=0.3]{../../images/hs-aalen.png} 
         % \vskip 0.5cm 
-        \hfill
-        \includegraphics[scale=0.3]{../../images/imfaa-logo.png}
+        % \hfill
+        % \includegraphics[scale=0.3]{../../images/imfaa-logo.png}
         \vskip 2cm
     %
         \begin{flushleft}
             \par \color{darkgray} % \large 
-            Project Proposal\\%
-            Institute of Materials Science
+            Project work in the scope of the dissertation \\%
+            \textit{Transferring Deep Learning Technology to Industry}
+            %Institute of Materials Science
         \end{flushleft}
         \vfill
     %
@@ -367,11 +368,11 @@ latex_elements = {
             \vspace{0mm}
             \begin{figure}[!h]
                 \centering
-                \includegraphics[scale=0.3]{logo.png}
+                \includegraphics[scale=0.3]{MAVIS_logo.png}
             \end{figure}
 
             \par \rule{\textwidth}{0.2pt}
-            \par\Huge\textsc{MAVIS - A user-friendly end-to-end ML-System}%
+            \par\Huge\textsc{MAVIS - A developer-first and user-friendly machine learning and computer vision platform}%
             \par\rule[1ex]{\textwidth}{0.2pt}
             \par \large \color{black}%%		
             \large Tobias Schiele %
@@ -381,8 +382,8 @@ latex_elements = {
     %
         \begin{flushright}\begin{minipage}{0.45\linewidth}
             \par\Large \color{black}
-            \par\large Proposal\\
-            \par\large Supervisor: \\ \large Dr. Timo Bernthaler\\
+            % \par\large Proposal\\
+            % \par\large Supervisor: \\ \large Dr. Timo Bernthaler\\
             % \par\large Examiner: \\ \large\@examinerB\\
             \par
         \end{minipage}\end{flushright}
@@ -396,8 +397,6 @@ latex_elements = {
     %
     \end{titlepage}
     
-    
-    
     \clearpage
     \pagenumbering{roman}
 
@@ -405,6 +404,12 @@ latex_elements = {
     % \pagenumbering{Roman}
     % \hypertarget{abstract}{%
     \section*{Abstract} %\label{abstract}}
+    
+    This work proposes a machine learning and computer vision platform.
+    As opposed to existing platforms, we focus on the developer instead of the end user.
+    To extend this  plain python modules.
+    Thereby, anyone with limited python knowledge. can make use of this project.
+    
     % \addcontentsline{toc}{section}{Abstarct}
 
     
