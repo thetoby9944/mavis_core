@@ -1,5 +1,13 @@
 # Adding your code
 
+!!! note "TL;DR"
+    Plain python modules are something everyone can work with. To add one to mavis install
+    vs-code and run:
+        
+        > code ~/mavis/mavis_modules/My_custom_package/My_new_module.py
+
+## Minimal Example
+
 This guide contains minimal instructions to add your code snippets, notebooks, 
 gists and utils to mavis. 
 First, run Mavis
@@ -15,9 +23,6 @@ E.g.
 ```bash    
 code ~/mavis/mavis_modules
 ```
-
-
-## Minimal Example
 
 
 ```python

@@ -18,11 +18,4 @@ Using the mavis SDK
    why
    how
    what
-
-SDK reference documentation
---------------------------------
-
-.. toctree::
-   :maxdepth: 2
-
-   ../sdk/index
+   mavis

@@ -3,14 +3,13 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-
-.. include:: ../README.rst
-
+MAVIS Documentation
+===================
 
 .. toctree::
    :maxdepth: 2
 
-   self
+   README.rst
    userguide/index
    developerguide/index
    processors/index

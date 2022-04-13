@@ -26,7 +26,7 @@ copyright = '2020, Tobias Schiele'
 author = 'Tobias Schiele'
 
 # The full version, including alpha/beta/rc tags
-release = '1.0'
+release = '0.5.4'
 
 # -- Internationalization ------------------------------------------------
 # specifying the natural language populates some key tags
@@ -362,7 +362,7 @@ latex_elements = {
             \vspace{0mm}
             \begin{figure}[!h]
                 \centering
-                \includegraphics[scale=0.3]{logo.png}
+                \includegraphics[scale=0.3]{MAVIS_logo.png}
             \end{figure}
 
             \par \rule{\textwidth}{0.2pt}

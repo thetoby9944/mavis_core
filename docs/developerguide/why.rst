@@ -1,10 +1,21 @@
 Why we use modules as plugins
 =============================
-Apps is a term for a piece of software that is commonly accessible via a platform.
-Mavis has apps too, they are simply plain python modules.
+
+.. admonition:: TL;DR
+
+    Plain python modules are something everyone can work with. To add one to mavis install
+    vs-code and run:
+
+    .. code-block:: bash
+
+        > code ~/mavis/mavis_modules/My_custom_package/My_new_module.py
+
 
 Philosophy
 -------------
+
+Apps is a term for a piece of software that is commonly accessible via a platform.
+Mavis has apps too, they are simply plain python modules.
 
 MAVIS is written developer first. It's a place for your code.
 You can look at the examples to find inspiration or solve a use case, but ultimately,
@@ -16,7 +27,6 @@ To save you from gray hair, extending mavis is simple as adding a python file.
 
 Benefits
 -------------
-
 
 The easiest way to extend mavis is to open the plugin directory in your favorite IDE.
 This opens all the possibilities which are limited e.g. in notebooks.
