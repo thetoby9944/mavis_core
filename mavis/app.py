@@ -101,7 +101,7 @@ def init_streamlit():
 
     with st.sidebar:
         st.write("# ")
-        st.image("assets\\images\\MAVIS_logo.png", width=200)
+        st.image(Path("assets/images/MAVIS_logo.png"), width=200)
         st.session_state["settings_placeholder"] = st.empty().container()
         st.session_state["settings_form_placeholder"] = st.empty().form("FORM")
 
