@@ -150,12 +150,10 @@ with open(Path("latex/maketitle.tex")) as f:
 
 asset_src = Path("../mavis/assets")
 asset_dst_1 = Path("mavis/assets")
-asset_dst_1.mkdir(parents=True, exist_ok=True)
 asset_dst_2 = Path("assets")
-asset_dst_2.mkdir(parents=True, exist_ok=True)
 
-shutil.copytree(asset_src, asset_dst_1, dirs_exist_ok=True)
-shutil.copytree(asset_src, asset_dst_2, dirs_exist_ok=True)
+shutil.copytree(asset_src, asset_dst_1)
+shutil.copytree(asset_src, asset_dst_2)
 
 latex_documents = [
     (master_doc, 'master.tex', u' MAVIS',
