@@ -8,7 +8,7 @@ MAVIS
 =====
 
 
-.. include:: gettingstarted/readme.rst
+.. include:: README.rst
 
 
 .. toctree::

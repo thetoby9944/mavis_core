@@ -1,4 +1,4 @@
 Getting Started
 ===============
 
-.. include:: readme.rst
+.. include:: ../readme.rst
