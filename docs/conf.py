@@ -164,7 +164,7 @@ latex_documents = [
      u'Tobias Schiele', 'report'), #"report"
 ]
 
-latex_logo = 'images/logo.png'
+latex_logo = 'mavis/assets/images/MAVIS_logo.png'
 latex_engine = 'lualatex'
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
@@ -362,7 +362,7 @@ latex_elements = {
             \vspace{0mm}
             \begin{figure}[!h]
                 \centering
-                \includegraphics[scale=0.3]{MAVIS_logo.png}
+                \includegraphics[scale=0.3]{logo.png}
             \end{figure}
 
             \par \rule{\textwidth}{0.2pt}

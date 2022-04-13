@@ -4,15 +4,13 @@
    contain the root `toctree` directive.
 
 
-MAVIS
-=====
+.. include:: ../README.rst
 
 
 .. toctree::
    :maxdepth: 2
-   :caption: MAVIS Documentation
 
-   gettingstarted/index
+   self
    userguide/index
    developerguide/index
    processors/index
