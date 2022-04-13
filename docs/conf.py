@@ -141,12 +141,6 @@ html_context = {
 #   'howto': 'ausarbeitung',
 #   'manual': 'ausarbeitung',
 #}
-with open(Path("latex/preamble.tex")) as f:
-    preamble = f.read()
-
-with open(Path("latex/maketitle.tex")) as f:
-    make_title = f.read()
-
 
 asset_src = Path("../mavis/assets/images")
 
@@ -356,7 +350,7 @@ latex_elements = {
     %
         \begin{flushleft}
             \par \color{darkgray} % \large 
-            Project work in the scope of the dissertation \\%
+            Work in progress under the scope of the dissertation \\%
             \textit{Transferring Deep Learning Technology to Industry}
             %Institute of Materials Science
         \end{flushleft}
@@ -407,8 +401,16 @@ latex_elements = {
     
     This work proposes a machine learning and computer vision platform.
     As opposed to existing platforms, we focus on the developer instead of the end user.
-    To extend this  plain python modules.
-    Thereby, anyone with limited python knowledge. can make use of this project.
+    Extending this platform is as simple as dropping in plain python modules. 
+    Thereby, anyone with limited python knowledge can make use of this project.
+    
+    Additionally, this platform builds on streamlit.
+    This way, you can extend any of your scripts to a fully customizable app.
+    
+    The main goal of this project is to enable rapid prototyping, reproducible workflows and collaboration.
+    The stakeholders of this project include computer scientists and researchers. 
+    To a certain degree, also end-users can be targeted. This depends on the usability of the apps you develop. 
+    
     
     % \addcontentsline{toc}{section}{Abstarct}
 

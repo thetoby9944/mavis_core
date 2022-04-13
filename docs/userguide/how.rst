@@ -7,7 +7,7 @@ How you can use mavis
    :class: note
 
    .. _imgUploadJobs:
-   .. figure:: images\\magnetz.PNG
+   .. figure:: images/magnetz.PNG
       :align: center
       :alt:
       :scale: 80 %
