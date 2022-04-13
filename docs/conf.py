@@ -155,13 +155,13 @@ asset_dst_2 = Path("assets")
 try:
     shutil.rmtree(asset_dst_1)
     shutil.rmtree(asset_dst_2)
-finally:
+except:
     pass
 
 try:
     shutil.copytree(asset_src, asset_dst_1)
     shutil.copytree(asset_src, asset_dst_2)
-finally:
+except:
     pass
 
 
