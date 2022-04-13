@@ -1,5 +1,5 @@
 What you get from Using ImageProcessor
-==================================
+========================================
 
 
 Settings Persistence
@@ -26,7 +26,7 @@ ________________________________
 
 
 What you get from Using TFModelProcessor
-==================================
+=========================================
 
 
 Tensorboard logging
@@ -39,7 +39,7 @@ tf.Dataset handling
 ________________________________
 
 Data augmentation with `albumentations`
-________________________________
+_______________________________________
 
 Multi-GPU training
 ________________________________

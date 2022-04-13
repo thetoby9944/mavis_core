@@ -38,7 +38,7 @@ with module development is as simple running
 
 
 Developing on a remote server
-----------------------------
+-----------------------------------
 
 If you are running on a remote host there are multiple
 options to bring your modules to mavis.
