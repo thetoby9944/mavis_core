@@ -20,7 +20,7 @@ RUN DEBIAN_FRONTEND=noninteractive; \
 
 # pip installs
 RUN pip install pycairo \
-    && pip install mavis_core \
+    && pip install mavis-core \
     && rm -rf /root/.cache/pip /tmp/* /var/tmp/*
 
 

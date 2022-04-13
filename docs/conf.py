@@ -11,7 +11,10 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import shutil
 import sys
+from pathlib import Path
+
 sys.path.insert(0, os.path.abspath('../mavis'))
 sys.path.insert(0, os.path.abspath('../../modules/'))
 
@@ -138,13 +141,28 @@ html_context = {
 #   'howto': 'ausarbeitung',
 #   'manual': 'ausarbeitung',
 #}
+with open(Path("latex/preamble.tex")) as f:
+    preamble = f.read()
+
+with open(Path("latex/maketitle.tex")) as f:
+    make_title = f.read()
+
+
+asset_src = Path("../mavis/assets")
+asset_dst_1 = Path("mavis/assets")
+asset_dst_1.mkdir(parents=True, exist_ok=True)
+asset_dst_2 = Path("assets")
+asset_dst_2.mkdir(parents=True, exist_ok=True)
+
+shutil.copytree(asset_src, asset_dst_1, dirs_exist_ok=True)
+shutil.copytree(asset_src, asset_dst_2, dirs_exist_ok=True)
 
 latex_documents = [
-    (master_doc, 'imageflow.tex', u'Imageflow',
+    (master_doc, 'master.tex', u' MAVIS',
      u'Tobias Schiele', 'report'), #"report"
 ]
 
-latex_logo = 'images/logo.png'
+latex_logo = 'assets/images/MAVIS_logo.png'
 latex_engine = 'lualatex'
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
@@ -163,7 +181,7 @@ latex_elements = {
 
     # The font size ('10pt', '11pt' or '12pt').
     #
-    'pointsize': '12pt',
+    'pointsize': '11pt',
 
     'inputenc': '',
     'utf8extra': '',
@@ -171,241 +189,12 @@ latex_elements = {
 
     # Additional stuff for the LaTeX preamble.
     #
-    'preamble': r'''
-        %%%%%%%%%%%%%%%%%%%% Meher %%%%%%%%%%%%%%%%%%
-        %%%add number to subsubsection 2=subsection, 3=subsubsection
-        %%% below subsubsection is not good idea.
-        \setcounter{secnumdepth}{3}
-        %
-
- 
-        \setmainfont{roboto}
-        %\setmonofont[Colour=A0203A]{roboto}
-        
-        \let\oldtexttt\texttt% Store \texttt
-        \renewcommand{\texttt}[2][darkgray]{\textcolor{#1}{\ttfamily #2}}% \texttt[<color>]{<stuff>}
-    
-        
-        %%%% Table of content upto 2=subsection, 3=subsubsection
-        \setcounter{tocdepth}{2}
-
-        \usepackage{amsmath,amsfonts,amssymb,amsthm}
-        \usepackage{graphicx}
-
-        %%% reduce spaces for Table of contents, figures and tables
-        %%% it is used "\addtocontents{toc}{\vskip -1.2cm}" etc. in the document
- 
-        \usepackage[notlot,nottoc,notlof]{}
-
-        \usepackage{color}
-        \usepackage{transparent}
-        \usepackage{eso-pic}
-        \usepackage{lipsum}
-        \usepackage{fontspec}
-        %\usepackage{utf8}[inputenc]
-
-        \usepackage{footnotebackref} %%link at the footnote to go to the place of footnote in the text
-
-        %% spacing between line
-        \usepackage{setspace}
-        %%%%\onehalfspacing
-        %%%%\doublespacing
-        \singlespacing
-
-
-        %%%%%%%%%%% datetime
-        \usepackage{datetime}
-
-        \newdateformat{MonthYearFormat}{%
-        \monthname[\THEMONTH], \THEYEAR}
-
-
-        %% RO, LE will not work for 'oneside' layout.
-        %% Change oneside to twoside in document class
-        \usepackage{fancyhdr}
-        \pagestyle{fancy}
-        \fancyhf{}
-
-        %%% Alternating Header for oneside
-        \fancyhead[L]{\ifthenelse{\isodd{\value{page}}}{ \small \nouppercase{\leftmark} }{}}
-        \fancyhead[R]{\ifthenelse{\isodd{\value{page}}}{}{ \small \nouppercase{\rightmark} }}
-
-        %%% Alternating Header for two side
-        %\fancyhead[RO]{\small \nouppercase{\rightmark}}
-        %\fancyhead[LE]{\small \nouppercase{\leftmark}}
-
-        %% for oneside: change footer at right side. If you want to use Left and right then use same as header defined above.
-        \fancyfoot[R]{\ifthenelse{\isodd{\value{page}}}{{\tiny Tobias Schiele} }{}}
-
-        %%% Alternating Footer for two side
-        %\fancyfoot[RO, RE]{\scriptsize Tobias Schiele}
-
-        %%% page number
-        \fancyfoot[CO, CE]{\thepage}
-
-        \renewcommand{\headrulewidth}{0.5pt}
-        \renewcommand{\footrulewidth}{0.5pt}
-
-        \RequirePackage{tocbibind} %%% comment this to remove page number for following
-        \addto\captionsenglish{\renewcommand{\contentsname}{Table of contents}}
-        \addto\captionsenglish{\renewcommand{\listfigurename}{List of figures}}
-        \addto\captionsenglish{\renewcommand{\listtablename}{List of tables}}
-        % \addto\captionsenglish{\renewcommand{\chaptername}{Chapter}}
-
-
-        %%reduce spacing for itemize
-        \usepackage{enumitem}
-        \setlist{nosep}
-
-        %%%%%%%%%%% Quote Styles at the top of chapter
-        \usepackage{epigraph}
-        \setlength{\epigraphwidth}{0.8\columnwidth}
-        \newcommand{\chapterquote}[2]{\epigraphhead[60]{\epigraph{\textit{#1}}{\textbf {\textit{--#2}}}}}
-        %%%%%%%%%%% Quote for all places except Chapter
-        \newcommand{\sectionquote}[2]{{\quote{\textit{``#1''}}{\textbf {\textit{--#2}}}}}
-        
-        %\usepackage{ragged2e}
-        
-        %\usepackage{microtype}
-        
-        %\RaggedRight
-        
-        %\sloppypar
-        
-        %\let\origbs\textbackslash
-        %\newcommand\allowbreaksafterbackslashinliterals {%
-        %  \def\.{\discretionary{\origbs}{}{\origbs}}% breaks after \
-        %}%
-        %\makeatletter
-        %\g@addto@macro\sphinx@literal@nolig@list{\allowbreaksafterbackslashinliterals}
-        %\makeatother
-        
-        \renewcommand*\sphinxbreaksafteractivelist {\do\.\do\,\do\;\do\?\do\!\do\/\do\=}
-        
-        
-        \usepackage{xparse}
-
-        \ExplSyntaxOn
-        \NewDocumentCommand{\replace}{mmm}
-         {
-          \marian_replace:nnn {#1} {#2} {#3}
-         }
-        
-        \tl_new:N \l_marian_input_text_tl
-        
-        \cs_new_protected:Npn \marian_replace:nnn #1 #2 #3
-         {
-          \tl_set:Nn \l_marian_input_text_tl { #1 }
-          \tl_replace_all:Nnn \l_marian_input_text_tl { #2 } { #3 }
-          \tl_use:N \l_marian_input_text_tl
-         }
-        \ExplSyntaxOff
-        
-        \usepackage{url}
-        \let\OldTexttt\texttt
-        \renewcommand{\texttt}[1]{\OldTexttt{\replace{#1}{.}{\allowbreak.}}}
-        \let\OldPySigLine\sphinxupquote
-        \renewcommand*\sphinxupquote[1]{\OldPySigLine{\replace{#1}{=}{=\allowbreak}}}
-        
-    ''',
+    'preamble': preamble,
 
     # Latex title
     # + Toc, tof, lot
     #
-    'maketitle': r"""
-
-    
-    \pagenumbering{Roman} %%% to avoid page 1 conflict with actual page 1
-
-    %--- Title page
-
-
-    \begin{titlepage}
-    %
-        \includegraphics[scale=0.3]{../../images/hs-aalen.png} 
-        % \vskip 0.5cm 
-        \hfill
-        \includegraphics[scale=0.3]{../../images/imfaa-logo.png}
-        \vskip 2cm
-    %
-        \begin{flushleft}
-            \par \color{darkgray} % \large 
-            Project Proposal\\%
-            Institute of Materials Science
-        \end{flushleft}
-        \vfill
-    %
-        \begin{center}
-            %\textbf{\Huge {A Dissertation Project}}
-
-            \vspace{0mm}
-            \begin{figure}[!h]
-                \centering
-                \includegraphics[scale=0.3]{logo.png}
-            \end{figure}
-
-            \par \rule{\textwidth}{0.2pt}
-            \par\Huge\textsc{MAVIS - A user-friendly end-to-end ML-System}%
-            \par\rule[1ex]{\textwidth}{0.2pt}
-            \par \large \color{black}%%		
-            \large Tobias Schiele %
-            
-        \end{center}
-        \vfill
-    %
-        \begin{flushright}\begin{minipage}{0.45\linewidth}
-            \par\Large \color{black}
-            \par\large Proposal\\
-            \par\large Supervisor: \\ \large Dr. Timo Bernthaler\\
-            % \par\large Examiner: \\ \large\@examinerB\\
-            \par
-        \end{minipage}\end{flushright}
-        \vfill
-    %
-        \begin{center}
-            \color{black}
-            \vspace*{0mm}
-            \small  Last updated : \MonthYearFormat\today
-        \end{center}
-    %
-    \end{titlepage}
-    
-    
-    
-    \clearpage
-    \pagenumbering{roman}
-
-    %--- Abstract
-    % \pagenumbering{Roman}
-    % \hypertarget{abstract}{%
-    \section*{Abstract} %\label{abstract}}
-    % \addcontentsline{toc}{section}{Abstarct}
-
-    
-    %--- Acknowledgements
-    %\section*{Acknowledgments}
-
-
-    %--- Affirmation
-    %\section*{Affirmation}
-    
-    %Hereby I, Tobias Schiele, declare that I have conscientiously and independently 
-    %written the present information in this thesis.
-
-    %First, I assure you that I have not used any unspecified sources or auxiliary means. 
-    %Second, all intellectual property of other authors is cited.
-    %Third,  the present work is specially crafted for this thesis and has not been part of other projects.
-    
-    
-    \tableofcontents
-    %\listoffigures
-    %\listoftables
-    \clearpage
-    \pagenumbering{arabic}
-
-    % \RaggedRight
-    
-    """,
+    'maketitle': make_title,
 
     # Sphinx Setup
     #
@@ -426,58 +215,4 @@ latex_elements = {
     #
     'tableofcontents':' ',
 
-
-
 }
-
-sphinxsetup_old = \
-    'hmargin={0.75in,0.75in}, vmargin={1in,1in}, \
-    verbatimwithframe=true, \
-    inlineliteralwraps=true, \
-    parsedliteralwraps=true, \
-    TitleColor={rgb}{0.905,0.094,0.215}, \
-    HeaderFamily=\\rmfamily\\bfseries, \
-    InnerLinkColor={rgb}{0,0,1}, \
-    OuterLinkColor={rgb}{0,0,1}, \
-    VerbatimColor={rgb}{0.93,0.93,0.93}, \
-    verbatimborder=0.1pt',
-
-
-title_old =   r'''
-        \pagenumbering{Roman} %%% to avoid page 1 conflict with actual page 1
-
-        \begin{titlepage}
-            \centering
-
-            \vspace*{40mm} %%% * is used to give space from top
-            \textbf{\Huge {Technical Documentation}}
-
-            \vspace{0mm}
-            \begin{figure}[!h]
-                \centering
-                \includegraphics[scale=0.3]{logo.png}
-            \end{figure}
-
-            \vspace{0mm}
-            \Large \textbf{{Tobias Schiele}}
-
-            \vspace*{0mm}
-            \small  Last updated : \MonthYearFormat\today
-
-
-            %% \vfill adds at the bottom
-            \vfill
-        \end{titlepage}
-
-        \clearpage
-        \pagenumbering{roman}
-        
-        \tableofcontents
-        \listoffigures
-        \listoftables
-        \clearpage
-        \pagenumbering{arabic}
-
-        \RaggedRight
-        
-        '''

@@ -1,17 +1,11 @@
 
 
-.. _logoFallback:
+.. _logo:
 .. figure:: mavis/assets/images/MAVIS_logo.png
    :align: center
    :alt:
    :scale: 50 %
 
-
-.. _logo:
-.. figure:: ../../mavis/assets/images/MAVIS_logo.png
-   :align: center
-   :alt:
-   :scale: 50 %
 
 
 .. admonition:: Description
@@ -29,7 +23,7 @@ Create a new python=3.9 env and install `mavis_core` from pip
 
     conda create -n mavis python=3.9
     conda activate mavis
-    pip install mavis_core
+    pip install mavis-core
 
 
 Run
@@ -43,7 +37,7 @@ To run, call `mavis` from your conda environment
 
 
 Legal
-_____
+-----
 
 .. admonition:: License
 
@@ -52,12 +46,15 @@ _____
 
 .. admonition:: Cite
 
-    Until an publication is available please cite this project if it helped you during your work as
+    If this project helped you during your work:
+    Until an publication is available, please cite as
+
+    Tobias Schiele. (2022). MAVIS - Machine Learning and Computer Vision. https://github.com/thetoby9944/mavis_core.
 
 
     .. code-block:: latex
 
-        @misc{Schiele2013,
+        @misc{Schiele2019,
             author = {Tobias Schiele},
             title = {MAVIS - Machine Learning and Computer Vision},
             year = {2022},
