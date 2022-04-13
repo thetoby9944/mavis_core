@@ -152,8 +152,23 @@ asset_src = Path("../mavis/assets")
 asset_dst_1 = Path("mavis/assets")
 asset_dst_2 = Path("assets")
 
-shutil.copytree(asset_src, asset_dst_1)
-shutil.copytree(asset_src, asset_dst_2)
+
+# Python 3.7 fix for copytree not able to ignore existing dirs
+def copytree(src, dst, symlinks=False, ignore=None):
+    if not os.path.exists(dst):
+        os.makedirs(dst)
+    for item in os.listdir(src):
+        s = os.path.join(src, item)
+        d = os.path.join(dst, item)
+        if os.path.isdir(s):
+            copytree(s, d, symlinks, ignore)
+        else:
+            if not os.path.exists(d) or os.stat(s).st_mtime - os.stat(d).st_mtime > 1:
+                shutil.copy2(s, d)
+
+
+copytree(asset_src, asset_dst_1)
+copytree(asset_src, asset_dst_2)
 
 latex_documents = [
     (master_doc, 'master.tex', u' MAVIS',
