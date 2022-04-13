@@ -152,10 +152,17 @@ asset_src = Path("../mavis/assets")
 asset_dst_1 = Path("mavis/assets")
 asset_dst_2 = Path("assets")
 
-shutil.rmtree(asset_dst_1)
-shutil.copytree(asset_src, asset_dst_1)
-shutil.rmtree(asset_dst_2)
-shutil.copytree(asset_src, asset_dst_2)
+try:
+    shutil.rmtree(asset_dst_1)
+    shutil.rmtree(asset_dst_2)
+finally:
+    pass
+
+try:
+    shutil.copytree(asset_src, asset_dst_1)
+    shutil.copytree(asset_src, asset_dst_2)
+finally:
+    pass
 
 
 latex_documents = [
