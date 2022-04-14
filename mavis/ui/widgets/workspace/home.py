@@ -168,6 +168,7 @@ class TableWidget:
             if st.button("Download .csv"):
                 ExportWidget(f"{name}.csv").df_link(csv_args)
 
+        st.table(df.describe())
 
         selection = grid_response['selected_rows']
         if selection:
