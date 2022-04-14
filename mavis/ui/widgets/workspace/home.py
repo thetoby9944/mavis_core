@@ -170,13 +170,13 @@ class TableWidget:
             if st.button("Download .csv"):
                 ExportWidget(f"{name}.csv").df_link(csv_args)
 
-        df: pd.DataFrame = df
-        if st.checkbox("Show Statistics"):
-            st.dataframe(df.describe(exclude=[np.object]))
+        numeric_df: pd.DataFrame = df.select_dtypes(include=[np.number])
+        if len(numeric_df.columns) and st.checkbox("Show Statistics"):
+            st.dataframe(numeric_df.describe())
         if st.checkbox("Show Info"):
             buf = io.StringIO()
             df.info(buf=buf)
-            st.write(buf.getvalue())
+            st.code(buf.getvalue())
 
         selection = grid_response['selected_rows']
         if selection:
