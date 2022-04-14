@@ -53,14 +53,14 @@ class ImageProcessor(BaseProcessor, ABC):
             new_dir=True,
             *args, **kwargs
     ):
+        self.multiprocessing = multiprocessing
+        self.flatten_result = False
         super().__init__(
             preview=preview,
             save_numeric=save_numeric,
             new_dir=new_dir
             *args, **kwargs
         )
-        self.multiprocessing = multiprocessing
-        self.flatten_result = False
 
     def process_one(self, *args):
         """
