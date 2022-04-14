@@ -2,11 +2,13 @@ import io
 import json
 import os
 import re
+import threading
 from datetime import datetime
 from pathlib import Path
 
 import streamlit as st
 import tensorflow as tf
+from streamlit.script_run_context import add_script_run_ctx
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau, TensorBoard
 from tensorflow_addons.optimizers import CyclicalLearningRate
 
@@ -33,7 +35,12 @@ class TrainingHandler:
         self.log_dir = self.create_log_dir()
         self.config = config
 
-    def train_model(self) -> (tf.keras.Model, float):
+    def train_model(self) -> None:
+        training_thread = threading.Thread(target=self._train_model, daemon=True)
+        add_script_run_ctx(training_thread)
+        training_thread.start()
+
+    def _train_model(self) -> None:
         model = self.model
         validation_data = self.validation_data
         train_data = self.train_data
@@ -132,7 +139,11 @@ class TrainingHandler:
             )
             loss = 0
 
-        return model, loss
+        st.success(
+            f"Loss improved to {loss}. "
+            f"Keeping {model.name}. "
+            f"Model stored at `{checkpoint_path}`"
+        )
 
     def summary(self):
         stream = io.StringIO()

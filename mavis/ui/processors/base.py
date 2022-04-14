@@ -47,6 +47,10 @@ class BaseProcessor:
         self.inplace = False
         self.run()
 
+    @staticmethod
+    def progress_percentage(i: int, n: int):
+        return min(1., i + 1 / n) if n > 0 and i < n else 1.
+
     def save_new_df(self, df) -> None:
         self.df = DFDAO().set(df, ProjectDAO().get())
         st.success("Success. Updated Project.")

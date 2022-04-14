@@ -37,19 +37,18 @@ class TfModelProcessor(BaseProcessor, ABC):
 
         return load_model(model_path, compile=False)
 
-    def prog_perc(self, n, i):
-        return min(1., i / (n // self.config.TRAIN.BATCH_SIZE - 1)) if n > self.config.TRAIN.BATCH_SIZE else 1.
-
     def inference(self, img_paths):
         model = self.model_from_path()
-
         data_generator = self.dataset
         data_generator.create(img_paths, None)
+
+        batch_size = self.config.TRAIN.BATCH_SIZE
         n = len(img_paths)
+        n_batches = n // batch_size + bool(n % batch_size)
 
         bar = st.progress(0)
         for batch_i, batch in enumerate(data_generator.ds):
-            bar.progress(self.prog_perc(n, batch_i))
+            bar.progress(self.progress_percentage(batch_i, n_batches))
             print("predicting on batch", batch_i)
             predictions = model.predict_on_batch(x=batch)
             print("returning batch", batch_i)
@@ -61,7 +60,7 @@ class TfModelProcessor(BaseProcessor, ABC):
                     pred = pred.numpy()
 
                 # Crop potential padding
-                image_i = batch_i * self.config.TRAIN.BATCH_SIZE + pred_i
+                image_i = batch_i * batch_size + pred_i
                 image_path = img_paths[image_i]
                 original_image: Image.Image = Image.open(image_path)
                 original_w, original_h = original_image.width, original_image.height
@@ -79,7 +78,7 @@ class TfModelProcessor(BaseProcessor, ABC):
                 with col2:
                     self.dataset.display_pred(pred)
 
-    def train_keras(self, model, ds, val_ds):
+    def train_keras(self, model: Model, ds: tf.data.Dataset, val_ds: tf.data.Dataset):
         return TrainingHandler(
             config=self.config,
             model=model,
@@ -145,28 +144,11 @@ class TfModelProcessor(BaseProcessor, ABC):
         if self.dry_run:
             return
 
-        model, loss = self.train_keras(
+        self.train_keras(
             model,
             data_generator.ds,
             data_generator.val_ds
         )
-
-        st.success(
-            f"Loss improved to {loss}. "
-            f"Keeping {model.name}"
-        )
-
-        if self.save_weights_only:
-            model.save_weights(self.config.MODEL.MODEL_PATH)
-        else:
-            model.save(self.config.MODEL.MODEL_PATH)
-
-    def training_store(self):
-        self.training()
-        if self.inference_after_training:
-            st.info("Running Inference on Training Data once")
-            self.df = self.inference_store()
-        return self.df
 
     def inference_store(self):
         preds = self.inference(self.input_args(dropna_jointly=False)[0])
@@ -241,8 +223,8 @@ class TfModelProcessor(BaseProcessor, ABC):
                 LogDAO(self.input_columns, self.column_out, preset).add("Training")
             else:
                 LogDAO(self.input_columns, self.column_out, preset).add("Dry Run")
-            df = self.training_store()
-            self.save_new_df(df)
+            self.training()
+            st.info("Training started. View tensorboard for progress.")
 
     def core(self):
         self.dataset.config = self.config

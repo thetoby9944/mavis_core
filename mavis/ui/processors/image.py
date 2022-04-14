@@ -110,14 +110,11 @@ class ImageProcessor(BaseProcessor, ABC):
         return val
 
     def process_all(self):
-
-        def prog_perc(x):
-            return x / (len(inputs_paths) - 1) if len(inputs_paths) > 1 else 1.
-
         if not self.inplace:
             self.df[self.column_out] = np.nan
 
         inputs_paths = list(zip(*self.input_args()))
+        n = len(inputs_paths)
 
         with ThreadPool(processes=max(os.cpu_count() - 1, 1) if self.multiprocessing else 1) as pool:
             st.info("Scheduling Tasks")
@@ -126,7 +123,7 @@ class ImageProcessor(BaseProcessor, ABC):
             for i, args in enumerate(inputs_paths):
 
                 results.append(pool.apply_async(self.tasks, (args,)))
-                bar.progress(prog_perc(i))
+                bar.progress(self.progress_percentage(i, n))
 
             bar.progress(1.)
 
@@ -144,7 +141,7 @@ class ImageProcessor(BaseProcessor, ABC):
                     else:
                         self.df.loc[i, self.column_out] = val
 
-                bar.progress(prog_perc(i))
+                bar.progress(self.progress_percentage(i, n))
             bar.progress(1.)
 
         if self.flatten_result:

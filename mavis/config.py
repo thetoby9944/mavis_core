@@ -293,12 +293,12 @@ class TrainingConfig(BaseProperty):
         ))
 
         self.VAL_SPLIT = int(self.st.number_input(
-            "Validation Images in batches", 0, 100,
+            "Validation Images", 0, 100000,
             int(self.VAL_SPLIT),
             help=
             "Use this many images for validation. For each image, one batch will be created. "
             "This behaviour is useful when you use data augmentation, e.g. with random crops. "
-            "Note that, without data augmentation, there will be duplicates in the validation data"
+            "Note that, currently, without data augmentation, there will be duplicates in the validation data"
         ))
 
         self.EARLY_STOPPING = int(self.st.number_input(
@@ -331,7 +331,7 @@ class DatasetConfig(BaseProperty):
     AUGMENTATION = AugmentationConfig()
 
     BUFFER_SIZE: int = 0
-    RESHUFFLE_EACH_ITERATION: bool = False
+    RESHUFFLE_EACH_ITERATION: bool = True
 
     def parameter_block(self):
         self.st.markdown("## Dataset")
