@@ -1,7 +1,9 @@
+import io
 import traceback
 from datetime import datetime
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import streamlit as st
 from PIL import Image
@@ -168,10 +170,13 @@ class TableWidget:
             if st.button("Download .csv"):
                 ExportWidget(f"{name}.csv").df_link(csv_args)
 
+        df: pd.DataFrame = df
         if st.checkbox("Show Statistics"):
-            st.write(df.describe())
+            st.dataframe(df.describe(exclude=[np.object]))
         if st.checkbox("Show Info"):
-            st.write(df.info())
+            buf = io.StringIO()
+            df.info(buf=buf)
+            st.write(buf.getvalue())
 
         selection = grid_response['selected_rows']
         if selection:
