@@ -162,7 +162,7 @@ class TfModelProcessor(BaseProcessor, ABC):
             self.save_new_df(df)
 
         model_path = Path(self.config.MODEL.MODEL_PATH)
-        if model_path.is_file() and st.form_submit_button(f"Get download link"):
+        if model_path.is_file() and st.button(f"Get download link"):
             model: Model = load_model(model_path, compile=False)
             new_path = model_path.parent / (model_path.stem + "no_optimizer.h5")
             model.save(new_path, include_optimizer=False)
