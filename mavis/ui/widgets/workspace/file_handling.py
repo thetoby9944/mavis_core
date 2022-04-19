@@ -65,8 +65,13 @@ class FileUpload:
 
             if self.landing_zone_copy:
                 date_str = f'{datetime.now().strftime("%Y%m%d")}'
-                landing_path = (Path(current_data_dir()) / "landing_zone" / date_str / file.name).resolve()
-                landing_path.mkdir(parents=True, exist_ok=True)
+                landing_dir = Path(current_data_dir()) / "landing_zone" / date_str
+                landing_dir.mkdir(parents=True, exist_ok=True)
+                landing_path = (landing_dir / file.name).resolve()
+
+                if landing_path.is_dir():
+                    os.rmdir(landing_path)
+
                 with open(str(landing_path), "wb") as target:
                     target.write(file.read())
 
