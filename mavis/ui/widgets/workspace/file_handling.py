@@ -250,11 +250,15 @@ class ImportHelperWidget:
     def __init__(self):
         c = FileSettings()
         st.markdown("#### Import Helper")
+        with st.expander("Files", expanded=False):
+            st.write(list(os.walk(current_data_dir())))
+
         c.selection = st.text_input(
             "Select Directory to Analyze", c.selection,
             help="Uploads files when mavis is running on a remote server. "
                  "It will create a new folder under the project with the files."
         )
+
         selection = c.selection
         folders, sub_dirs, file_types_list = [], [], []
         preview = st.checkbox("Preview")
