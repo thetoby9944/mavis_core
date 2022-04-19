@@ -221,20 +221,15 @@ class ModelConfig(BaseProperty):
         new_path = Path(self.st.text_input(
             "Path", Path(current_model_dir()) / f"{datetime.now():%y%m%d_%H-%M}_{Path(ProjectDAO().get()).stem}.h5"
         ))
-        self.st.form_submit_button("Add Model Path")
+        if self.st.form_submit_button("Add Model Path"):
+            ModelDAO().add(new_path)
 
         all_model_paths = ModelDAO().get_all()
         self.MODEL_PATH = st.radio(
             "select model",
-            all_model_paths + [new_path],
-            index=all_model_paths.index(self.MODEL_PATH) if self.MODEL_PATH in all_model_paths else 0
+            all_model_paths,
+            index=all_model_paths.index(Path(self.MODEL_PATH)) if Path(self.MODEL_PATH) in all_model_paths else 0
         )
-        if self.MODEL_PATH not in all_model_paths:
-            ModelDAO().add(self.MODEL_PATH)
-
-        if Path(self.MODEL_PATH) not in all_model_paths:
-            st.info(f"{self.MODEL_PATH} not in {all_model_paths}. Setting new model path to {all_model_paths[0]}")
-            self.MODEL_PATH = all_model_paths[0]
 
 
 class ContourFilterConfig(BaseProperty):

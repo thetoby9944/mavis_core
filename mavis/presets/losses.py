@@ -4,6 +4,7 @@ from typing import Dict, List
 import numpy as np
 import segmentation_models as sm
 import tensorflow as tf
+import tensorflow_addons as tfa
 from segmentation_models.losses import CategoricalFocalLoss, DiceLoss
 
 from mavis.presets.base import BaseProperty, PropertyContainer
@@ -27,7 +28,6 @@ class FDLConfig(LossBase):
 
     def get(self):
         return (100 * CategoricalFocalLoss()) + DiceLoss()
-
 
 class FJLConfig(LossBase):
     _name = "Focal Jacquard Loss"
@@ -72,6 +72,37 @@ class WJFConfig(LossBase):
         ) + sm.losses.categorical_focal_loss
 
 
+class DistTransformLossConfig(LossBase):
+    _name = "Dist Transoform Loss"
+
+    def get(self):
+        def euclidean_dist_transform_loss(
+                gt: tfa.types.TensorLike,
+                pred: tfa.types.TensorLike
+        ):
+            def get_scaled_distance_map(
+                    images: tfa.types.TensorLike
+            ):
+                dist = tfa.image.euclidean_dist_transform(
+                    images=tf.image.convert_image_dtype(images, tf.uint8),
+                )
+                return dist / (tf.reduce_max(dist, axis=0) + tf.keras.backend.epsilon())
+
+            """
+            Calculate the difference between gt and pred euclidean distance transforms 
+            """
+
+            pred_dist = get_scaled_distance_map(pred)
+            gt_dist = get_scaled_distance_map(gt)
+
+            return (
+                    100 * sm.losses.CategoricalFocalLoss()
+                    + sm.losses.DiceLoss()
+            )(gt_dist, pred_dist)
+
+        return euclidean_dist_transform_loss
+
+
 class LossConfig(PropertyContainer):
     _name = "Loss"
 
@@ -80,5 +111,6 @@ class LossConfig(PropertyContainer):
     FJL_PARAMETER: FJLConfig = FJLConfig()
     JAC_PARAMETER: JACConfig = JACConfig()
     WJF_PARAMETER: WJFConfig = WJFConfig()
+    DST_PARAMETER: DistTransformLossConfig = DistTransformLossConfig()
 
     ACTIVE: str = "Weighted Jacquard Focal Loss"
