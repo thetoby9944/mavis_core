@@ -251,7 +251,13 @@ class ImportHelperWidget:
         c = FileSettings()
         st.markdown("#### Import Helper")
         with st.expander("Files", expanded=False):
-            st.write(list(os.walk(current_data_dir())))
+            def fs_tree_to_dict(path_):
+                for root, dirs, files in os.walk(path_):
+                    tree = {d: fs_tree_to_dict(os.path.join(root, d)) for d in dirs}
+                    tree.update({"files": list(files)})
+                    return tree
+
+            st.write(fs_tree_to_dict(current_data_dir()))
 
         c.selection = st.text_input(
             "Select Directory to Analyze", c.selection,
