@@ -57,8 +57,12 @@ class FileUpload:
                 st.warning("No file selected.")
                 continue
 
-            target_path = str((self.target_dir / file.name).resolve())
+            landing_path = str((Path(current_data_dir()) / "landing_zone" / file.name).resolve())
+            target_path = str((self.target_dir / Path(file.name)).resolve())
             suffix = Path(file.name).suffix.lower()
+
+            with open(landing_path, "wb") as target:
+                target.write(file.read())
 
             if suffix in IMAGE_FILETYPE_EXTENSIONS:
                 img = Image.open(file).convert("RGB")
@@ -66,12 +70,12 @@ class FileUpload:
                 paths += [target_path]
 
             elif suffix in [".zip"]:
-                target_dir = self.target_dir.resolve()  # / Path(file.name).stem).resolve()
+                target_dir = (self.target_dir / Path(file.name).stem).resolve()
                 target_dir.mkdir(parents=True, exist_ok=True)
                 ZipFile(file).extractall(target_dir)
                 st.info(f"Extracted Archive to host into:")
                 st.code(f"{target_dir}")
-                paths += [target_dir / Path(file.name).stem]
+                paths += [target_dir]
 
             else:
                 with open(target_path, "wb") as target:
