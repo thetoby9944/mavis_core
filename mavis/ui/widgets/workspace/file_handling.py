@@ -54,7 +54,7 @@ class FileUpload:
         paths = []
         for file in self.uploaded_files:
             if file is None:
-                st.warning("Upload a file")
+                st.warning("No file selected.")
                 continue
 
             target_path = str((self.target_dir / file.name).resolve())
@@ -71,7 +71,7 @@ class FileUpload:
                 ZipFile(file).extractall(target_dir)
                 st.info(f"Extracted Archive to host into:")
                 st.code(f"{target_dir}")
-                paths += [target_dir]
+                paths += [target_dir / Path(file.name).stem]
 
             else:
                 with open(target_path, "wb") as target:
@@ -123,26 +123,29 @@ class ImportFromHostWidget:
 
         c.selection = st.text_input("File selection expression", c.selection, help=help)
 
-        c.load_folders_as_columns = st.checkbox("Load matching folders as separate columns. "
-                                                             "Uncheck to load all matching files in one column.",
-                                                             c.load_folders_as_columns)
+        c.load_folders_as_columns = st.checkbox(
+            "Load matching folders as separate columns. "
+            "Uncheck to load all matching files in one column.",
+            c.load_folders_as_columns
+        )
 
         if not c.load_folders_as_columns:
             c.column = st.text_input("Remember matched paths in:", c.column)
 
         config_min_file_size = 0.
         if st.checkbox("Show Extended options"):
-            c.is_sbi = not c.load_folders_as_columns and st.checkbox("Folder is SBI",
-                                                                                               c.is_sbi)
+            c.is_sbi = not c.load_folders_as_columns and st.checkbox("Folder is SBI", c.is_sbi)
             c.recursive = not c.is_sbi and st.checkbox(
                 "Collect files recursively. Uncheck to match exact expression.",
-                c.recursive)
+                c.recursive
+            )
             c.sort = st.checkbox("Keep file order sorted OS-style", c.sort)
             config_min_file_size = float(st.number_input("Minimum file size in KB. Zero to ignore.", 0.))
-            c.overwrite_modes = st.radio("When creating a column which is already present",
-                                                      list(overwrite_modes.values()),
-                                                      list(overwrite_modes.values()).index(
-                                                          c.overwrite_modes))
+            c.overwrite_modes = st.radio(
+                "When creating a column which is already present",
+                list(overwrite_modes.values()),
+                list(overwrite_modes.values()).index(c.overwrite_modes)
+            )
 
         if st.button("Load"):
             df = DFDAO().get(ProjectDAO().get())
@@ -186,8 +189,11 @@ class FileUploaderWidget:
         uploader = FileUpload(Path(current_data_dir()) / column)
         overwrite_mode = overwrite_modes["opt_a"]
         if verbose:
-            overwrite_mode = st.radio("When creating a column which is already present",
-                                      list(overwrite_modes.values()), 0)
+            overwrite_mode = st.radio(
+                "When creating a column which is already present",
+                list(overwrite_modes.values()),
+                0
+            )
 
         if st.button("Upload"):
             df = DFDAO().get(ProjectDAO().get())
@@ -200,14 +206,25 @@ class FileUploaderWidget:
 class UploadZipWidget:
     def __init__(self):
         c = FileSettings()
+        target_dir = str(Path(current_data_dir()) / "landing_zone")
         st.markdown("#### Upload .zip")
-        uploader = FileUpload(current_data_dir(), "Upload Archive", type=[".zip"], accept_multiple_files=False)
+
+        uploader = FileUpload(
+            target_dir=target_dir,
+            label="Upload Archive",
+            type=[".zip"],
+            accept_multiple_files=False
+        )
 
         if st.button("Extract Archive"):
             target_dir = uploader.start()
             if target_dir:
-                st.warning(f"Use 'import from host' functionality to access desired files")
+                st.warning(
+                    f"Successfully extracted. "
+                    f"Use `import from host` functionality to access desired files"
+                )
                 c.selection = str(target_dir)
+                c.update()
 
 
 class ImportHelperWidget:

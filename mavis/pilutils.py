@@ -8,7 +8,7 @@ from PIL import Image
 Image.MAX_IMAGE_PIXELS = None
 
 
-IMAGE_FILETYPE_EXTENSIONS = [".bmp", ".png", ".jpg", ".jpeg", ".tif"]
+IMAGE_FILETYPE_EXTENSIONS = [".bmp", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]
 FILETYPE_EXTENSIONS = IMAGE_FILETYPE_EXTENSIONS + [".xml", ".json"]
 
 
