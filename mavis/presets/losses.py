@@ -83,9 +83,12 @@ class DistTransformLossConfig(LossBase):
             def get_scaled_distance_map(
                     images: tfa.types.TensorLike
             ):
-                dist = tfa.image.euclidean_dist_transform(
-                    images=tf.image.convert_image_dtype(images, tf.uint8),
-                )
+                dist = tf.stack([
+                    tfa.image.euclidean_dist_transform(
+                        images=tf.image.convert_image_dtype(images[..., c], tf.uint8),
+                    )
+                    for c in range(images.shape[-1])
+                ], axis=-1)
                 return dist / (tf.reduce_max(dist, axis=0) + tf.keras.backend.epsilon())
 
             """
