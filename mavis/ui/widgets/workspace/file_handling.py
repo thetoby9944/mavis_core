@@ -254,7 +254,7 @@ class ImportHelperWidget:
             def fs_tree_to_dict(path_):
                 for root, dirs, files in os.walk(path_):
                     tree = {d: fs_tree_to_dict(os.path.join(root, d)) for d in dirs}
-                    tree.update({"files": list(files)})
+                    tree.update({"files": list(files)} if len(files) else {})
                     return tree
 
             st.write(fs_tree_to_dict(current_data_dir()))
