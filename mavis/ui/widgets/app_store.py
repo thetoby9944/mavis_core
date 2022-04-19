@@ -34,7 +34,9 @@ class AppStoreWidget:
         upload_widget = st.empty()
         with upload_widget:
             uploader = FileUpload(
-                str(package_path), f"Upload package", ".zip",
+                str(package_path),
+                label=f"Upload package",
+                type=[".zip"],
                 help="Add functionality by uploading zipped python packages. "
                 # "The python packages can contain arbitrary python scripts."
                 # "After uploading a package, all its contents will be added to the menu."

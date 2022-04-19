@@ -2,6 +2,7 @@ import glob
 import os
 import sys
 from collections import defaultdict
+from datetime import datetime
 from io import BytesIO
 from pathlib import Path, PureWindowsPath, PurePosixPath
 from zipfile import ZipFile, ZIP_STORED
@@ -40,11 +41,13 @@ class FileUpload:
             type=FILETYPE_EXTENSIONS,
             accept_multiple_files=True,
             help="The files will be uploaded to the mavis data path in the corresponding project directory. "
-                 "You can set the mavis data root in the side panel under settings. "
+                 "You can set the mavis data root in the side panel under settings. ",
+            landing_zone_copy=False
     ):
         self.target_dir = Path(target_dir)
         self.accept_multiple_files = accept_multiple_files
         self.uploaded_files = st.file_uploader(label, type, accept_multiple_files, help=help)
+        self.landing_zone_copy = landing_zone_copy
         if not self.accept_multiple_files:
             self.uploaded_files = [self.uploaded_files]
 
@@ -57,12 +60,16 @@ class FileUpload:
                 st.warning("No file selected.")
                 continue
 
-            landing_path = str((Path(current_data_dir()) / "landing_zone" / file.name).resolve())
             target_path = str((self.target_dir / Path(file.name)).resolve())
             suffix = Path(file.name).suffix.lower()
 
-            with open(landing_path, "wb") as target:
-                target.write(file.read())
+            if self.landing_zone_copy:
+                date_str = f'{datetime.now().strftime("%Y%m%d")}'
+                landing_path = str(
+                    (Path(current_data_dir()) / "landing_zone" / date_str / file.name).resolve()
+                )
+                with open(landing_path, "wb") as target:
+                    target.write(file.read())
 
             if suffix in IMAGE_FILETYPE_EXTENSIONS:
                 img = Image.open(file).convert("RGB")
@@ -210,22 +217,26 @@ class FileUploaderWidget:
 class UploadZipWidget:
     def __init__(self):
         c = FileSettings()
-        target_dir = str(Path(current_data_dir()) / "landing_zone")
+        target_dir = str(Path(current_data_dir()) / "processing")
         st.markdown("#### Upload .zip")
-
+        landing_zone_copy = st.checkbox(
+            "Save a copy of the archive to the landing zone with current date.",
+            vale=True
+        )
         uploader = FileUpload(
             target_dir=target_dir,
             label="Upload Archive",
             type=[".zip"],
-            accept_multiple_files=False
+            accept_multiple_files=False,
+            landing_zone_copy=landing_zone_copy
         )
 
         if st.button("Extract Archive"):
             target_dir = uploader.start()
             if target_dir:
                 st.warning(
-                    f"Successfully extracted. "
-                    f"Use `import from host` functionality to access desired files"
+                    f"Successfully extracted archive. "
+                    f"Use `Locate on host` functionality to access desired files"
                 )
                 c.selection = str(target_dir)
                 c.update()
