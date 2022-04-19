@@ -221,7 +221,7 @@ class UploadZipWidget:
         st.markdown("#### Upload .zip")
         landing_zone_copy = st.checkbox(
             "Save a copy of the archive to the landing zone with current date.",
-            vale=True
+            value=True
         )
         uploader = FileUpload(
             target_dir=target_dir,
