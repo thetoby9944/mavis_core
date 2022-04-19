@@ -65,10 +65,9 @@ class FileUpload:
 
             if self.landing_zone_copy:
                 date_str = f'{datetime.now().strftime("%Y%m%d")}'
-                landing_path = str(
-                    (Path(current_data_dir()) / "landing_zone" / date_str / file.name).resolve()
-                )
-                with open(landing_path, "wb") as target:
+                landing_path = (Path(current_data_dir()) / "landing_zone" / date_str / file.name).resolve()
+                landing_path.mkdir(parents=True, exist_ok=True)
+                with open(str(landing_path), "wb") as target:
                     target.write(file.read())
 
             if suffix in IMAGE_FILETYPE_EXTENSIONS:
