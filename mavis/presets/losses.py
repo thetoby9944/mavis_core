@@ -12,6 +12,7 @@ from mavis.presets.base import BaseProperty, PropertyContainer
 
 class LossBase(BaseProperty, ABC):
     _class_names: List = []
+
     def parameter_block(self):
         pass
 
@@ -28,6 +29,7 @@ class FDLConfig(LossBase):
 
     def get(self):
         return (100 * CategoricalFocalLoss()) + DiceLoss()
+
 
 class FJLConfig(LossBase):
     _name = "Focal Jacquard Loss"
@@ -81,15 +83,41 @@ class DistTransformLossConfig(LossBase):
                 pred: tfa.types.TensorLike
         ):
             def get_scaled_distance_map(
-                    images: tfa.types.TensorLike
+                    inputs: tfa.types.TensorLike
             ):
-                dist = tf.stack([
-                    tfa.image.euclidean_dist_transform(
-                        images=tf.image.convert_image_dtype(images[..., c], tf.uint8),
-                    )
-                    for c in range(images.shape[-1])
-                ], axis=-1)
-                return dist / (tf.reduce_max(dist, axis=0) + tf.keras.backend.epsilon())
+                """Generalized 2D Euclidean Distance Transform
+
+                A naive O(n^2) implementation of the distance transform of a sampled function
+                'f' from http://www.theoryofcomputing.org/articles/v008a019/v008a019.pdf
+
+                Arguments:
+                inputs: NHWC tensor containing values of f.
+
+                Returns:
+                A tensor with the same type as `Inputs`
+                """
+                in_shape = tf.shape(inputs)
+
+                i = tf.cast(tf.range(in_shape[1]), inputs.dtype)
+                j = tf.cast(tf.range(in_shape[2]), inputs.dtype)
+
+                coords = tf.stack(tf.meshgrid(i, j), -1)
+
+                d_pq = tf.norm(
+                    tf.reshape(coords, (-1, 1, 2))
+                    - tf.reshape(coords, (1, -1, 2)),
+                    axis=-1,
+                    keepdims=True
+                )
+
+                f_q = tf.reshape(inputs, (-1, 1, in_shape[1] * in_shape[2], in_shape[3]))
+
+                # Equation 1.1
+                dt = tf.reduce_min(d_pq + f_q, axis=2)
+
+                dt = tf.reshape(dt, in_shape)
+
+                return dt
 
             """
             Calculate the difference between gt and pred euclidean distance transforms 
