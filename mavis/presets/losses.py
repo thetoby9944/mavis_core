@@ -73,65 +73,108 @@ class WJFConfig(LossBase):
             per_image=False
         ) + sm.losses.categorical_focal_loss
 
-
 class DistTransformLossConfig(LossBase):
     _name = "Dist Transoform Loss"
 
     def get(self):
-        def euclidean_dist_transform_loss(
-                gt: tfa.types.TensorLike,
-                pred: tfa.types.TensorLike
+        def local_convolutional_distance_transform(inputs, k):
+            dt = tfa.image.gaussian_filter2d(
+                inputs,
+                filter_shape=(k, k),
+                sigma=1
+            )
+            return dt
+
+        def normalize_per_image_per_channel(inputs):
+            args = dict(axis=[1, 2], keepdims=True)
+
+            d = tf.cast(inputs, float)
+
+            min_val = tf.reduce_min(d, **args)
+            max_val = tf.reduce_max(d, **args)
+
+            d = tf.where((max_val - min_val) > 0, (d - min_val) / (max_val - min_val), d)
+
+            max_val = tf.reduce_max(d, **args)
+            d = tf.where(max_val > 1., d / max_val, d)
+            return d
+
+
+        def get_scaled_distance_map(
+                inputs: tfa.types.TensorLike
         ):
-            def get_scaled_distance_map(
-                    inputs: tfa.types.TensorLike
-            ):
-                """Generalized 2D Euclidean Distance Transform
+            # https://www.is.uni-due.de/fileadmin/literatur/publikation/pham20gcpr_website.pdf
 
-                A naive O(n^2) implementation of the distance transform of a sampled function
-                'f' from http://www.theoryofcomputing.org/articles/v008a019/v008a019.pdf
+            tf.cast(inputs, float)
+            k = 3
 
-                Arguments:
-                inputs: NHWC tensor containing values of f.
+            diag = tf.shape(inputs)[1] * np.sqrt(2.)
 
-                Returns:
-                A tensor with the same type as `Inputs`
-                """
-                in_shape = tf.shape(inputs)
+            s = tf.math.ceil(diag / (k // 2))
 
-                i = tf.cast(tf.range(in_shape[1]), inputs.dtype)
-                j = tf.cast(tf.range(in_shape[2]), inputs.dtype)
+            d = inputs * 0
+            for i in tf.range(int(s)):
+                d_i = local_convolutional_distance_transform(inputs, k)
+                d_i = tf.cast(d_i, float)
 
-                coords = tf.stack(tf.meshgrid(i, j), -1)
+                scaling = (i * k // 2)
+                scaling = tf.cast(scaling, float)
 
-                d_pq = tf.norm(
-                    tf.reshape(coords, (-1, 1, 2))
-                    - tf.reshape(coords, (1, -1, 2)),
-                    axis=-1,
-                    keepdims=True
-                )
+                d = tf.where(d_i > 0, d + scaling + d_i, d)
 
-                f_q = tf.reshape(inputs, (-1, 1, in_shape[1] * in_shape[2], in_shape[3]))
+                inputs = tf.where(d_i > 0, 1., inputs)
 
-                # Equation 1.1
-                dt = tf.reduce_min(d_pq + f_q, axis=2)
+            d = normalize_per_image_per_channel(d)
+            return d
 
-                dt = tf.reshape(dt, in_shape)
 
-                return dt
+        def cleaned_dist_transform(
+                gt: tfa.types.TensorLike,
+        ):
+            """
+            Calculate the dist transofrm for a tensor with applying soft thresholding
+            """
+            # https://openreview.net/pdf?id=B1eIcvS45V
+
+            n_channels = tf.shape(gt)[-1]
+            probability_threshold = (n_channels - 1) / n_channels
+
+            gt_relu = tf.keras.activations.relu(gt - tf.cast(probability_threshold, float))
+            gt_dist = get_scaled_distance_map(tf.identity(gt))
+
+            return gt_dist
+
+        def categorical_focal_loss(gt, pr, gamma=2.0, alpha=0.25, class_indexes=None, **kwargs):
+            r"""Implementation of Focal Loss from the paper in multiclass classification
+
+            Formula:
+                loss = - gt * alpha * ((1 - pr)^gamma) * log(pr)
+
+            Args:
+                gt: ground truth 4D keras tensor (B, H, W, C) or (B, C, H, W)
+                pr: prediction 4D keras tensor (B, H, W, C) or (B, C, H, W)
+                alpha: the same as weighting factor in balanced cross entropy, default 0.25
+                gamma: focusing parameter for modulating factor (1-p), default 2.0
+                class_indexes: Optional integer or list of integers, classes to consider, if ``None`` all classes are used.
 
             """
-            Calculate the difference between gt and pred euclidean distance transforms 
-            """
 
-            pred_dist = get_scaled_distance_map(pred)
-            gt_dist = get_scaled_distance_map(gt)
+            backend = tf.keras.backend
 
-            return (
-                    100 * sm.losses.CategoricalFocalLoss()
-                    + sm.losses.DiceLoss()
-            )(gt_dist, pred_dist)
+            # clip to prevent NaN's and Inf's
+            pr = backend.clip(pr, backend.epsilon(), 1.0 - backend.epsilon())
 
-        return euclidean_dist_transform_loss
+            # Calculate eucldiean dist transforms
+            gt_dist = cleaned_dist_transform(gt)
+
+            # Calculate focal loss
+            loss = - gt * (alpha * backend.pow((1 - pr), gamma) * backend.log(pr))
+
+            loss = loss * (gt_dist + 1)
+
+            return 100 * backend.mean(loss)
+
+        return categorical_focal_loss
 
 
 class LossConfig(PropertyContainer):
