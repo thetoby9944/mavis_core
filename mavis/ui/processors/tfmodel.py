@@ -34,21 +34,26 @@ class TfModelProcessor(BaseProcessor, ABC):
     def model_from_path(self, model_path=None):
         if model_path is None:
             model_path = self.config.MODEL.MODEL_PATH
+        if model_path is None or not Path(model_path).is_file():
+            return self.model()
+        else:
+            return load_model(model_path, compile=False)
 
-        return load_model(model_path, compile=False)
-
-    def inference(self, img_paths):
+    def inference(self, index=-1):
+        img_paths = self.input_args(dropna_jointly=False)[0]
+        if index >= 0:
+            img_paths = [img_paths[index]]
         model = self.model_from_path()
+
         data_generator = self.dataset
         data_generator.create(img_paths, None)
 
-        batch_size = self.config.TRAIN.BATCH_SIZE
         n = len(img_paths)
-        n_batches = n // batch_size + bool(n % batch_size)
+        batch_size = 1  # self.config.TRAIN.BATCH_SIZE
 
-        bar = st.progress(0)
+        bar = st.progress(0.)
         for batch_i, batch in enumerate(data_generator.ds):
-            bar.progress(self.progress_percentage(batch_i, n_batches))
+            bar.progress(self.progress_percentage(batch_i, n))
             print("predicting on batch", batch_i)
             predictions = model.predict_on_batch(x=batch)
             print("returning batch", batch_i)
@@ -72,7 +77,7 @@ class TfModelProcessor(BaseProcessor, ABC):
         col1, col2 = st.columns(2)
         col1.image(Image.open(img_path))
         if st.button("Preview"):
-            preds = self.inference([img_path])
+            preds = self.inference(index=n)
             if preds is not None:
                 pred = next(preds)
                 with col2:
@@ -85,7 +90,8 @@ class TfModelProcessor(BaseProcessor, ABC):
             train_data=ds,
             validation_data=val_ds,
             multiprocessing=self.multiprocessing,
-            save_weights_only=self.save_weights_only
+            save_weights_only=self.save_weights_only,
+            inference_fn=self.inference_store
         ).train_model()
 
     def training(self):
@@ -138,12 +144,11 @@ class TfModelProcessor(BaseProcessor, ABC):
         # end mirrored strategy scope
 
         data_generator = self.dataset
-        data_generator.create(*self.input_args())
+        data_generator.create(*self.input_args(include_output_column=True))
         data_generator.peek()
 
         if self.dry_run:
             return
-
         self.train_keras(
             model,
             data_generator.ds,
@@ -151,7 +156,7 @@ class TfModelProcessor(BaseProcessor, ABC):
         )
 
     def inference_store(self):
-        preds = self.inference(self.input_args(dropna_jointly=False)[0])
+        preds = self.inference()
         self.df[self.column_out] = np.nan
         return self.store_preds(preds, self.df)
 
@@ -217,6 +222,10 @@ class TfModelProcessor(BaseProcessor, ABC):
             # if len(self.presets) == 0:
             #    st.warning("No presets selected!")
             #    return
+            if self.column_out not in self.df:
+                st.write("Getting initial predictions")
+                self.inference_store()
+
             self.tensorboard_info()
             preset = self.config.dict()
             if not self.dry_run:
@@ -224,7 +233,6 @@ class TfModelProcessor(BaseProcessor, ABC):
             else:
                 LogDAO(self.input_columns, self.column_out, preset).add("Dry Run")
             self.training()
-            st.info("Training started. View tensorboard for progress.")
 
     def core(self):
         self.dataset.config = self.config

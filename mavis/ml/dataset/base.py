@@ -13,7 +13,7 @@ auto = tf.data.experimental.AUTOTUNE
 
 
 class TFDatasetWrapper(ABC):
-    config: MLConfig = None  # Inject from processor
+    config: MLConfig = None  # Inject from processor at def core()
 
     @staticmethod
     def py_unet_preprocessing(img: tf.Tensor) -> tf.Tensor:
@@ -28,6 +28,7 @@ class TFDatasetWrapper(ABC):
         return img
 
     @staticmethod
+    @tf.function
     def pad_image_to_divisor(image: tf.Tensor, divisor=64) -> tf.Tensor:
         """
         Pads width and height with zeros to make them multiples of `divisor`.
@@ -114,7 +115,8 @@ class TFDatasetWrapper(ABC):
         """
         return self.config.DATASET.AUGMENTATION.get()
 
-    def _apply_img_aug(self, img_tensor, lbl_tensor):
+    def _apply_img_aug(self, img_tensor, lbl_tensor, prediction_tensor):
+
         lbl_shape = tf.shape(lbl_tensor)
         if self.augment_label:
             lbl_tensor = tf.image.convert_image_dtype(lbl_tensor, tf.uint8)
@@ -124,11 +126,12 @@ class TFDatasetWrapper(ABC):
         img_tensor = tf.image.convert_image_dtype(img_tensor, tf.uint8)
         img_shape = tf.shape(img_tensor)
         img_dtype = img_tensor.dtype
+        index_dtype = prediction_tensor.dtype
 
         img_tensor, lbl_tensor = tf.numpy_function(
             self.img_aug,
-            [img_tensor, lbl_tensor],
-            [img_dtype, lbl_dtype]
+            inp=[img_tensor, lbl_tensor, prediction_tensor],
+            Tout=[img_dtype, lbl_dtype]
         )
 
         # img_tensor = tf.reshape(img_tensor, shape=tf.shape())
@@ -140,7 +143,7 @@ class TFDatasetWrapper(ABC):
 
         return img_tensor, lbl_tensor
 
-    def img_aug(self, image: np.ndarray, label: np.ndarray) -> (np.ndarray, np.ndarray):
+    def img_aug(self, image: np.ndarray, label: np.ndarray, predictions: np.ndarray) -> (np.ndarray, np.ndarray):
         raise NotImplementedError
 
     def augment(self):
@@ -165,13 +168,13 @@ class TFDatasetWrapper(ABC):
         self.ds = self.ds.repeat()
         self.ds = self.prepare_batch(self.ds, batch_size)
 
-    def create(self, img_paths, labels):
+    def create(self, img_paths, labels, predictions=None):
         # Convert to str if paths are windows paths
         img_paths = [str(img_path) for img_path in img_paths]
         if labels is None:
             return self.create_inference(img_paths)
         else:
-            return self.create_train(img_paths, labels)
+            return self.create_train(img_paths, labels, predictions=predictions)
 
     def create_inference(self, img_paths) -> (tf.data.Dataset or Sequence):
         """
@@ -219,7 +222,7 @@ class TFDatasetWrapper(ABC):
                     f"Shape {img_np.shape}"
                 )
 
-    def create_train(self, img_paths, labels) -> None:
+    def create_train(self, img_paths, labels, predictions=None) -> None:
         raise NotImplementedError
 
     def peek(self) -> None:

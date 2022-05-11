@@ -88,8 +88,12 @@ class BaseProcessor:
     def preview(self, n) -> None:
         raise NotImplementedError
 
-    def input_args(self, dropna_jointly=True, dropna=True) -> List[List[Any]]:
-        temp_df = self.df[self.input_columns]
+    def input_args(self, dropna_jointly=True, dropna=True, include_output_column=False) -> List[List[Any]]:
+        temp_df = self.df[
+            self.input_columns +
+            ([self.column_out] if include_output_column and self.column_out in self.df else [])
+        ]
+
         if dropna and dropna_jointly:
             temp_df = temp_df.dropna()
 

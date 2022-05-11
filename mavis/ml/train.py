@@ -14,7 +14,7 @@ from tensorflow_addons.optimizers import CyclicalLearningRate
 
 from mavis.db import ProjectDAO, LogPathDAO, ActivePresetDAO
 from mavis.config import MLConfig
-from mavis.ml.callbacks import CheckPoint, ReduceCyclicalLROnPlateau
+from mavis.ml.callbacks import CheckPoint, ReduceCyclicalLROnPlateau, PredictionCallback
 
 
 class TrainingHandler:
@@ -25,7 +25,8 @@ class TrainingHandler:
             train_data: tf.data.Dataset,
             validation_data: tf.data.Dataset,
             multiprocessing=True,
-            save_weights_only=False
+            save_weights_only=False,
+            inference_fn=None,
     ):
         self.train_data = train_data
         self.model = model
@@ -34,6 +35,7 @@ class TrainingHandler:
         self.save_weights_only = save_weights_only
         self.log_dir = self.create_log_dir()
         self.config = config
+        self.inference_fn = inference_fn
 
     def train_model(self) -> None:
         training_thread = threading.Thread(target=self._train_model, daemon=True)
@@ -41,6 +43,7 @@ class TrainingHandler:
         training_thread.start()
 
     def _train_model(self) -> None:
+        st.info("Training started. View tensorboard for progress.")
         model = self.model
         validation_data = self.validation_data
         train_data = self.train_data
@@ -96,6 +99,12 @@ class TrainingHandler:
                 verbose=1,
             )
             cbs.append(reduce_lr_on_plateau)
+
+        if self.inference_fn is not None:
+            prediction_callback = PredictionCallback(
+                self.inference_fn,
+            )
+            cbs.append(prediction_callback)
 
         workers = (
             0

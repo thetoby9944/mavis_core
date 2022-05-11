@@ -1,4 +1,5 @@
 import random
+from abc import ABC
 from typing import List, Tuple, Union, Literal
 
 import albumentations as A
@@ -183,51 +184,58 @@ class CenterCropConfig(AugmentationBaseConfig):
         )
 
 
+class CustomCropNonEmptyMaskIfExists(A.CropNonEmptyMaskIfExists):
+    _target_str_singular = "mask"
+    _target_str_plural = "masks"
+
+    def sample_more_likely_in_the_middle(self, range_length):
+        epsilon = 0.000001
+        return int(np.clip(random.betavariate(5, 5), 0, 1 - epsilon) * range_length)
+
+    def update_params(self, params, **kwargs):
+        super().update_params(params, **kwargs)
+        if self._target_str_singular in kwargs:
+            mask = self._preprocess_mask(kwargs[self._target_str_singular])
+        elif self._target_str_plural in kwargs and len(kwargs[self._target_str_plural]):
+            masks = kwargs[self._target_str_plural]
+            mask = self._preprocess_mask(masks[0])
+            for m in masks[1:]:
+                mask |= self._preprocess_mask(m)
+        else:
+            raise RuntimeError("Can not find mask for CropNonEmptyMaskIfExists")
+
+        mask_height, mask_width = mask.shape[:2]
+
+        if mask.any():
+            mask = mask.sum(axis=-1) if mask.ndim == 3 else mask
+            non_zero_yx = np.argwhere(mask)
+            y, x = random.choice(non_zero_yx)
+            x_min = x - self.sample_more_likely_in_the_middle(self.width)
+            y_min = y - self.sample_more_likely_in_the_middle(self.height)
+            x_min = np.clip(x_min, 0, mask_width - self.width)
+            y_min = np.clip(y_min, 0, mask_height - self.height)
+        else:
+            x_min = random.randint(0, mask_width - self.width)
+            y_min = random.randint(0, mask_height - self.height)
+
+        x_max = x_min + self.width
+        y_max = y_min + self.height
+
+        params.update({"x_min": x_min, "x_max": x_max, "y_min": y_min, "y_max": y_max})
+        return params
+
+
 class MaskCropConfig(AugmentationBaseConfig):
-    class CustomCropNonEmptyMaskIfExists(A.CropNonEmptyMaskIfExists):
-
-        def sample_more_likely_in_the_middle(self, range_length):
-            epsilon = 0.000001
-            return int(np.clip(random.betavariate(5, 5), 0, 1 - epsilon) * range_length)
-
-        def update_params(self, params, **kwargs):
-            super().update_params(params, **kwargs)
-            if "mask" in kwargs:
-                mask = self._preprocess_mask(kwargs["mask"])
-            elif "masks" in kwargs and len(kwargs["masks"]):
-                masks = kwargs["masks"]
-                mask = self._preprocess_mask(masks[0])
-                for m in masks[1:]:
-                    mask |= self._preprocess_mask(m)
-            else:
-                raise RuntimeError("Can not find mask for CropNonEmptyMaskIfExists")
-
-            mask_height, mask_width = mask.shape[:2]
-
-            if mask.any():
-                mask = mask.sum(axis=-1) if mask.ndim == 3 else mask
-                non_zero_yx = np.argwhere(mask)
-                y, x = random.choice(non_zero_yx)
-                x_min = x - self.sample_more_likely_in_the_middle(self.width)
-                y_min = y - self.sample_more_likely_in_the_middle(self.height)
-                x_min = np.clip(x_min, 0, mask_width - self.width)
-                y_min = np.clip(y_min, 0, mask_height - self.height)
-            else:
-                x_min = random.randint(0, mask_width - self.width)
-                y_min = random.randint(0, mask_height - self.height)
-
-            x_max = x_min + self.width
-            y_max = y_min + self.height
-
-            params.update({"x_min": x_min, "x_max": x_max, "y_min": y_min, "y_max": y_max})
-            return params
+    width: int = 32
+    height: int = 32
 
     name: Literal["Random Crop patch where Mask is not empty if exists"] = (
         "Random Crop patch where Mask is not empty if exists"
     )
 
-    width: int = 32
-    height: int = 32
+    class MaskCropNonEmptyMaskIfExists(CustomCropNonEmptyMaskIfExists):
+        _target_str_singular = "mask"
+        _target_str_plural = "masks"
 
     def parameter_block(self):
         super().parameter_block()
@@ -243,12 +251,47 @@ class MaskCropConfig(AugmentationBaseConfig):
         ))
 
     def get(self):
-        return self.CustomCropNonEmptyMaskIfExists(
+        return self.MaskCropNonEmptyMaskIfExists(
             p=self.p,
             width=self.width,
             height=self.height,
             ignore_channels=[0]
         )
+
+
+class HardNegativeCropConfig(AugmentationBaseConfig):
+    width: int = 32
+    height: int = 32
+
+    class HardNegatiaveCropNonEmptyMaskIfExists(CustomCropNonEmptyMaskIfExists):
+        _target_str_singular = "wrong_predictions"
+        _target_str_plural = "wrong_predictions"
+
+    name: Literal["Random Crop patch where Wrong Prediction is not empty if exists"] = (
+        "Random Crop patch where Wrong Prediction is not empty if exists"
+    )
+
+    def parameter_block(self):
+        super().parameter_block()
+        self.width = int(self.st.number_input(
+            "Crop Width", 1, 10 * 100,
+            value=int(self.width),
+            key=self.key("width")
+        ))
+        self.height = int(self.st.number_input(
+            "Crop Height", 1, 10 * 100,
+            value=int(self.height),
+            key=self.key("height")
+        ))
+
+    def get(self):
+        return self.HardNegatiaveCropNonEmptyMaskIfExists(
+            p=self.p,
+            width=self.width,
+            height=self.height,
+            ignore_channels=[0]
+        )
+
 
 
 class BlurConfig(AugmentationBaseConfig):
@@ -567,7 +610,8 @@ class AugmentationConfig(PropertiesContainer):
         ElasticTransformConfig,
         CutoutConfig,
         ColorJitterConfig,
-        CenterCropConfig
+        CenterCropConfig,
+        HardNegativeCropConfig
     ]] = Field([], discriminator="name")
 
     @property
@@ -606,7 +650,10 @@ class AugmentationConfig(PropertiesContainer):
                     p=self.GLOBAL_PROBABILITY,
                     transforms=[a.get()],
                     additional_targets=(
-                        {"label": "image"}
+                        {
+                            "wrong_predictions": "mask",
+                            "label": "image"
+                        }
                         if a.apply_on_label
                         else None
                     )

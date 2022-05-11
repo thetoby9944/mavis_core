@@ -11,7 +11,7 @@ from mavis.ml.dataset.base import TFDatasetWrapper
 
 
 class ImageToImageDataset(TFDatasetWrapper, ABC):
-    def create_train(self, img_paths, labels):
+    def create_train(self, img_paths, labels, predictions=None):
         """
         Prepare Training Dataset (self.ds and self.val_ds)
         """
@@ -19,10 +19,13 @@ class ImageToImageDataset(TFDatasetWrapper, ABC):
 
         image_paths = tf.data.Dataset.from_tensor_slices(img_paths)
         label_paths = tf.data.Dataset.from_tensor_slices(labels)
+        pred_paths = tf.data.Dataset.from_tensor_slices(predictions)
 
         paths = tf.data.Dataset.zip((
             image_paths,
-            label_paths)
+            label_paths,
+            pred_paths,
+        )
         ).shuffle(
             buffer_size=self.config.DATASET.BUFFER_SIZE if self.config.DATASET.BUFFER_SIZE else n_paths,
             reshuffle_each_iteration=False,
@@ -39,14 +42,20 @@ class ImageToImageDataset(TFDatasetWrapper, ABC):
             paths = keep_unshuffled.concatenate(shuffle_each_iteration)
 
         self.ds = paths.map(
-            lambda x, y: (
+            lambda x, y, preds: (
                 self.process_image_path(x),
-                self.process_image_path(y)
-            ),
+                self.process_image_path(y),
+                self.process_image_path(preds)
+        ),
             num_parallel_calls=AUTOTUNE
         )
 
         if not self.config.DATASET.RESHUFFLE_EACH_ITERATION:
+            # We cannot cache if we reshuffle each iteration because cache is static
+            st.warning(
+                "Dataset is cached, predictions will not get updated. "
+                "Check reshuffle each iteration to disable cache"
+            )
             self.ds = self.ds.take(n_paths).cache()
             st.write("Caching Dataset")
             bar = st.progress(0.)

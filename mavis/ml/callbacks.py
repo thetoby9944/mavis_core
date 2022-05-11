@@ -1,6 +1,9 @@
+import keras.callbacks
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.callbacks import Callback
+
+from mavis.ml.dataset.base import TFDatasetWrapper
 
 
 class CheckPoint(tf.keras.callbacks.Callback):
@@ -159,4 +162,10 @@ class ReduceCyclicalLROnPlateau(Callback):
         return self.cooldown_counter > 0
 
 
+class PredictionCallback(keras.callbacks.Callback):
+    def __init__(self, inference_fn):
+        super().__init__()
+        self.inference_fn = inference_fn
 
+    def on_epoch_end(self, epoch, logs={}):
+        self.inference_fn()
