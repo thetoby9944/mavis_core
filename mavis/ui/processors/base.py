@@ -185,6 +185,21 @@ class BaseProcessor:
 
 
 class MultiProcessor(MultiProcessorSettings, ABC):
+    """
+    Sample usage
+
+        class ClusteringProcessor(MultiProcessor):
+            name = "Clustering Methods"
+
+            @property
+            def inputs(self):
+                return {
+                    "K-Means with Affinity Propagation": MeanShiftProcessor,
+                    "Channel-Wise Histogram Binning": HistogramBinningProcessor,
+                    "Median Filter for Saturation and Value": MedianBlurProcessor,
+                }
+
+    """
     def __init__(self, **data: Any):
         super().__init__(**data)
         options = list(self.inputs.keys())

@@ -1,0 +1,1455 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>Python</ID>
+  <OriginalElement />
+  <nodes>
+    <node x="1359.0" y="3067.271863117871">modules.Classical.Color_Quantization.QuantizeImageSettings</node>
+    <node x="1401.0" y="818.9087452471483">mavis.presets.augmentation.RandomCropConfig</node>
+    <node x="376.5" y="1753.8764258555134">mavis.presets.base.BaseConfig</node>
+    <node x="1651.0" y="4862.787863117871">modules.Analysis.Reconstruction_Loss.ReconstructionLossImageProcessor</node>
+    <node x="811.5" y="408.0000000000001">modules.Classical.Morphology.EdgeProcessor</node>
+    <node x="4822.0" y="5142.787863117871">modules.Visualization.Images_Side_by_Side.ImageComparisonWidget</node>
+    <node x="860.5" y="2374.4087452471485">mavis.presets.losses.WJFConfig</node>
+    <node x="973.0" y="4877.271863117871">mavis.ui.processors.image.NumericalProcessor</node>
+    <node x="1413.0" y="971.9087452471484">mavis.presets.augmentation.ZoomOutConfig</node>
+    <node x="917.5" y="4265.271863117871">modules.Data.File_Type_Conversion.ConversionImageProcessor</node>
+    <node x="841.0" y="663.0000000000001">mavis.presets.optimizer.AdamConfig</node>
+    <node x="777.0" y="0.0">modules.ML.Semantic_Segmentation.ArchitectureConfig</node>
+    <node x="1412.0" y="308.9087452471483">mavis.presets.augmentation.MaskCropConfig</node>
+    <node x="3953.0" y="5421.787863117871">mavis.ml.callbacks.CheckPoint</node>
+    <node x="298.0" y="1052.771863117871">modules.ML.Semantic_Segmentation.ArchitectureBase</node>
+    <node x="1369.0" y="563.9087452471483">mavis.presets.augmentation.AdditiveGaussianNoiseConfig</node>
+    <node x="1333.5" y="2761.271863117871">modules.Data.Segmentation_Format_Converter.LabelMe2ColSettings</node>
+    <node x="741.0" y="867.0000000000001">mavis.presets.learning_rates.Triangular2CyclicalLearningRateConfig</node>
+    <node x="1370.5" y="1741.271863117871">modules.Data.Label_Studio_Connector.LabelStudioConfig</node>
+    <node x="1709.0" y="4684.287863117871">modules.Analysis.Image_Quality.QualityImageProcessor</node>
+    <node x="800.0" y="1020.0000000000001">modules.ML.Semantic_Segmentation.UNetConfig</node>
+    <node x="4958.0" y="5421.787863117871">mavis.db.LogDAO</node>
+    <node x="4206.0" y="5345.787863117871">mavis.ui.widgets.workspace.home.TableWidget</node>
+    <node x="2166.0" y="5345.787863117871">mavis.ui.widgets.workspace.file_handling.FileUpload</node>
+    <node x="1391.0" y="1588.271863117871">modules.Classical.Normalize.NormalizationSettings</node>
+    <node x="806.5" y="255.0">modules.Classical.Morphology.MorphProcessor</node>
+    <node x="1691.5" y="4735.287863117871">modules.Data.Segmentation_Format_Converter.Col2LabelMe</node>
+    <node x="4598.0" y="5345.787863117871">modules.Project.File_Export.FileZipperWidget</node>
+    <node x="1390.5" y="155.90874524714832">mavis.presets.augmentation.ElasticTransformConfig</node>
+    <node x="2598.0" y="1685.9087452471485">modules.Data.Segmentation_Format_Converter.Int2ColConfig</node>
+    <node x="2130.0" y="5421.787863117871">mavis.ml.models.static_train.ListView</node>
+    <node x="1314.0" y="1945.271863117871">modules.Data.Segmentation_Format_Converter.ColorMarker2ColorSettings</node>
+    <node x="844.0" y="1150.4087452471485">mavis.config.MultiProcessorSettings</node>
+    <node x="873.0" y="5345.787863117871">mavis.ui.widgets.workflow.workflow.WorkflowWidget</node>
+    <node x="3590.5" y="3194.2718631178714">mavis.db.DataPathDAO</node>
+    <node x="965.5" y="3296.271863117871">mavis.ui.processors.image.ImageGroupProcessor</node>
+    <node x="3011.0" y="5345.787863117871">mavis.ui.widgets.settings.settings.SettingsWidget</node>
+    <node x="1397.5" y="2506.271863117871">modules.Classical.Registration.RegistrationConfig</node>
+    <node x="1407.5" y="1022.9087452471484">mavis.presets.augmentation.InvertBlendConfig</node>
+    <node x="324.5" y="895.4087452471483">mavis.presets.learning_rates.LearningRateBase</node>
+    <node x="1419.0" y="53.90874524714832">mavis.presets.augmentation.ZoomInConfig</node>
+    <node x="3413.0" y="5345.787863117871">mavis.ui.widgets.settings.projects.ProjectWidget</node>
+    <node x="3109.0" y="5142.787863117871">mavis.cvutils.ConnectedComponentSkeletonize</node>
+    <node x="978.5" y="3857.271863117871">modules.Edit.Resizing.ResizeImageProcessor</node>
+    <node x="788.0" y="1804.8764258555134">mavis.ui.widgets.workspace.file_handling.FileSettings</node>
+    <node x="1269.0" y="1792.271863117871">modules.Visualization.Segmentation_Map_Random_Colors_for_Objects.ColorizerSettings</node>
+    <node x="1712.0" y="3318.711863117871">modules.Edit.Tile_Stitching.TileReverseImageProcessor</node>
+    <node x="1423.0" y="104.90874524714832">mavis.presets.augmentation.CutoutConfig</node>
+    <node x="1405.5" y="2302.271863117871">mavis.ui.processors.image.ImageGroupSettings</node>
+    <node x="1391.5" y="716.9087452471483">mavis.presets.augmentation.AffineTransformConfig</node>
+    <node x="1688.0" y="5015.787863117871">modules.Analysis.Line_Segment_Evaluation.ContourEvaluation</node>
+    <node x="941.0" y="4214.271863117871">modules.Classical.Watershed.WatershedImageProcessor</node>
+    <node x="1491.0" y="5269.787863117871">modules.Data.Label_Studio_Connector.OneHot2LabelStudio</node>
+    <node x="3836.0" y="3194.271863117871">mavis.ml.dataset.base.TFDatasetWrapper</node>
+    <node x="1403.5" y="1894.271863117871">modules.Classical.ImageJ_Macros.ImageJConfig</node>
+    <node x="924.0" y="3347.271863117871">modules.Visualization.Image_Overlay.OverlayImageProcessor</node>
+    <node x="1430.5" y="1150.4087452471485">mavis.ui.processors.base.MultiProcessor</node>
+    <node x="921.0" y="4775.271863117871">modules.Data.Segmentation_Format_Converter.Marker2Binary</node>
+    <node x="1451.0" y="1639.271863117871">mavis.config.ClassConfigProperty</node>
+    <node x="839.0" y="3245.271863117871">modules.ML.Deep_Stacked_Hierarchical_Reconstruction.ReconstructionModelProcessor</node>
+    <node x="354.0" y="109.27186311787091">mavis.presets.base.PropertyContainer</node>
+    <node x="380.5" y="2399.9087452471485">mavis.presets.losses.LossBase</node>
+    <node x="1312.5" y="2455.271863117871">modules.Data.Segmentation_Format_Converter.LabelMe2CocoSplitSettings</node>
+    <node x="2061.0" y="2276.771863117871">modules.Edit.Tile_Stitching.TileReverseSettings</node>
+    <node x="861.5" y="2323.4087452471485">mavis.presets.losses.JACConfig</node>
+    <node x="811.5" y="714.0000000000001">mavis.presets.optimizer.RectifiedAdamConfig</node>
+    <node x="2240.0" y="5142.787863117871">mavis.presets.augmentation.CustomCropNonEmptyMaskIfExists</node>
+    <node x="1456.0" y="2200.271863117871">modules.Edit.Crop.CropSettings</node>
+    <node x="862.0" y="2425.4087452471485">mavis.presets.losses.CFLConfig</node>
+    <node x="3320.0" y="3296.2718631178714">mavis.db.ActivePresetDAO</node>
+    <node x="1967.0" y="1379.9087452471483">modules.Analysis.Evaluate_Segmentation_Errors.SegmentationErrorSettings</node>
+    <node x="879.0" y="4673.271863117871">modules.Classical.Variational_Model.MedianNormalizationImageProcessor</node>
+    <node x="3848.0" y="5269.787863117871">mavis.ui.widgets.settings.path_config.PathConfigWidget</node>
+    <node x="4746.0" y="5421.787863117871">mavis.db.LoginDAO</node>
+    <node x="3594.0" y="3245.2718631178714">mavis.db.LogPathDAO</node>
+    <node x="1004.0" y="5269.787863117871">mavis.ui.widgets.workspace.file_handling.FileUploaderWidget</node>
+    <node x="995.0" y="4724.271863117871">modules.Edit.Crop.CropImageProcessor</node>
+    <node x="2053.0" y="1175.9087452471483">modules.Project.File_Export.ExportMultiProcessor</node>
+    <node x="787.5" y="765.0000000000001">mavis.presets.learning_rates.ExponentialDecayConfig</node>
+    <node x="815.5" y="204.0">modules.Classical.Morphology.BlurProcessor</node>
+    <node x="1439.5" y="1996.271863117871">modules.Edit.Resizing.ResizeSettings</node>
+    <node x="1416.0" y="2251.271863117871">modules.Project.File_Export.StorageSettings</node>
+    <node x="1313.0" y="1486.271863117871">modules.Classical.Skeletonize_Components.SkeletonizeComponentSettings</node>
+    <node x="3563.0" y="5269.787863117871">pydantic.main.ModelMetaclass</node>
+    <node x="946.0" y="4367.271863117871">modules.Classical.Morphology.GeneralBinaryProcessor</node>
+    <node x="1711.0" y="4633.287863117871">modules.Analysis.Evaluate_Contours.ContourEvaluation</node>
+    <node x="1485.5" y="3016.271863117871">mavis.config.MLConfig</node>
+    <node x="1417.5" y="665.9087452471483">mavis.presets.augmentation.ContrastConfig</node>
+    <node x="1298.5" y="2404.271863117871">modules.Visualization.Segmentation_Map_Object_Gallery.ObjectGallerySettings</node>
+    <node x="1604.0" y="4440.711863117871">modules.Classical.Skeletonize_Components.ConnectedComponentSkeletonizeProcessor</node>
+    <node x="4252.0" y="5142.787863117871">keras.callbacks.Callback</node>
+    <node x="1306.0" y="5345.787863117871">mavis.ui.widgets.workspace.home.SlimProjectWidget</node>
+    <node x="861.0" y="2272.4087452471485">mavis.presets.losses.FDLConfig</node>
+    <node x="1411.0" y="359.9087452471483">mavis.presets.augmentation.BrightnessConfig</node>
+    <node x="945.0" y="3755.271863117871">modules.Data.Segmentation_Format_Converter.Int2Col</node>
+    <node x="796.0" y="306.0">modules.Classical.Morphology.ThresholdProcessor</node>
+    <node x="1653.0" y="5142.787863117871">albumentations.augmentations.crops.transforms.CropNonEmptyMaskIfExists</node>
+    <node x="1617.0" y="4491.711863117871">modules.Classical.Skeletonize_Components.ConnectedComponentCleanerProcessor</node>
+    <node x="1676.0" y="4072.287863117871">modules.Classical.Color_Quantization.HistogramBinningProcessor</node>
+    <node x="2133.5" y="1690.271863117871">mavis.config.ClassConfig</node>
+    <node x="849.0" y="4622.271863117871">modules.Visualization.Segmentation_Error_Maps.SegmentationErrorImageProcessor</node>
+    <node x="925.0" y="3959.271863117871">modules.Data.Segmentation_Format_Converter.LabelImg2Int</node>
+    <node x="345.0" y="5193.787863117871">mavis.presets.augmentation.BorderMode</node>
+    <node x="1403.0" y="1300.5000000000002">modules.Classical.Morphology.MorphProperties</node>
+    <node x="1465.0" y="5421.787863117871">modules.Project.Edit_Table.EditWidget</node>
+    <node x="1382.5" y="1073.9087452471485">mavis.presets.augmentation.HardNegativeCropConfig</node>
+    <node x="938.0" y="4928.271863117871">modules.Classical.ImageJ_Macros.ImageJImageProcessor</node>
+    <node x="1700.0" y="3267.711863117871">modules.Data.Segmentation_Format_Converter.Masks2Col</node>
+    <node x="2026.0" y="1073.9087452471485">modules.Classical.Color_Quantization.ClusteringProcessor</node>
+    <node x="4979.0" y="5345.787863117871">modules.Edit.Tile_Stitching.OverlapProcessor</node>
+    <node x="1387.5" y="2608.271863117871">modules.Data.File_Type_Conversion.FileTypeSettings</node>
+    <node x="867.5" y="4418.271863117871">modules.Analysis.Horizontal_Color_Distribution.ColorCountingImageProcessor</node>
+    <node x="3323.0" y="3194.2718631178714">mavis.db.SimplePathDAO</node>
+    <node x="792.0" y="1071.0">modules.ML.Semantic_Segmentation.LinkNetConfig</node>
+    <node x="0.0" y="5168.287863117871">mavis.presets.base.ExtendedEnum</node>
+    <node x="1335.5" y="2812.271863117871">modules.Data.Extract_Class_Information.ClassNamesInferenceConfig</node>
+    <node x="2578.0" y="1634.9087452471483">modules.Data.Segmentation_Format_Converter.Col2LabelMeConfig</node>
+    <node x="813.5" y="561.0000000000001">mavis.presets.optimizer.SWA_SGD_Optimizer</node>
+    <node x="2452.0" y="5421.787863117871">mavis.ui.widgets.login.LoginWidget</node>
+    <node x="930.0" y="4520.271863117871">modules.Classical.Normalize.NormalizationImageProcessor</node>
+    <node x="732.0" y="5142.787863117871">albumentations.core.transforms_interface.BasicTransform</node>
+    <node x="778.5" y="969.0000000000001">mavis.presets.learning_rates.CyclicalLearningRateConfig</node>
+    <node x="1432.0" y="206.90874524714832">mavis.presets.augmentation.BlurConfig</node>
+    <node x="0.0" y="767.9087452471483">mavis.presets.base.BaseProperty</node>
+    <node x="1310.0" y="2863.271863117871">modules.Visualization.Segmentation_Error_Maps.SegmentationErrorSettings</node>
+    <node x="1736.0" y="5345.787863117871">mavis.ui.widgets.workspace.file_handling.AddWidget</node>
+    <node x="3375.0" y="5421.787863117871">mavis.ui.widgets.utils.OptionGrid</node>
+    <node x="3038.0" y="3296.2718631178714">mavis.db.SimpleKeyDAO</node>
+    <node x="437.0" y="5345.787863117871">modules.Project.Edit_Table.ImportExportTableWidget</node>
+    <node x="2068.0" y="1583.9087452471483">mavis.config.ClassConfigWithSubsetProperty</node>
+    <node x="3006.0" y="3194.2718631178714">mavis.db.LocalFolderBrowserMixin</node>
+    <node x="1968.0" y="5269.787863117871">modules.Data.Label_Studio_Connector.LabelStudio2OneHot</node>
+    <node x="965.5" y="3551.271863117871">mavis.ui.processors.image.SingleImageProcessor</node>
+    <node x="904.0" y="3500.271863117871">modules.Data.Segmentation_Format_Converter.LabelMe2CocoSplit</node>
+    <node x="355.5" y="4123.287863117871">mavis.ui.processors.image.ImageProcessor</node>
+    <node x="742.0" y="5421.787863117871">label_studio_ml.model.LabelStudioMLBase</node>
+    <node x="1194.0" y="5142.787863117871">albumentations.core.transforms_interface.DualTransform</node>
+    <node x="4735.0" y="3194.271863117871">modules.ML.Semantic_Segmentation.ImageToSegmentationDataset</node>
+    <node x="1658.0" y="5066.787863117871">modules.Analysis.Segmentation_Statistics.MaskFractionImageProcessor</node>
+    <node x="343.0" y="3205.287863117871">mavis.ui.processors.tfmodel.TfModelProcessor</node>
+    <node x="1702.5" y="3984.771863117871">modules.Classical.Color_Quantization.MeanShiftProcessor</node>
+    <node x="803.5" y="357.0">modules.Classical.Morphology.InverterProcessor</node>
+    <node x="2445.0" y="5269.787863117871">mavis.ui.widgets.workspace.file_handling.UploadZipWidget</node>
+    <node x="310.0" y="5142.787863117871">mavis.presets.learning_rates.AvailableLearningRates</node>
+    <node x="925.0" y="4316.271863117871">modules.Data.Segmentation_Format_Converter.LabelMe2Col</node>
+    <node x="320.5" y="510.0000000000001">mavis.presets.base.PropertiesContainerProperty</node>
+    <node x="860.0" y="4469.271863117871">modules.Classical.Skeletonize_Components.ConnectedComponentBaseProcessor</node>
+    <node x="2739.0" y="5142.787863117871">mavis.cvutils.ConnectedComponentCleaner</node>
+    <node x="955.0" y="3806.271863117871">modules.Project.File_Export.StorageImageProcessor</node>
+    <node x="1425.0" y="257.9087452471483">mavis.presets.augmentation.FlipLRConfig</node>
+    <node x="1984.5" y="1481.9087452471483">modules.Analysis.Line_Segment_Evaluation.ContourEvaluationSettings</node>
+    <node x="4494.0" y="5142.787863117871">mavis.ml.callbacks.PredictionCallback</node>
+    <node x="0.0" y="5269.787863117871">mavis.ui.widgets.workspace.file_handling.ImportFromHostWidget</node>
+    <node x="2591.0" y="5345.787863117871">modules.Visualization.Image_Gallery.GalleryWidget</node>
+    <node x="807.0" y="816.0000000000001">mavis.presets.learning_rates.NoScheduleConfig</node>
+    <node x="789.5" y="918.0000000000001">mavis.presets.learning_rates.PolynomialDecayConfig</node>
+    <node x="3388.0" y="5269.787863117871">abc.ABCMeta</node>
+    <node x="1422.5" y="869.9087452471483">mavis.presets.augmentation.FlipUDConfig</node>
+    <node x="2014.0" y="2907.0">modules.ML.Classification_Model.ClassificationModelsConfig</node>
+    <node x="2795.0" y="3347.2718631178714">mavis.db.BaseDAO</node>
+    <node x="919.0" y="4061.271863117871">modules.Classical.Color_Quantization.QuantizeImageProcessor</node>
+    <node x="1385.0" y="2047.271863117871">modules.Visualization.Image_Overlay.OverlaySettings</node>
+    <node x="1000.0" y="3398.271863117871">modules.Edit.Tiles.TileImageProcessor</node>
+    <node x="1698.0" y="4145.727863117871">modules.Classical.Color_Quantization.MedianBlurProcessor</node>
+    <node x="1639.5" y="4964.787863117871">modules.Data.Extract_Class_Information.ClassNameInferenceImageProcessor</node>
+    <node x="1999.5" y="2327.771863117871">modules.Data.Segmentation_Format_Converter.Mask2ColSettings</node>
+    <node x="2000.0" y="1277.9087452471483">modules.Analysis.Reconstruction_Loss.ReconstructionLossSettings</node>
+    <node x="3064.0" y="3398.2718631178714">mavis.db.DFDAO</node>
+    <node x="1411.0" y="920.9087452471484">mavis.presets.augmentation.SaturationConfig</node>
+    <node x="4742.0" y="5269.787863117871">modules.Visualization.Image_Gallery.PPTExportWidget</node>
+    <node x="945.0" y="4010.271863117871">modules.Data.Segmentation_Format_Converter.Col2Int</node>
+    <node x="3581.0" y="3143.2718631178714">mavis.db.ModulePathDAO</node>
+    <node x="1410.0" y="1843.271863117871">modules.Classical.Morphology.MorphSettings</node>
+    <node x="4507.0" y="5421.787863117871">mavis.db.WorkflowDAO</node>
+    <node x="1989.0" y="1124.9087452471485">modules.Analysis.Evaluate_Contours.EvaluateContoursMultiProcessor</node>
+    <node x="846.5" y="612.0000000000001">mavis.presets.optimizer.SGDConfig</node>
+    <node x="1338.0" y="2965.271863117871">modules.Data.Segmentation_Format_Converter.LabelImg2IntConfig</node>
+    <node x="987.0" y="3704.271863117871">modules.Edit.Padding.PadImageProcessor</node>
+    <node x="3339.0" y="3423.7718631178714">mavis.db.ModelDAO</node>
+    <node x="2266.0" y="5015.787863117871">modules.Analysis.Line_Segment_Evaluation.SegmentationEvaluation</node>
+    <node x="1457.0" y="1384.271863117871">mavis.config.NumericalSettings</node>
+    <node x="1105.0" y="5421.787863117871">mavis.ui.widgets.settings.users.UserWidget</node>
+    <node x="1352.5" y="2914.271863117871">modules.Analysis.Segmentation_Statistics.MaskFractionSettings</node>
+    <node x="512.0" y="5269.787863117871">mavis.ui.widgets.workspace.file_handling.ImportHelperWidget</node>
+    <node x="868.0" y="2221.4087452471485">mavis.config.DefaultSettings</node>
+    <node x="903.0" y="3194.271863117871">modules.ML.Semantic_Segmentation.SegmentationModelProcessor</node>
+    <node x="372.0" y="5421.787863117871">mavis.ui.widgets.settings.activity.LogWidget</node>
+    <node x="4193.0" y="3219.771863117871">modules.ML.Classification_Model.ImageToCategoryDataset</node>
+    <node x="1347.5" y="2710.271863117871">modules.Data.Segmentation_Wizard.SegmentationLabelSettings</node>
+    <node x="4231.0" y="3168.771863117871">mavis.ml.dataset.images.ImageToImageDataset</node>
+    <node x="1638.0" y="3551.271863117871">modules.Data.Segmentation_Wizard.SegmentationMapLabelImageProcessor</node>
+    <node x="2058.0" y="1430.9087452471483">modules.Analysis.Image_Quality.QualitySettings</node>
+    <node x="828.0" y="51.0">mavis.presets.optimizer.OptimizerConfig</node>
+    <node x="803.5" y="102.0">mavis.presets.learning_rates.LearningRateConfig</node>
+    <node x="918.0" y="3143.271863117871">modules.ML.Classification_Model.ClassificationModelProcessor</node>
+    <node x="3076.0" y="5421.787863117871">mavis.presets.base.PresetHandler</node>
+    <node x="1329.5" y="1435.271863117871">modules.Data.Segmentation_Format_Converter.Marker2BinarySettings</node>
+    <node x="890.5" y="4112.271863117871">modules.Classical.Image_Processor_Template.TemplateImageProcessor</node>
+    <node x="3864.0" y="5142.787863117871">mavis.ml.callbacks.ReduceCyclicalLROnPlateau</node>
+    <node x="0.0" y="5421.787863117871">mavis.ui.widgets.app_store.AppStoreWidget</node>
+    <node x="1618.0" y="4913.787863117871">modules.Analysis.Evaluate_Segmentation_Errors.SegmentationErrorImageProcessor</node>
+    <node x="2007.5" y="1328.9087452471483">modules.Analysis.Evaluate_Contours.ContourEvaluationSettings</node>
+    <node x="864.0" y="2527.4087452471485">mavis.presets.losses.FJLConfig</node>
+    <node x="3058.5" y="3347.2718631178714">mavis.db.UserDAO</node>
+    <node x="4231.0" y="5421.787863117871">mavis.ui.widgets.utils.ListView</node>
+    <node x="368.5" y="459.0000000000001">mavis.config.ContourFilterConfig</node>
+    <node x="1411.0" y="461.9087452471483">mavis.presets.augmentation.ColorJitterConfig</node>
+    <node x="932.0" y="4163.271863117871">modules.Classical.Registration.RegistrationImageProcessor</node>
+    <node x="2598.0" y="1736.9087452471485">modules.Data.Segmentation_Format_Converter.Col2IntConfig</node>
+    <node x="1428.0" y="1690.271863117871">modules.Edit.Rotate.AutoRotateSettings</node>
+    <node x="334.0" y="357.0">modules.Classical.Morphology.CVProcessor</node>
+    <node x="2681.5" y="1583.9087452471483">mavis.config.ClassConfigWithSubset</node>
+    <node x="1407.5" y="410.9087452471483">mavis.presets.augmentation.CenterCropConfig</node>
+    <node x="1402.0" y="1537.271863117871">modules.Classical.Watershed.WatershedSettings</node>
+    <node x="0.0" y="3664.287863117871">mavis.ui.processors.base.BaseProcessor</node>
+    <node x="4671.0" y="3143.271863117871">modules.ML.Deep_Stacked_Hierarchical_Reconstruction.ImageToReconstructionDataset</node>
+    <node x="834.0" y="1300.5000000000002">mavis.presets.base.PropertiesContainer</node>
+    <node x="1359.5" y="2098.271863117871">modules.Classical.Variational_Model.VariationalModelConfig</node>
+    <node x="1356.0" y="2149.271863117871">modules.Classical.Image_Processor_Template.TemplateConfig</node>
+    <node x="390.0" y="767.9087452471483">mavis.config.ModelConfig</node>
+    <node x="733.0" y="3908.271863117871">modules.Visualization.Segmentation_Map_Random_Colors_for_Objects.ConnectedComponentsColorizeImageProcessor</node>
+    <node x="4297.0" y="5269.787863117871">mavis.ui.widgets.workspace.file_handling.ExportWidget</node>
+    <node x="299.0" y="1583.9087452471483">modules.ML.Semantic_Segmentation.BackboneConfig</node>
+    <node x="1938.0" y="3062.9087452471485">modules.ML.Deep_Stacked_Hierarchical_Reconstruction.ReconstructionModelConfig</node>
+    <node x="384.5" y="408.0000000000001">mavis.config.TrainingConfig</node>
+    <node x="905.5" y="3602.271863117871">modules.Data.Segmentation_Format_Converter.ColorMarker2Color</node>
+    <node x="2289.0" y="4658.787863117871">modules.Analysis.Evaluate_Contours.SegmentationEvaluation</node>
+    <node x="0.0" y="5345.787863117871">modules.Analysis.Numerical_Analysis.PandasProcessor</node>
+    <node x="859.5" y="153.0">mavis.presets.losses.LossConfig</node>
+    <node x="1397.5" y="1249.5000000000002">mavis.presets.augmentation.AugmentationConfig</node>
+    <node x="1402.0" y="512.9087452471483">mavis.presets.augmentation.CompressionConfig</node>
+    <node x="1448.0" y="2659.271863117871">modules.Edit.Padding.PadSettings</node>
+    <node x="336.5" y="665.9087452471483">mavis.presets.optimizer.OptimizerProperty</node>
+    <node x="958.0" y="3449.271863117871">modules.Visualization.Plotting.HistogramProcessor</node>
+    <node x="3329.5" y="3474.7718631178714">mavis.db.PresetListDAO</node>
+    <node x="1461.0" y="2353.271863117871">modules.Edit.Tiles.TileSettings</node>
+    <node x="3671.0" y="5421.787863117871">mavis.ml.train.TrainingHandler</node>
+    <node x="3050.0" y="3245.2718631178714">mavis.db.ProjectDAO</node>
+    <node x="386.0" y="1634.9087452471483">mavis.config.DatasetConfig</node>
+    <node x="2918.0" y="5269.787863117871">mavis.ui.widgets.workspace.file_handling.FileImportWidget</node>
+    <node x="1359.5" y="767.9087452471483">mavis.presets.augmentation.ChangeColorTemperatureConfig</node>
+    <node x="2767.0" y="5421.787863117871">mavis.cvutils.LabelMeJsonWrapper</node>
+    <node x="1984.5" y="1226.9087452471483">modules.Classical.Skeletonize_Components.SkeletonizeMultiProcessor</node>
+    <node x="3039.0" y="3449.2718631178714">mavis.db.SimpleListDAO</node>
+    <node x="1328.5" y="2557.271863117871">modules.Analysis.Horizontal_Color_Distribution.ColorCountingSettings</node>
+    <node x="905.0" y="4571.271863117871">modules.Data.Label_Studio_Connector.LabelStudioImageProcessor</node>
+    <node x="783.5" y="510.0000000000001">mavis.presets.augmentation.AugmentationBaseConfig</node>
+    <node x="813.0" y="2476.4087452471485">mavis.presets.losses.DistTransformLossConfig</node>
+    <node x="837.5" y="3653.271863117871">modules.Visualization.Segmentation_Map_Object_Gallery.ObjectGalleryImageProcessor</node>
+    <node x="967.0" y="4826.271863117871">modules.Edit.Rotate.AutoRotateImageProcessor</node>
+    <node x="3500.0" y="5142.787863117871">tensorflow.python.keras.callbacks.Callback</node>
+    <node x="3810.0" y="5345.787863117871">mavis.ui.widgets.workspace.home.HomeWidget</node>
+    <node x="1802.0" y="5421.787863117871">mavis.ui.widgets.main.ModuleWidget</node>
+    <node x="1999.0" y="3011.9087452471485">modules.ML.Semantic_Segmentation.SegmentationModelsConfig</node>
+    <node x="2308.5" y="4607.787863117871">modules.Analysis.Evaluate_Contours.PolygonEvaluation</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="modules.Classical.Normalize.NormalizationSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-187.5" y="0.0" />
+      <point x="1244.0" y="1603.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.File_Type_Conversion.FileTypeSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-191.0" y="0.0" />
+      <point x="1244.0" y="2623.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Analysis.Evaluate_Contours.ContourEvaluationSettings" target="mavis.config.NumericalSettings" relationship="REALIZATION">
+      <point x="-225.5" y="0.0" />
+      <point x="1913.0" y="1344.4087452471483" />
+      <point x="1913.0" y="1399.771863117871" />
+      <point x="121.5" y="0.0" />
+    </edge>
+    <edge source="modules.Edit.Padding.PadSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-130.5" y="0.0" />
+      <point x="1244.0" y="2674.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="mavis.config.TrainingConfig" target="mavis.presets.base.BaseProperty" relationship="REALIZATION">
+      <point x="-110.0" y="0.0" />
+      <point x="273.0" y="423.5000000000001" />
+      <point x="273.0" y="783.4087452471483" />
+      <point x="124.0" y="0.0" />
+    </edge>
+    <edge source="mavis.config.DatasetConfig" target="mavis.presets.base.BaseProperty" relationship="REALIZATION">
+      <point x="-108.5" y="0.0" />
+      <point x="273.0" y="1650.4087452471483" />
+      <point x="273.0" y="783.4087452471483" />
+      <point x="124.0" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.ImageJ_Macros.ImageJImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-205.5" y="0.0" />
+      <point x="708.0" y="4943.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="modules.Visualization.Segmentation_Map_Object_Gallery.ObjectGalleryImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-306.0" y="0.0" />
+      <point x="708.0" y="3668.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.base.PropertiesContainer" target="mavis.presets.base.BaseConfig" relationship="REALIZATION">
+      <point x="-146.0" y="0.0" />
+      <point x="716.0" y="1316.0000000000002" />
+      <point x="716.0" y="1769.3764258555134" />
+      <point x="118.0" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Morphology.GeneralBinaryProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-197.5" y="0.0" />
+      <point x="708.0" y="4382.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Morphology.MorphProperties" target="mavis.presets.base.PropertiesContainer" relationship="REALIZATION">
+      <point x="-175.5" y="0.0" />
+      <point x="146.0" y="0.0" />
+    </edge>
+    <edge source="mavis.db.ModelDAO" target="mavis.db.SimpleListDAO" relationship="REALIZATION">
+      <point x="-86.5" y="0.0" />
+      <point x="3295.0" y="3439.2718631178714" />
+      <point x="3295.0" y="3464.7718631178714" />
+      <point x="99.0" y="0.0" />
+    </edge>
+    <edge source="modules.Visualization.Segmentation_Map_Object_Gallery.ObjectGallerySettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-280.0" y="0.0" />
+      <point x="1244.0" y="2419.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Morphology.MorphProcessor" target="modules.Classical.Morphology.CVProcessor" relationship="REALIZATION">
+      <point x="-173.5" y="0.0" />
+      <point x="716.0" y="270.5" />
+      <point x="716.0" y="372.5" />
+      <point x="160.5" y="0.0" />
+    </edge>
+    <edge source="modules.ML.Classification_Model.ClassificationModelProcessor" target="mavis.ui.processors.tfmodel.TfModelProcessor" relationship="REALIZATION">
+      <point x="-225.5" y="0.0" />
+      <point x="708.0" y="3158.771863117871" />
+      <point x="708.0" y="3220.787863117871" />
+      <point x="170.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.AdditiveGaussianNoiseConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-209.5" y="0.0" />
+      <point x="1244.0" y="579.4087452471483" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Color_Quantization.QuantizeImageSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-219.5" y="0.0" />
+      <point x="1244.0" y="3082.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Variational_Model.VariationalModelConfig" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-219.0" y="0.0" />
+      <point x="1244.0" y="2113.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Format_Converter.ColorMarker2ColorSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-264.5" y="0.0" />
+      <point x="1244.0" y="1960.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="mavis.ui.processors.base.MultiProcessor" target="mavis.config.MultiProcessorSettings" relationship="REALIZATION">
+      <point x="-148.0" y="0.0" />
+      <point x="136.0" y="0.0" />
+    </edge>
+    <edge source="mavis.db.UserDAO" target="mavis.db.BaseDAO" relationship="REALIZATION">
+      <point x="-79.5" y="0.0" />
+      <point x="80.5" y="0.0" />
+    </edge>
+    <edge source="modules.Edit.Crop.CropImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-148.5" y="0.0" />
+      <point x="708.0" y="4739.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="mavis.ui.processors.image.ImageGroupSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-173.0" y="0.0" />
+      <point x="1244.0" y="2317.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Analysis.Evaluate_Segmentation_Errors.SegmentationErrorSettings" target="mavis.config.NumericalSettings" relationship="REALIZATION">
+      <point x="-266.0" y="0.0" />
+      <point x="1913.0" y="1395.4087452471483" />
+      <point x="1913.0" y="1399.771863117871" />
+      <point x="121.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.base.PropertyContainer" target="mavis.presets.base.BaseProperty" relationship="REALIZATION">
+      <point x="-140.5" y="0.0" />
+      <point x="273.0" y="124.77186311787091" />
+      <point x="273.0" y="783.4087452471483" />
+      <point x="124.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Format_Converter.LabelMe2ColSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-245.0" y="0.0" />
+      <point x="1244.0" y="2776.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.learning_rates.ExponentialDecayConfig" target="mavis.presets.learning_rates.LearningRateBase" relationship="REALIZATION">
+      <point x="-192.5" y="0.0" />
+      <point x="716.0" y="780.5000000000001" />
+      <point x="716.0" y="910.9087452471483" />
+      <point x="170.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.learning_rates.Triangular2CyclicalLearningRateConfig" target="mavis.presets.learning_rates.LearningRateBase" relationship="REALIZATION">
+      <point x="-239.0" y="0.0" />
+      <point x="716.0" y="882.5000000000001" />
+      <point x="716.0" y="910.9087452471483" />
+      <point x="170.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.base.PropertiesContainerProperty" target="mavis.presets.base.BaseProperty" relationship="REALIZATION">
+      <point x="-174.0" y="0.0" />
+      <point x="273.0" y="525.5000000000001" />
+      <point x="273.0" y="783.4087452471483" />
+      <point x="124.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Extract_Class_Information.ClassNamesInferenceConfig" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-243.0" y="0.0" />
+      <point x="1244.0" y="2827.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Watershed.WatershedImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-202.5" y="0.0" />
+      <point x="708.0" y="4229.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="modules.ML.Semantic_Segmentation.ArchitectureConfig" target="mavis.presets.base.PropertyContainer" relationship="REALIZATION">
+      <point x="-203.0" y="0.0" />
+      <point x="716.0" y="15.5" />
+      <point x="716.0" y="124.77186311787091" />
+      <point x="140.5" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Format_Converter.LabelMe2CocoSplitSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-266.0" y="0.0" />
+      <point x="1244.0" y="2470.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Edit.Tiles.TileSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-117.5" y="0.0" />
+      <point x="1244.0" y="2368.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Registration.RegistrationImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-211.5" y="0.0" />
+      <point x="708.0" y="4178.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="mavis.db.LogPathDAO" target="mavis.db.SimplePathDAO" relationship="REALIZATION">
+      <point x="-92.0" y="0.0" />
+      <point x="3556.0" y="3260.7718631178714" />
+      <point x="3556.0" y="3209.7718631178714" />
+      <point x="102.5" y="0.0" />
+    </edge>
+    <edge source="modules.ML.Deep_Stacked_Hierarchical_Reconstruction.ImageToReconstructionDataset" target="mavis.ml.dataset.images.ImageToImageDataset" relationship="REALIZATION">
+      <point x="-306.5" y="0.0" />
+      <point x="4646.0" y="3158.771863117871" />
+      <point x="4646.0" y="3184.271863117871" />
+      <point x="176.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.ElasticTransformConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-188.0" y="0.0" />
+      <point x="1244.0" y="171.40874524714832" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="modules.Edit.Padding.PadImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-156.5" y="0.0" />
+      <point x="708.0" y="3719.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="modules.Visualization.Image_Overlay.OverlayImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-219.5" y="0.0" />
+      <point x="708.0" y="3362.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.optimizer.OptimizerConfig" target="mavis.presets.base.PropertyContainer" relationship="REALIZATION">
+      <point x="-152.0" y="0.0" />
+      <point x="716.0" y="66.5" />
+      <point x="716.0" y="124.77186311787091" />
+      <point x="140.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.learning_rates.LearningRateBase" target="mavis.presets.base.BaseProperty" relationship="REALIZATION">
+      <point x="-170.0" y="0.0" />
+      <point x="273.0" y="910.9087452471483" />
+      <point x="273.0" y="783.4087452471483" />
+      <point x="124.0" y="0.0" />
+    </edge>
+    <edge source="modules.Edit.Resizing.ResizeSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-139.0" y="0.0" />
+      <point x="1244.0" y="2011.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Format_Converter.Int2ColConfig" target="mavis.config.ClassConfig" relationship="REALIZATION">
+      <point x="-220.5" y="0.0" />
+      <point x="2553.0" y="1701.4087452471485" />
+      <point x="2553.0" y="1705.771863117871" />
+      <point x="99.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.losses.LossConfig" target="mavis.presets.base.PropertyContainer" relationship="REALIZATION">
+      <point x="-120.5" y="0.0" />
+      <point x="716.0" y="168.5" />
+      <point x="716.0" y="124.77186311787091" />
+      <point x="140.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.AffineTransformConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-187.0" y="0.0" />
+      <point x="1244.0" y="732.4087452471483" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="mavis.db.SimpleListDAO" target="mavis.db.BaseDAO" relationship="REALIZATION">
+      <point x="-99.0" y="0.0" />
+      <point x="2981.0" y="3464.7718631178714" />
+      <point x="2981.0" y="3362.7718631178714" />
+      <point x="80.5" y="0.0" />
+    </edge>
+    <edge source="modules.Analysis.Evaluate_Contours.ContourEvaluation" target="mavis.ui.processors.image.NumericalProcessor" relationship="REALIZATION">
+      <point x="-199.0" y="0.0" />
+      <point x="1579.0" y="4648.787863117871" />
+      <point x="1579.0" y="4892.771863117871" />
+      <point x="170.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.losses.JACConfig" target="mavis.presets.losses.LossBase" relationship="REALIZATION">
+      <point x="-118.5" y="0.0" />
+      <point x="716.0" y="2338.9087452471485" />
+      <point x="716.0" y="2415.4087452471485" />
+      <point x="114.0" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Watershed.WatershedSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-176.5" y="0.0" />
+      <point x="1244.0" y="1552.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Format_Converter.Marker2BinarySettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-249.0" y="0.0" />
+      <point x="1244.0" y="1450.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Label_Studio_Connector.LabelStudioConfig" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-208.0" y="0.0" />
+      <point x="1244.0" y="1756.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Format_Converter.LabelImg2IntConfig" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-240.5" y="0.0" />
+      <point x="1244.0" y="2980.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="mavis.db.PresetListDAO" target="mavis.db.SimpleListDAO" relationship="REALIZATION">
+      <point x="-96.0" y="0.0" />
+      <point x="3295.0" y="3490.2718631178714" />
+      <point x="3295.0" y="3464.7718631178714" />
+      <point x="99.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Format_Converter.Col2LabelMeConfig" target="mavis.config.ClassConfig" relationship="REALIZATION">
+      <point x="-240.5" y="0.0" />
+      <point x="2553.0" y="1650.4087452471483" />
+      <point x="2553.0" y="1705.771863117871" />
+      <point x="99.5" y="0.0" />
+    </edge>
+    <edge source="mavis.config.MultiProcessorSettings" target="mavis.presets.base.BaseConfig" relationship="REALIZATION">
+      <point x="-136.0" y="0.0" />
+      <point x="716.0" y="1165.9087452471485" />
+      <point x="716.0" y="1769.3764258555134" />
+      <point x="118.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.FlipLRConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-153.5" y="0.0" />
+      <point x="1244.0" y="273.4087452471483" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.FlipUDConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-156.0" y="0.0" />
+      <point x="1244.0" y="885.4087452471483" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="modules.Visualization.Segmentation_Error_Maps.SegmentationErrorImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-294.5" y="0.0" />
+      <point x="708.0" y="4637.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Image_Processor_Template.TemplateConfig" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-222.5" y="0.0" />
+      <point x="1244.0" y="2164.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="mavis.ui.processors.image.ImageGroupProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-178.0" y="0.0" />
+      <point x="708.0" y="3311.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Normalize.NormalizationImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-213.5" y="0.0" />
+      <point x="708.0" y="4535.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.ChangeColorTemperatureConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-219.0" y="0.0" />
+      <point x="1244.0" y="783.4087452471483" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.CutoutConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-155.5" y="0.0" />
+      <point x="1244.0" y="120.40874524714832" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="modules.Analysis.Reconstruction_Loss.ReconstructionLossImageProcessor" target="mavis.ui.processors.image.NumericalProcessor" relationship="REALIZATION">
+      <point x="-259.0" y="0.0" />
+      <point x="1579.0" y="4878.287863117871" />
+      <point x="1579.0" y="4892.771863117871" />
+      <point x="170.5" y="0.0" />
+    </edge>
+    <edge source="modules.ML.Semantic_Segmentation.UNetConfig" target="modules.ML.Semantic_Segmentation.ArchitectureBase" relationship="REALIZATION">
+      <point x="-180.0" y="0.0" />
+      <point x="716.0" y="1035.5" />
+      <point x="716.0" y="1068.271863117871" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.learning_rates.LearningRateConfig" target="mavis.presets.base.PropertyContainer" relationship="REALIZATION">
+      <point x="-176.5" y="0.0" />
+      <point x="716.0" y="117.5" />
+      <point x="716.0" y="124.77186311787091" />
+      <point x="140.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.losses.CFLConfig" target="mavis.presets.losses.LossBase" relationship="REALIZATION">
+      <point x="-118.0" y="0.0" />
+      <point x="716.0" y="2440.9087452471485" />
+      <point x="716.0" y="2415.4087452471485" />
+      <point x="114.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.learning_rates.PolynomialDecayConfig" target="mavis.presets.learning_rates.LearningRateBase" relationship="REALIZATION">
+      <point x="-190.5" y="0.0" />
+      <point x="716.0" y="933.5000000000001" />
+      <point x="716.0" y="910.9087452471483" />
+      <point x="170.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.File_Type_Conversion.ConversionImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-226.0" y="0.0" />
+      <point x="708.0" y="4280.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Morphology.InverterProcessor" target="modules.Classical.Morphology.CVProcessor" relationship="REALIZATION">
+      <point x="-176.5" y="0.0" />
+      <point x="160.5" y="0.0" />
+    </edge>
+    <edge source="modules.ML.Classification_Model.ClassificationModelsConfig" target="mavis.config.MLConfig" relationship="REALIZATION">
+      <point x="-219.0" y="0.0" />
+      <point x="1913.0" y="2922.5" />
+      <point x="1913.0" y="3031.771863117871" />
+      <point x="93.0" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Variational_Model.MedianNormalizationImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-264.5" y="0.0" />
+      <point x="708.0" y="4688.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.BorderMode" target="mavis.presets.base.ExtendedEnum" relationship="REALIZATION">
+      <point x="-153.5" y="0.0" />
+      <point x="285.0" y="5209.287863117871" />
+      <point x="285.0" y="5183.787863117871" />
+      <point x="130.0" y="0.0" />
+    </edge>
+    <edge source="modules.Analysis.Segmentation_Statistics.MaskFractionSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-226.0" y="0.0" />
+      <point x="1244.0" y="2929.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.learning_rates.AvailableLearningRates" target="mavis.presets.base.ExtendedEnum" relationship="REALIZATION">
+      <point x="-188.5" y="0.0" />
+      <point x="285.0" y="5158.287863117871" />
+      <point x="285.0" y="5183.787863117871" />
+      <point x="130.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.ColorJitterConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-167.5" y="0.0" />
+      <point x="1244.0" y="477.4087452471483" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Wizard.SegmentationMapLabelImageProcessor" target="mavis.ui.processors.image.SingleImageProcessor" relationship="REALIZATION">
+      <point x="-272.0" y="0.0" />
+      <point x="178.0" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Color_Quantization.ClusteringProcessor" target="mavis.ui.processors.base.MultiProcessor" relationship="REALIZATION">
+      <point x="-207.0" y="0.0" />
+      <point x="1913.0" y="1089.4087452471485" />
+      <point x="1913.0" y="1165.9087452471485" />
+      <point x="148.0" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.ImageJ_Macros.ImageJConfig" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-175.0" y="0.0" />
+      <point x="1244.0" y="1909.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Analysis.Image_Quality.QualitySettings" target="mavis.config.NumericalSettings" relationship="REALIZATION">
+      <point x="-175.0" y="0.0" />
+      <point x="1913.0" y="1446.4087452471483" />
+      <point x="1913.0" y="1399.771863117871" />
+      <point x="121.5" y="0.0" />
+    </edge>
+    <edge source="modules.Analysis.Evaluate_Segmentation_Errors.SegmentationErrorImageProcessor" target="mavis.ui.processors.image.NumericalProcessor" relationship="REALIZATION">
+      <point x="-292.0" y="0.0" />
+      <point x="1579.0" y="4929.287863117871" />
+      <point x="1579.0" y="4892.771863117871" />
+      <point x="170.5" y="0.0" />
+    </edge>
+    <edge source="modules.Edit.Rotate.AutoRotateSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-150.5" y="0.0" />
+      <point x="1244.0" y="1705.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Morphology.EdgeProcessor" target="modules.Classical.Morphology.CVProcessor" relationship="REALIZATION">
+      <point x="-168.5" y="0.0" />
+      <point x="716.0" y="423.5000000000001" />
+      <point x="716.0" y="372.5" />
+      <point x="160.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.AugmentationConfig" target="mavis.presets.base.PropertiesContainer" relationship="REALIZATION">
+      <point x="-181.0" y="0.0" />
+      <point x="1244.0" y="1265.0000000000002" />
+      <point x="1244.0" y="1316.0000000000002" />
+      <point x="146.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.losses.LossBase" target="mavis.presets.base.BaseProperty" relationship="REALIZATION">
+      <point x="-114.0" y="0.0" />
+      <point x="273.0" y="2415.4087452471485" />
+      <point x="273.0" y="783.4087452471483" />
+      <point x="124.0" y="0.0" />
+    </edge>
+    <edge source="modules.Analysis.Segmentation_Statistics.MaskFractionImageProcessor" target="mavis.ui.processors.image.NumericalProcessor" relationship="REALIZATION">
+      <point x="-252.0" y="0.0" />
+      <point x="1579.0" y="5082.287863117871" />
+      <point x="1579.0" y="4892.771863117871" />
+      <point x="170.5" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Extract_Class_Information.ClassNameInferenceImageProcessor" target="mavis.ui.processors.image.NumericalProcessor" relationship="REALIZATION">
+      <point x="-270.5" y="0.0" />
+      <point x="1579.0" y="4980.287863117871" />
+      <point x="1579.0" y="4892.771863117871" />
+      <point x="170.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.CenterCropConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-171.0" y="0.0" />
+      <point x="1244.0" y="426.4087452471483" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="modules.Project.File_Export.ExportMultiProcessor" target="mavis.ui.processors.base.MultiProcessor" relationship="REALIZATION">
+      <point x="-180.0" y="0.0" />
+      <point x="1913.0" y="1191.4087452471483" />
+      <point x="1913.0" y="1165.9087452471485" />
+      <point x="148.0" y="0.0" />
+    </edge>
+    <edge source="modules.ML.Semantic_Segmentation.ImageToSegmentationDataset" target="mavis.ml.dataset.images.ImageToImageDataset" relationship="REALIZATION">
+      <point x="-242.5" y="0.0" />
+      <point x="4646.0" y="3209.771863117871" />
+      <point x="4646.0" y="3184.271863117871" />
+      <point x="176.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Format_Converter.LabelMe2CocoSplit" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-239.5" y="0.0" />
+      <point x="708.0" y="3515.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Format_Converter.Marker2Binary" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-222.5" y="0.0" />
+      <point x="708.0" y="4790.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="modules.Analysis.Line_Segment_Evaluation.SegmentationEvaluation" target="modules.Analysis.Line_Segment_Evaluation.ContourEvaluation" relationship="REALIZATION">
+      <point x="-242.0" y="0.0" />
+      <point x="222.0" y="0.0" />
+    </edge>
+    <edge source="modules.Visualization.Image_Overlay.OverlaySettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-193.5" y="0.0" />
+      <point x="1244.0" y="2062.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Format_Converter.Mask2ColSettings" target="mavis.ui.processors.image.ImageGroupSettings" relationship="REALIZATION">
+      <point x="-233.5" y="0.0" />
+      <point x="1913.0" y="2343.271863117871" />
+      <point x="1913.0" y="2317.771863117871" />
+      <point x="173.0" y="0.0" />
+    </edge>
+    <edge source="mavis.config.ClassConfig" target="mavis.config.ClassConfigProperty" relationship="REALIZATION">
+      <point x="-99.5" y="0.0" />
+      <point x="1913.0" y="1705.771863117871" />
+      <point x="1913.0" y="1654.771863117871" />
+      <point x="127.5" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Format_Converter.LabelImg2Int" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-218.5" y="0.0" />
+      <point x="708.0" y="3974.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.losses.FDLConfig" target="mavis.presets.losses.LossBase" relationship="REALIZATION">
+      <point x="-119.0" y="0.0" />
+      <point x="716.0" y="2287.9087452471485" />
+      <point x="716.0" y="2415.4087452471485" />
+      <point x="114.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.MaskCropConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-166.5" y="0.0" />
+      <point x="1244.0" y="324.4087452471483" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="modules.Analysis.Reconstruction_Loss.ReconstructionLossSettings" target="mavis.config.NumericalSettings" relationship="REALIZATION">
+      <point x="-233.0" y="0.0" />
+      <point x="1913.0" y="1293.4087452471483" />
+      <point x="1913.0" y="1399.771863117871" />
+      <point x="121.5" y="0.0" />
+    </edge>
+    <edge source="modules.Analysis.Horizontal_Color_Distribution.ColorCountingImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-276.0" y="0.0" />
+      <point x="708.0" y="4433.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="modules.ML.Semantic_Segmentation.ArchitectureBase" target="mavis.presets.base.BaseProperty" relationship="REALIZATION">
+      <point x="-196.5" y="0.0" />
+      <point x="273.0" y="1068.271863117871" />
+      <point x="273.0" y="783.4087452471483" />
+      <point x="124.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.ZoomOutConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-165.5" y="0.0" />
+      <point x="1244.0" y="987.4087452471484" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.base.BaseConfig" target="mavis.presets.base.BaseProperty" relationship="REALIZATION">
+      <point x="-118.0" y="0.0" />
+      <point x="273.0" y="1769.3764258555134" />
+      <point x="273.0" y="783.4087452471483" />
+      <point x="124.0" y="0.0" />
+    </edge>
+    <edge source="modules.ML.Semantic_Segmentation.LinkNetConfig" target="modules.ML.Semantic_Segmentation.ArchitectureBase" relationship="REALIZATION">
+      <point x="-188.0" y="0.0" />
+      <point x="716.0" y="1086.5" />
+      <point x="716.0" y="1068.271863117871" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Color_Quantization.MeanShiftProcessor" target="modules.Classical.Color_Quantization.QuantizeImageProcessor" relationship="REALIZATION">
+      <point x="-207.5" y="0.0" />
+      <point x="1579.0" y="4000.271863117871" />
+      <point x="1579.0" y="4076.771863117871" />
+      <point x="224.5" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Color_Quantization.HistogramBinningProcessor" target="modules.Classical.Color_Quantization.QuantizeImageProcessor" relationship="REALIZATION">
+      <point x="-234.0" y="0.0" />
+      <point x="1579.0" y="4087.787863117871" />
+      <point x="1579.0" y="4076.771863117871" />
+      <point x="224.5" y="0.0" />
+    </edge>
+    <edge source="modules.Edit.Tile_Stitching.TileReverseSettings" target="mavis.ui.processors.image.ImageGroupSettings" relationship="REALIZATION">
+      <point x="-172.0" y="0.0" />
+      <point x="1913.0" y="2292.271863117871" />
+      <point x="1913.0" y="2317.771863117871" />
+      <point x="173.0" y="0.0" />
+    </edge>
+    <edge source="modules.ML.Classification_Model.ImageToCategoryDataset" target="mavis.ml.dataset.base.TFDatasetWrapper" relationship="REALIZATION">
+      <point x="-214.0" y="0.0" />
+      <point x="4168.0" y="3235.271863117871" />
+      <point x="4168.0" y="3209.771863117871" />
+      <point x="153.5" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Color_Quantization.MedianBlurProcessor" target="modules.Classical.Color_Quantization.QuantizeImageProcessor" relationship="REALIZATION">
+      <point x="-212.0" y="0.0" />
+      <point x="1579.0" y="4161.227863117871" />
+      <point x="1579.0" y="4076.771863117871" />
+      <point x="224.5" y="0.0" />
+    </edge>
+    <edge source="mavis.db.SimplePathDAO" target="mavis.db.SimpleKeyDAO" relationship="REALIZATION">
+      <point x="-102.5" y="0.0" />
+      <point x="3295.0" y="3209.7718631178714" />
+      <point x="3295.0" y="3311.7718631178714" />
+      <point x="100.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.CustomCropNonEmptyMaskIfExists" target="albumentations.augmentations.crops.transforms.CropNonEmptyMaskIfExists" relationship="REALIZATION">
+      <point x="-227.0" y="0.0" />
+      <point x="268.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.optimizer.AdamConfig" target="mavis.presets.optimizer.OptimizerProperty" relationship="REALIZATION">
+      <point x="-139.0" y="0.0" />
+      <point x="716.0" y="678.5000000000001" />
+      <point x="716.0" y="681.4087452471483" />
+      <point x="158.0" y="0.0" />
+    </edge>
+    <edge source="modules.ML.Deep_Stacked_Hierarchical_Reconstruction.ReconstructionModelProcessor" target="mavis.ui.processors.tfmodel.TfModelProcessor" relationship="REALIZATION">
+      <point x="-304.5" y="0.0" />
+      <point x="708.0" y="3260.771863117871" />
+      <point x="708.0" y="3220.787863117871" />
+      <point x="170.0" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Color_Quantization.QuantizeImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-224.5" y="0.0" />
+      <point x="708.0" y="4076.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="mavis.db.ActivePresetDAO" target="mavis.db.SimpleKeyDAO" relationship="REALIZATION">
+      <point x="-105.5" y="0.0" />
+      <point x="100.0" y="0.0" />
+    </edge>
+    <edge source="mavis.config.ModelConfig" target="mavis.presets.base.BaseProperty" relationship="REALIZATION">
+      <point x="-104.5" y="0.0" />
+      <point x="124.0" y="0.0" />
+    </edge>
+    <edge source="modules.Project.File_Export.StorageImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-188.5" y="0.0" />
+      <point x="708.0" y="3821.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="modules.Visualization.Segmentation_Error_Maps.SegmentationErrorSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-268.5" y="0.0" />
+      <point x="1244.0" y="2878.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Format_Converter.Int2Col" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-198.5" y="0.0" />
+      <point x="708.0" y="3770.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="modules.Analysis.Horizontal_Color_Distribution.ColorCountingSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-250.0" y="0.0" />
+      <point x="1244.0" y="2572.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="mavis.ml.callbacks.ReduceCyclicalLROnPlateau" target="tensorflow.python.keras.callbacks.Callback" relationship="REALIZATION">
+      <point x="-171.5" y="0.0" />
+      <point x="157.0" y="0.0" />
+    </edge>
+    <edge source="mavis.cvutils.ConnectedComponentSkeletonize" target="mavis.cvutils.ConnectedComponentCleaner" relationship="REALIZATION">
+      <point x="-173.0" y="0.0" />
+      <point x="160.0" y="0.0" />
+    </edge>
+    <edge source="modules.Analysis.Evaluate_Contours.PolygonEvaluation" target="modules.Analysis.Evaluate_Contours.ContourEvaluation" relationship="REALIZATION">
+      <point x="-199.5" y="0.0" />
+      <point x="2241.0" y="4623.287863117871" />
+      <point x="2241.0" y="4648.787863117871" />
+      <point x="199.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.losses.WJFConfig" target="mavis.presets.losses.LossBase" relationship="REALIZATION">
+      <point x="-119.5" y="0.0" />
+      <point x="716.0" y="2389.9087452471485" />
+      <point x="716.0" y="2415.4087452471485" />
+      <point x="114.0" y="0.0" />
+    </edge>
+    <edge source="modules.ML.Semantic_Segmentation.SegmentationModelProcessor" target="mavis.ui.processors.tfmodel.TfModelProcessor" relationship="REALIZATION">
+      <point x="-240.5" y="0.0" />
+      <point x="708.0" y="3209.771863117871" />
+      <point x="708.0" y="3220.787863117871" />
+      <point x="170.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.CompressionConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-176.5" y="0.0" />
+      <point x="1244.0" y="528.4087452471483" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="mavis.config.NumericalSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-121.5" y="0.0" />
+      <point x="1244.0" y="1399.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.optimizer.OptimizerProperty" target="mavis.presets.base.BaseProperty" relationship="REALIZATION">
+      <point x="-158.0" y="0.0" />
+      <point x="273.0" y="681.4087452471483" />
+      <point x="273.0" y="783.4087452471483" />
+      <point x="124.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Format_Converter.LabelMe2Col" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-218.5" y="0.0" />
+      <point x="708.0" y="4331.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.AugmentationBaseConfig" target="mavis.presets.base.PropertiesContainerProperty" relationship="REALIZATION">
+      <point x="-196.5" y="0.0" />
+      <point x="174.0" y="0.0" />
+    </edge>
+    <edge source="mavis.db.ModulePathDAO" target="mavis.db.SimplePathDAO" relationship="REALIZATION">
+      <point x="-105.0" y="0.0" />
+      <point x="3556.0" y="3158.7718631178714" />
+      <point x="3556.0" y="3209.7718631178714" />
+      <point x="102.5" y="0.0" />
+    </edge>
+    <edge source="modules.Analysis.Line_Segment_Evaluation.ContourEvaluation" target="mavis.ui.processors.image.NumericalProcessor" relationship="REALIZATION">
+      <point x="-222.0" y="0.0" />
+      <point x="1579.0" y="5031.287863117871" />
+      <point x="1579.0" y="4892.771863117871" />
+      <point x="170.5" y="0.0" />
+    </edge>
+    <edge source="modules.Analysis.Evaluate_Contours.EvaluateContoursMultiProcessor" target="mavis.ui.processors.base.MultiProcessor" relationship="REALIZATION">
+      <point x="-244.0" y="0.0" />
+      <point x="1913.0" y="1140.4087452471485" />
+      <point x="1913.0" y="1165.9087452471485" />
+      <point x="148.0" y="0.0" />
+    </edge>
+    <edge source="mavis.db.ProjectDAO" target="mavis.db.BaseDAO" relationship="REALIZATION">
+      <point x="-88.0" y="0.0" />
+      <point x="2981.0" y="3260.7718631178714" />
+      <point x="2981.0" y="3362.7718631178714" />
+      <point x="80.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.losses.FJLConfig" target="mavis.presets.losses.LossBase" relationship="REALIZATION">
+      <point x="-116.0" y="0.0" />
+      <point x="716.0" y="2542.9087452471485" />
+      <point x="716.0" y="2415.4087452471485" />
+      <point x="114.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Format_Converter.Col2IntConfig" target="mavis.config.ClassConfig" relationship="REALIZATION">
+      <point x="-220.5" y="0.0" />
+      <point x="2553.0" y="1752.4087452471485" />
+      <point x="2553.0" y="1705.771863117871" />
+      <point x="99.5" y="0.0" />
+    </edge>
+    <edge source="modules.Edit.Crop.CropSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-122.5" y="0.0" />
+      <point x="1244.0" y="2215.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Format_Converter.Masks2Col" target="mavis.ui.processors.image.ImageGroupProcessor" relationship="REALIZATION">
+      <point x="-210.0" y="0.0" />
+      <point x="1579.0" y="3283.211863117871" />
+      <point x="1579.0" y="3311.771863117871" />
+      <point x="178.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.learning_rates.CyclicalLearningRateConfig" target="mavis.presets.learning_rates.LearningRateBase" relationship="REALIZATION">
+      <point x="-201.5" y="0.0" />
+      <point x="716.0" y="984.5000000000001" />
+      <point x="716.0" y="910.9087452471483" />
+      <point x="170.0" y="0.0" />
+    </edge>
+    <edge source="mavis.config.ClassConfigWithSubsetProperty" target="mavis.config.ClassConfigProperty" relationship="REALIZATION">
+      <point x="-165.0" y="0.0" />
+      <point x="1913.0" y="1599.4087452471483" />
+      <point x="1913.0" y="1654.771863117871" />
+      <point x="127.5" y="0.0" />
+    </edge>
+    <edge source="pydantic.main.ModelMetaclass" target="abc.ABCMeta" relationship="REALIZATION">
+      <point x="-120.0" y="0.0" />
+      <point x="62.5" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Format_Converter.Col2Int" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-198.5" y="0.0" />
+      <point x="708.0" y="4025.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="mavis.ui.widgets.workspace.file_handling.FileSettings" target="mavis.presets.base.BaseConfig" relationship="REALIZATION">
+      <point x="-192.0" y="0.0" />
+      <point x="716.0" y="1820.3764258555134" />
+      <point x="716.0" y="1769.3764258555134" />
+      <point x="118.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.SaturationConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-167.5" y="0.0" />
+      <point x="1244.0" y="936.4087452471484" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="mavis.db.SimplePathDAO" target="mavis.db.LocalFolderBrowserMixin" relationship="REALIZATION">
+      <point x="-102.5" y="0.0" />
+      <point x="132.0" y="0.0" />
+    </edge>
+    <edge source="modules.Analysis.Evaluate_Contours.SegmentationEvaluation" target="modules.Analysis.Evaluate_Contours.ContourEvaluation" relationship="REALIZATION">
+      <point x="-219.0" y="0.0" />
+      <point x="2241.0" y="4674.287863117871" />
+      <point x="2241.0" y="4648.787863117871" />
+      <point x="199.0" y="0.0" />
+    </edge>
+    <edge source="modules.Edit.Tiles.TileImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-143.5" y="0.0" />
+      <point x="708.0" y="3413.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Morphology.MorphSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-168.5" y="0.0" />
+      <point x="1244.0" y="1858.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Format_Converter.ColorMarker2Color" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-238.0" y="0.0" />
+      <point x="708.0" y="3617.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.losses.DistTransformLossConfig" target="mavis.presets.losses.LossBase" relationship="REALIZATION">
+      <point x="-167.0" y="0.0" />
+      <point x="716.0" y="2491.9087452471485" />
+      <point x="716.0" y="2415.4087452471485" />
+      <point x="114.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.InvertBlendConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-171.0" y="0.0" />
+      <point x="1244.0" y="1038.4087452471485" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="modules.ML.Semantic_Segmentation.BackboneConfig" target="mavis.presets.base.BaseProperty" relationship="REALIZATION">
+      <point x="-195.5" y="0.0" />
+      <point x="273.0" y="1599.4087452471483" />
+      <point x="273.0" y="783.4087452471483" />
+      <point x="124.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Label_Studio_Connector.LabelStudioImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-238.5" y="0.0" />
+      <point x="708.0" y="4586.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Skeletonize_Components.SkeletonizeMultiProcessor" target="mavis.ui.processors.base.MultiProcessor" relationship="REALIZATION">
+      <point x="-248.5" y="0.0" />
+      <point x="1913.0" y="1242.4087452471483" />
+      <point x="1913.0" y="1165.9087452471485" />
+      <point x="148.0" y="0.0" />
+    </edge>
+    <edge source="modules.Project.File_Export.StorageSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-162.5" y="0.0" />
+      <point x="1244.0" y="2266.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Morphology.BlurProcessor" target="modules.Classical.Morphology.CVProcessor" relationship="REALIZATION">
+      <point x="-164.5" y="0.0" />
+      <point x="716.0" y="219.5" />
+      <point x="716.0" y="372.5" />
+      <point x="160.5" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Skeletonize_Components.SkeletonizeComponentSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-265.5" y="0.0" />
+      <point x="1244.0" y="1501.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="mavis.ui.processors.image.NumericalProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-170.5" y="0.0" />
+      <point x="708.0" y="4892.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Wizard.SegmentationLabelSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-231.0" y="0.0" />
+      <point x="1244.0" y="2725.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="modules.Visualization.Plotting.HistogramProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-185.5" y="0.0" />
+      <point x="708.0" y="3464.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="modules.ML.Deep_Stacked_Hierarchical_Reconstruction.ReconstructionModelConfig" target="mavis.config.MLConfig" relationship="REALIZATION">
+      <point x="-295.0" y="0.0" />
+      <point x="1913.0" y="3078.4087452471485" />
+      <point x="1913.0" y="3031.771863117871" />
+      <point x="93.0" y="0.0" />
+    </edge>
+    <edge source="mavis.config.ClassConfigProperty" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-127.5" y="0.0" />
+      <point x="1244.0" y="1654.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="mavis.ui.processors.tfmodel.TfModelProcessor" target="mavis.ui.processors.base.BaseProcessor" relationship="REALIZATION">
+      <point x="-170.0" y="0.0" />
+      <point x="318.0" y="3220.787863117871" />
+      <point x="318.0" y="3679.787863117871" />
+      <point x="146.5" y="0.0" />
+    </edge>
+    <edge source="mavis.config.MLConfig" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-93.0" y="0.0" />
+      <point x="1244.0" y="3031.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.optimizer.SWA_SGD_Optimizer" target="mavis.presets.optimizer.OptimizerProperty" relationship="REALIZATION">
+      <point x="-166.5" y="0.0" />
+      <point x="716.0" y="576.5000000000001" />
+      <point x="716.0" y="681.4087452471483" />
+      <point x="158.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.BrightnessConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-167.5" y="0.0" />
+      <point x="1244.0" y="375.4087452471483" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.RandomCropConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-177.5" y="0.0" />
+      <point x="1244.0" y="834.4087452471483" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.learning_rates.NoScheduleConfig" target="mavis.presets.learning_rates.LearningRateBase" relationship="REALIZATION">
+      <point x="-173.0" y="0.0" />
+      <point x="716.0" y="831.5000000000001" />
+      <point x="716.0" y="910.9087452471483" />
+      <point x="170.0" y="0.0" />
+    </edge>
+    <edge source="modules.Edit.Resizing.ResizeImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-165.0" y="0.0" />
+      <point x="708.0" y="3872.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.optimizer.RectifiedAdamConfig" target="mavis.presets.optimizer.OptimizerProperty" relationship="REALIZATION">
+      <point x="-168.5" y="0.0" />
+      <point x="716.0" y="729.5000000000001" />
+      <point x="716.0" y="681.4087452471483" />
+      <point x="158.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.optimizer.SGDConfig" target="mavis.presets.optimizer.OptimizerProperty" relationship="REALIZATION">
+      <point x="-133.5" y="0.0" />
+      <point x="716.0" y="627.5000000000001" />
+      <point x="716.0" y="681.4087452471483" />
+      <point x="158.0" y="0.0" />
+    </edge>
+    <edge source="mavis.ui.processors.image.ImageProcessor" target="mavis.ui.processors.base.BaseProcessor" relationship="REALIZATION">
+      <point x="-157.5" y="0.0" />
+      <point x="318.0" y="4138.787863117871" />
+      <point x="318.0" y="3679.787863117871" />
+      <point x="146.5" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Skeletonize_Components.ConnectedComponentBaseProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-283.5" y="0.0" />
+      <point x="708.0" y="4484.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Morphology.ThresholdProcessor" target="modules.Classical.Morphology.CVProcessor" relationship="REALIZATION">
+      <point x="-184.0" y="0.0" />
+      <point x="716.0" y="321.5" />
+      <point x="716.0" y="372.5" />
+      <point x="160.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.ZoomInConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-159.5" y="0.0" />
+      <point x="1244.0" y="69.40874524714832" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="modules.Analysis.Line_Segment_Evaluation.ContourEvaluationSettings" target="mavis.config.NumericalSettings" relationship="REALIZATION">
+      <point x="-248.5" y="0.0" />
+      <point x="1913.0" y="1497.4087452471483" />
+      <point x="1913.0" y="1399.771863117871" />
+      <point x="121.5" y="0.0" />
+    </edge>
+    <edge source="mavis.db.DFDAO" target="mavis.db.BaseDAO" relationship="REALIZATION">
+      <point x="-74.0" y="0.0" />
+      <point x="2981.0" y="3413.7718631178714" />
+      <point x="2981.0" y="3362.7718631178714" />
+      <point x="80.5" y="0.0" />
+    </edge>
+    <edge source="mavis.config.ContourFilterConfig" target="mavis.presets.base.BaseProperty" relationship="REALIZATION">
+      <point x="-126.0" y="0.0" />
+      <point x="273.0" y="474.5000000000001" />
+      <point x="273.0" y="783.4087452471483" />
+      <point x="124.0" y="0.0" />
+    </edge>
+    <edge source="modules.Edit.Tile_Stitching.TileReverseImageProcessor" target="mavis.ui.processors.image.ImageGroupProcessor" relationship="REALIZATION">
+      <point x="-198.0" y="0.0" />
+      <point x="1579.0" y="3334.211863117871" />
+      <point x="1579.0" y="3311.771863117871" />
+      <point x="178.0" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Morphology.CVProcessor" target="mavis.presets.base.BaseProperty" relationship="REALIZATION">
+      <point x="-160.5" y="0.0" />
+      <point x="273.0" y="372.5" />
+      <point x="273.0" y="783.4087452471483" />
+      <point x="124.0" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Skeletonize_Components.ConnectedComponentSkeletonizeProcessor" target="modules.Classical.Skeletonize_Components.ConnectedComponentBaseProcessor" relationship="REALIZATION">
+      <point x="-306.0" y="0.0" />
+      <point x="1579.0" y="4456.211863117871" />
+      <point x="1579.0" y="4484.771863117871" />
+      <point x="283.5" y="0.0" />
+    </edge>
+    <edge source="mavis.config.DefaultSettings" target="mavis.presets.base.BaseConfig" relationship="REALIZATION">
+      <point x="-112.0" y="0.0" />
+      <point x="716.0" y="2236.9087452471485" />
+      <point x="716.0" y="1769.3764258555134" />
+      <point x="118.0" y="0.0" />
+    </edge>
+    <edge source="mavis.ml.callbacks.PredictionCallback" target="keras.callbacks.Callback" relationship="REALIZATION">
+      <point x="-141.5" y="0.0" />
+      <point x="96.0" y="0.0" />
+    </edge>
+    <edge source="modules.Analysis.Image_Quality.QualityImageProcessor" target="mavis.ui.processors.image.NumericalProcessor" relationship="REALIZATION">
+      <point x="-201.0" y="0.0" />
+      <point x="1579.0" y="4699.787863117871" />
+      <point x="1579.0" y="4892.771863117871" />
+      <point x="170.5" y="0.0" />
+    </edge>
+    <edge source="mavis.db.DataPathDAO" target="mavis.db.SimplePathDAO" relationship="REALIZATION">
+      <point x="-95.5" y="0.0" />
+      <point x="102.5" y="0.0" />
+    </edge>
+    <edge source="modules.Visualization.Segmentation_Map_Random_Colors_for_Objects.ColorizerSettings" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-309.5" y="0.0" />
+      <point x="1244.0" y="1807.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.BlurConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-146.5" y="0.0" />
+      <point x="1244.0" y="222.40874524714832" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="mavis.ui.processors.image.SingleImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-178.0" y="0.0" />
+      <point x="708.0" y="3566.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="albumentations.core.transforms_interface.DualTransform" target="albumentations.core.transforms_interface.BasicTransform" relationship="REALIZATION">
+      <point x="-204.5" y="0.0" />
+      <point x="206.0" y="0.0" />
+    </edge>
+    <edge source="mavis.config.ClassConfigWithSubset" target="mavis.config.ClassConfigWithSubsetProperty" relationship="REALIZATION">
+      <point x="-137.0" y="0.0" />
+      <point x="165.0" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Image_Processor_Template.TemplateImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-253.0" y="0.0" />
+      <point x="708.0" y="4127.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="modules.Edit.Rotate.AutoRotateImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-176.5" y="0.0" />
+      <point x="708.0" y="4841.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="mavis.db.SimpleKeyDAO" target="mavis.db.BaseDAO" relationship="REALIZATION">
+      <point x="-100.0" y="0.0" />
+      <point x="2981.0" y="3311.7718631178714" />
+      <point x="2981.0" y="3362.7718631178714" />
+      <point x="80.5" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Skeletonize_Components.ConnectedComponentCleanerProcessor" target="modules.Classical.Skeletonize_Components.ConnectedComponentBaseProcessor" relationship="REALIZATION">
+      <point x="-293.0" y="0.0" />
+      <point x="1579.0" y="4507.211863117871" />
+      <point x="1579.0" y="4484.771863117871" />
+      <point x="283.5" y="0.0" />
+    </edge>
+    <edge source="mavis.ml.dataset.images.ImageToImageDataset" target="mavis.ml.dataset.base.TFDatasetWrapper" relationship="REALIZATION">
+      <point x="-176.0" y="0.0" />
+      <point x="4168.0" y="3184.271863117871" />
+      <point x="4168.0" y="3209.771863117871" />
+      <point x="153.5" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.HardNegativeCropConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-196.0" y="0.0" />
+      <point x="1244.0" y="1089.4087452471485" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="modules.Visualization.Segmentation_Map_Random_Colors_for_Objects.ConnectedComponentsColorizeImageProcessor" target="mavis.ui.processors.image.ImageProcessor" relationship="REALIZATION">
+      <point x="-410.5" y="0.0" />
+      <point x="708.0" y="3923.771863117871" />
+      <point x="708.0" y="4138.787863117871" />
+      <point x="157.5" y="0.0" />
+    </edge>
+    <edge source="albumentations.augmentations.crops.transforms.CropNonEmptyMaskIfExists" target="albumentations.core.transforms_interface.DualTransform" relationship="REALIZATION">
+      <point x="-268.5" y="0.0" />
+      <point x="204.5" y="0.0" />
+    </edge>
+    <edge source="modules.Classical.Registration.RegistrationConfig" target="mavis.config.DefaultSettings" relationship="REALIZATION">
+      <point x="-181.0" y="0.0" />
+      <point x="1244.0" y="2521.771863117871" />
+      <point x="1244.0" y="2236.9087452471485" />
+      <point x="112.0" y="0.0" />
+    </edge>
+    <edge source="mavis.presets.augmentation.ContrastConfig" target="mavis.presets.augmentation.AugmentationBaseConfig" relationship="REALIZATION">
+      <point x="-161.0" y="0.0" />
+      <point x="1244.0" y="681.4087452471483" />
+      <point x="1244.0" y="525.5000000000001" />
+      <point x="196.5" y="0.0" />
+    </edge>
+    <edge source="modules.ML.Semantic_Segmentation.SegmentationModelsConfig" target="mavis.config.MLConfig" relationship="REALIZATION">
+      <point x="-234.0" y="0.0" />
+      <point x="1913.0" y="3027.4087452471485" />
+      <point x="1913.0" y="3031.771863117871" />
+      <point x="93.0" y="0.0" />
+    </edge>
+    <edge source="modules.Data.Segmentation_Format_Converter.Col2LabelMe" target="mavis.ui.processors.image.NumericalProcessor" relationship="REALIZATION">
+      <point x="-218.5" y="0.0" />
+      <point x="1579.0" y="4750.787863117871" />
+      <point x="1579.0" y="4892.771863117871" />
+      <point x="170.5" y="0.0" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic" zoom="0.17248309884889454" showDependencies="false" x="2659.5" y="2726.5" />
+  <SelectedNodes />
+  <Categories />
+</Diagram>
+

@@ -168,4 +168,5 @@ class PredictionCallback(keras.callbacks.Callback):
         self.inference_fn = inference_fn
 
     def on_epoch_end(self, epoch, logs={}):
-        self.inference_fn()
+        if (epoch + 1) % 5 == 0:
+            self.inference_fn()

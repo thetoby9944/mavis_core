@@ -45,7 +45,7 @@ class DefaultSettings(BaseConfig):
         if label:
             self.column_out = st.text_input(
                 "Remember Results in",
-                f"{self.input_columns[0]} {label}"
+                (f"{self.input_columns[0]} " if len(self.input_columns) else '') + label
             )
         if suffix:
             self._suffix = suffix

@@ -29,7 +29,7 @@ class TFDatasetWrapper(ABC):
 
     @staticmethod
     @tf.function
-    def pad_image_to_divisor(image: tf.Tensor, divisor=64) -> tf.Tensor:
+    def pad_image_to_divisor(image: tf.Tensor, divisor=32) -> tf.Tensor:
         """
         Pads width and height with zeros to make them multiples of `divisor`.
         E.g. The multiple of 64 is needed to ensure smooth scaling of feature
