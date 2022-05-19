@@ -52,7 +52,9 @@ class AugmentationBaseConfig(PropertiesContainerProperty):
             f"Apply on Label",
             self.apply_on_label,
             key=self.key("apply"),
-            help="For categorical and mask data, this field has no effect"
+            help="Only relevant for reconstruction labels. "
+                 "For categorical and mask data, this field has no effect. "
+                 "Transforms are always applied to masks. "
         ))
 
 
@@ -98,6 +100,8 @@ class ZoomOutConfig(AugmentationBaseConfig):
         )
 
     def parameter_block(self):
+        super().parameter_block()
+
         self.pad_mode = self.st.selectbox(
             "Void Area Treatment for Zoom Out. Extend border values:",
             BorderMode.values(),
@@ -106,6 +110,12 @@ class ZoomOutConfig(AugmentationBaseConfig):
             else 0,
             key=self.key("")
         )
+
+        self.percent = float(self.st.number_input(
+            "Zoom out percentage", 0., 1.,
+            value=self.percent,
+            key=self.key("zoom_out")
+        ))
 
 
 class ZoomInConfig(AugmentationBaseConfig):
@@ -120,6 +130,15 @@ class ZoomInConfig(AugmentationBaseConfig):
             sample_independently=self.sample_independently,
             percent=(-self.percent, 0),
         )
+
+    def parameter_block(self):
+        super().parameter_block()
+
+        self.percent = float(self.st.number_input(
+            "Zoom In percentage", 0., 1.,
+            value=self.percent,
+            key=self.key("zoom_in")
+        ))
 
 
 class RandomCropConfig(AugmentationBaseConfig):
@@ -468,7 +487,7 @@ class ChangeColorTemperatureConfig(AugmentationBaseConfig):
 
 
 class ColorJitterConfig(AugmentationBaseConfig):
-    name: Literal["Color Temperature"] = "Random HSV Color Jitter"
+    name: Literal["Random HSV Color Jitter"] = "Random HSV Color Jitter"
 
     def get(self):
         return A.ColorJitter(
