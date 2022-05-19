@@ -659,5 +659,6 @@ class AugmentationConfig(PropertiesContainer):
                     )
                 )
                 for a in self.ACTIVE
+                # if a.apply_during_inference
             ]
         )

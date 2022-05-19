@@ -1,32 +1,64 @@
-What you get from Using ImageProcessor
-========================================
+What you get from inheriting :code:`mavis.processors.BaseProcessor`
+==============================================================================
 
 
 Settings Persistence
 ________________________________
 
+
+- All settings that you configure in the module will be saved.
+- You can save multiple settings for the module under different names.
+- You can export and import settings from different sessions.
+- Settings are saved per workspace / user.
+
 Preview Functionality
 ________________________________
+
+You can enable a life preview for your module. This way, you always know what
+output is to be expected.
 
 Batch processing
 ________________________________
 
+After you are done configuring your module,
+it will run on all the inputs from your dataframe
+
 Activity Logging
 ________________________________
 
-Parameter Logging
-________________________________
+For each batch-run in a module, mavis will remember
+
+- User
+- Project
+- Preset Name
+- Preset Configuration
+- Activity Type
+- Time
+- Inputs
+- Outputs
+
+This way you can replicate and look up all changes made.
+You can even access the settings which were used during this run,
+export it and use those settings again or somewhere else.
+
 
 Workflow Builder
 ________________________________
 
+You can chain modules with saved settings into workflows.
+Next time you use the workflow, just click next until you are done.
+
 Code Sharing
 ________________________________
 
+You can export your module as a link and send it over slack or mail or whatsapp.
+The link contains all the code of the module, the next person will receive a full
+copy of the module which will be installed into their local mavis environment.
+If you want to install on a server or remote machine, you can change the target url.
 
 
-What you get from Using TFModelProcessor
-=========================================
+What you (additionally) get from inheriting :code:`mavis.processors.TFModelProcessor`
+===============================================================================
 
 
 Loss functions
@@ -74,6 +106,7 @@ module, you can drop-in your own keras implementations.
 
 tf.Dataset handling
 ________________________________
+
 
 Mavis works with tf.data.Datasets.
 It will automatically prefetch, batch and split your data.
