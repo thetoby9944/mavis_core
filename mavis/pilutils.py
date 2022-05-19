@@ -12,7 +12,7 @@ IMAGE_FILETYPE_EXTENSIONS = [".bmp", ".png", ".jpg", ".jpeg", ".tif", ".tiff"]
 FILETYPE_EXTENSIONS = IMAGE_FILETYPE_EXTENSIONS + [".xml", ".json"]
 
 
-def pil(img: np.ndarray, normalize=True, verbose=True):
+def pil(img: np.ndarray, normalize=True, verbose=False):
     """
     Convert any 1 or 3 channel ndarray to uint8 RGB pil image
 
