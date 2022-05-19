@@ -96,7 +96,8 @@ class ZoomOutConfig(AugmentationBaseConfig):
             p=self.p,
             sample_independently=self.sample_independently,
             percent=(0, self.percent),
-            pad_mode=BorderMode.to_cv2(self.pad_mode)
+            pad_mode=BorderMode.to_cv2(self.pad_mode),
+            interpolation=cv2.INTER_NEAREST
         )
 
     def parameter_block(self):
@@ -129,6 +130,7 @@ class ZoomInConfig(AugmentationBaseConfig):
             p=self.p,
             sample_independently=self.sample_independently,
             percent=(-self.percent, 0),
+            interpolation=cv2.INTER_NEAREST
         )
 
     def parameter_block(self):
