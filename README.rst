@@ -75,7 +75,7 @@ Screenshots
 ------------
 
 .. _screenshot:
-.. figure:: docs/images/screenshot_home_screen.png
+.. figure:: mavis/assets/images/screenshot_home_screen.png
    :align: left
    :alt:
    :scale: 35 %
