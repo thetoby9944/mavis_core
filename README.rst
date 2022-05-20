@@ -37,12 +37,18 @@ To run, call `mavis` from your conda environment
     mavis
 
 
-Legal
------
 
-.. admonition:: License
 
-    This software is licensed under AGPL v3
+
+Usage
+-----------
+
+
+.. admonition:: Docs
+
+    For documentation and usage see
+
+    https://mavis-core.readthedocs.io/en/latest/
 
 
 .. admonition:: Cite
@@ -63,5 +69,15 @@ Legal
             journal = {GitHub repository},
             howpublished = {\url{https://github.com/thetoby9944/mavis_core}},
         }
+
+
+Screenshots
+------------
+
+.. _screenshot:
+.. figure:: docs/images/screenshot_home_screen.png
+   :align: left
+   :alt:
+   :scale: 35 %
 
 
