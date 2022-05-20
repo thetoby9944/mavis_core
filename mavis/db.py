@@ -29,8 +29,8 @@ def get(**kwargs):
             st.session_state[key] = val
             # sleep(1)
             assert st.session_state.get(key, val) == val
-        res += [st.session_state[key].copy()]
-
+        res += [st.session_state[key]]
+    res = res.copy()
     if len(res) == 0:
         return st.session_state
     if len(res) == 1:
