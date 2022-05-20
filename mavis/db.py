@@ -27,9 +27,9 @@ def get(**kwargs):
     for key, val in kwargs.items():
         if key not in st.session_state:
             st.session_state[key] = val
-            sleep(1)
-            assert st.session_state[key] == val
-        res += [st.session_state[key]]
+            # sleep(1)
+            assert st.session_state.get(key, val) == val
+        res += [st.session_state[key].copy()]
 
     if len(res) == 0:
         return st.session_state

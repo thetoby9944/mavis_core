@@ -209,21 +209,25 @@ class PresetHandler(ABC):
 
     @staticmethod
     def export_preset(self: BaseConfig, file_name: str):
-        st.write("###### Export Preset")
-
+        # st.write("###### Export Preset")
+        download_button_cnt = st.empty()
         zip_buffer = io.BytesIO()
         with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
             zip_file.writestr(f"{self.__class__.__name__}.json", self.json())
 
             if hasattr(self, "MODEL"):
                 model_path = Path(self.MODEL.MODEL_PATH)
-                if model_path.is_file() and st.checkbox("Zip model"):
+                if model_path.is_file() and st.checkbox(
+                        ".h5",
+                        help="Include the model as .h5 file in the settings .zip"
+                ):
                     zip_file.write(model_path, model_path.name)
 
-        st.download_button(
-            "Export Preset",
+        download_button_cnt.download_button(
+            "⚙",
             zip_buffer.getvalue(),
-            file_name
+            file_name,
+            help="Export Settings"
         )
 
     @staticmethod

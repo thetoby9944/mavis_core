@@ -170,34 +170,35 @@ class TableWidget:
             if st.button("Download .csv"):
                 ExportWidget(f"{name}.csv").df_link(csv_args)
 
-        numeric_df: pd.DataFrame = df.select_dtypes(include=[np.number])
-        if len(numeric_df.columns) and st.checkbox("Show Statistics"):
-            st.dataframe(numeric_df.describe())
-        if st.checkbox("Show Info"):
-            buf = io.StringIO()
-            df.info(buf=buf)
-            st.code(buf.getvalue())
-
         selection = grid_response['selected_rows']
-        if selection:
-            st.write("---")
-
-        columns = st.columns(len(df.columns))
         for selected_row in selection:
-            for st_column, (df_column, value) in zip(columns, selected_row.items()):
-                with st_column:
+            st.write("---")
+            content_columns = [
+                column
+                for i in range(
+                    ((len(df.columns) // 4) + 1)
+                )
+                for column in st.columns(4)
+            ]
+
+            for (column), (df_column, value) in zip(content_columns, selected_row.items()):
+                with column:
                     st.write(f"**{df_column}**")
 
-        columns = st.columns(len(df.columns))
-        for selected_row in selection:
-            for st_column, (df_column, value) in zip(columns, selected_row.items()):
-                with st_column:
                     path_value = Path(value)
                     if path_value.is_file() and path_value.suffix in IMAGE_FILETYPE_EXTENSIONS:
                         st.image(Image.open(path_value))
                     else:
                         st.code(value)
 
-        if selection:
             st.write("---")
-            st.write(selection[0])
+            st.write(selected_row)
+
+        st.write("---")
+        numeric_df: pd.DataFrame = df.select_dtypes(include=[np.number])
+        if len(numeric_df.columns) and st.checkbox("Show Statistics"):
+            st.dataframe(numeric_df.describe())
+        if st.checkbox("Show Info", help="Get `pandas.DataFrame.info()`"):
+            buf = io.StringIO()
+            df.info(buf=buf)
+            st.code(buf.getvalue())

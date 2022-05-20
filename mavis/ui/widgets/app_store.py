@@ -12,18 +12,20 @@ class AppStoreWidget:
         from mavis.ui.widgets.workspace.file_handling import FileUpload
 
         package_path = db.ModulePathDAO().get()
+        package_path = Path(package_path)
+        (package_path / "__init__.py").touch()
 
         query_params = st.experimental_get_query_params()
         if len(query_params):
             package, module, code = [query_params[key][0] for key in ["package", "module", "code"]]
 
-            target = Path(package_path) / package
+            target = package_path / package
             target.mkdir(parents=True, exist_ok=True)
             with open(target / f"{module}.py", "w") as f:
                 import zlib
                 import base64
                 f.write(zlib.decompress(base64.b64decode(code)).decode())
-
+            (package_path / package / "__init__.py").touch()
             st.success(f"Installed {package} / {module}. Go to workspace.")
             st.experimental_set_query_params(**{})
 

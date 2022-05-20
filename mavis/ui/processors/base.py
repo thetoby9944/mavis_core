@@ -10,7 +10,7 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 
 from mavis.config import DefaultSettings, MultiProcessorSettings
-from mavis.db import ProjectDAO, DFDAO, ModulePathDAO
+from mavis.db import ProjectDAO, DFDAO, ModulePathDAO, ActivePresetDAO
 from mavis.presets.base import PresetHandler
 
 
@@ -132,26 +132,31 @@ class BaseProcessor:
         is_win_os = sys.platform.startswith('win')
 
         st.write("---")
-        h_stack = st.columns([17, 1, 1, 1])
-        if h_stack[-1].button(
+        h_stack = st.columns([16, 1, 1, 1, 1])
+        if h_stack[-2].button(
                 "🔗",
                 help="Get Module Link"
         ):
             self.module_link(filename, folder, module)
 
-        if is_win_os and h_stack[-2].button(
+        if is_win_os and h_stack[-3].button(
                 "📄",
                 help="Open the module for editing"
         ):
             os.startfile(filename)
 
-        if is_win_os and h_stack[-3].button(
+        if is_win_os and h_stack[-4].button(
                 "➦",
                 help="Fork"
         ):
             target = module_path / target_name
             shutil.copyfile(filename, target)
             os.startfile(target)
+        with h_stack[-1]:
+            PresetHandler.export_preset(
+                self.config,
+                file_name=f"{ActivePresetDAO().get()}.zip"
+            )
 
     def core(self):
         raise NotImplementedError
